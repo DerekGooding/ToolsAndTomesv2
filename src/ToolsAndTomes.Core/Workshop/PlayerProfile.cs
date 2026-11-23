@@ -55,6 +55,12 @@ public static class ProfileSerializer
                     bool ok = catalog.Actions.TryGetValue(r.ActionId, out var def) && def.IsReactive;
                     if (!ok) warnings.Add($"Dropped reaction rule '{r.ActionId}' from {a.Name}.");
                     return ok;
+                }).ToList(),
+                Cargo = a.Cargo.Where(c =>
+                {
+                    bool ok = c.Kind != CargoKind.Consumable || (c.ItemId is not null && catalog.Consumables.ContainsKey(c.ItemId));
+                    if (!ok) warnings.Add($"Dropped unknown cargo item '{c.ItemId}' from {a.Name}.");
+                    return ok;
                 }).ToList()
             })
             .ToList();

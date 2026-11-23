@@ -30,6 +30,12 @@ public sealed class ActiveAction
     public int PhaseEnteredBeat { get; set; } = -1;
     public bool CostsCommitted { get; set; }
 
+    /// <summary>The Crest's own component this action works on (e.g. the weapon an ammo refill restocks).</summary>
+    public string? OwnComponentInstanceId { get; set; }
+
+    /// <summary>What a Shaping spell will produce, resolved when the action starts.</summary>
+    public Rules.ShapingRules.ShapingPlan? ShapingPlan { get; set; }
+
     public string WitReservationKey => $"action_{Id}";
 
     /// <summary>Approaching or winding up: nothing committed yet, so it may be freely canceled.</summary>

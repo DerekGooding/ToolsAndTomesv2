@@ -9,6 +9,7 @@
       "eq_vorpal",
       "eq_spell_amplifier",
       "eq_blink_drive",
+      "util_cargo_rack",
       "mob_stride_legs",
       "spellbook_grimoire",
       "core_aether_dynamo"
@@ -18,6 +19,10 @@
         "actionId": "defense_blink",
         "minIncomingDamage": 2
       }
+    ],
+    "cargo": [
+      { "kind": "FastIron", "count": 3 },
+      { "kind": "Consumable", "count": 1, "itemId": "con_shaped_charge" }
     ]
   },
   {

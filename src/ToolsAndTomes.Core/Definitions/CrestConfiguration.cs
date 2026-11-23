@@ -13,6 +13,9 @@ public sealed record CrestConfiguration
 
     /// <summary>Pre-set reactions, in priority order.</summary>
     public IReadOnlyList<ReactionRule> ReactionRules { get; init; } = [];
+
+    /// <summary>Cargo loaded in the Workshop; the Crest is restocked to this manifest before each encounter.</summary>
+    public IReadOnlyList<CargoEntry> Cargo { get; init; } = [];
 }
 
 public sealed record EnemyDefinition

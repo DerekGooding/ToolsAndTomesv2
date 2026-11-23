@@ -45,6 +45,26 @@ internal static class ActionEffectResolver
             return;
         }
 
+        // Field shaping: fast-iron becomes a component, a consumable, or ammunition
+        if (def.IsShaping && active.ShapingPlan is { } plan)
+        {
+            ResolveShaping(actor, active, plan, beat, events);
+            return;
+        }
+
+        // Prepared ammo pack: restock one of the Crest's weapons
+        if (def.RefillsAmmo)
+        {
+            var weapon = active.OwnComponentInstanceId is null ? null : actor.Loadout.FindById(active.OwnComponentInstanceId);
+            if (weapon is not null && weapon.IsOperational)
+            {
+                weapon.RefillAmmo();
+                events.Add(new CombatEvent(beat, CombatEventType.AmmoRefilled, actor.Id,
+                    $"{actor.Name} restocked {weapon.Definition.Name} ({weapon.CurrentAmmo}/{weapon.Definition.MaxAmmo})."));
+            }
+            return;
+        }
+
         // Jet Dash: self-propelled relocation toward the target point
         if (def.DashDistance > 0)
         {
@@ -134,6 +154,46 @@ internal static class ActionEffectResolver
             actor.Id,
             $"{actor.Name} executed {def.Name}" + (targets.Count == 0 ? " (no target in reach)." : "."),
             active.TargetActorId));
+    }
+
+    private static void ResolveShaping(
+        Combatant actor,
+        ActiveAction active,
+        ShapingRules.ShapingPlan plan,
+        int beat,
+        List<CombatEvent> events)
+    {
+        if (plan.Component is { } component)
+        {
+            // Anything shaped in the field joins the very end of the Damage Order.
+            var instance = new EquipmentInstance($"{actor.Id}_shaped_{active.Id}_{component.Id}", component);
+            actor.Loadout.InstallAtEnd(instance);
+            events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
+                $"{actor.Name} shaped {plan.FastIronCost} fast-iron into a new {component.Name} (end of Damage Order).",
+                Value: plan.FastIronCost));
+        }
+        else if (plan.Consumable is { } item)
+        {
+            if (actor.Loadout.TryAddConsumable(item, actor.Rules))
+            {
+                events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
+                    $"{actor.Name} shaped {plan.FastIronCost} fast-iron into {item.Name} (stowed in cargo).",
+                    Value: plan.FastIronCost));
+            }
+            else
+            {
+                actor.Resources.AddFastIron(plan.FastIronCost); // nowhere to stow it: the fast-iron stays loose
+                events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+                    $"{actor.Name} has no cargo room for {item.Name}; the fast-iron is kept."));
+            }
+        }
+        else if (plan.AmmoTarget is { } weapon && weapon.IsOperational)
+        {
+            weapon.RefillAmmo();
+            events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
+                $"{actor.Name} shaped {plan.FastIronCost} fast-iron into ammunition for {weapon.Definition.Name} ({weapon.CurrentAmmo}/{weapon.Definition.MaxAmmo}).",
+                Value: plan.FastIronCost));
+        }
     }
 
     /// <summary>Without an explicit destination, Blink moves directly away from the nearest hostile combatant.</summary>

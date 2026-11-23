@@ -75,6 +75,35 @@ public static class ContentValidator
             }
         }
 
+        // Consumables & field shaping
+        foreach (var c in catalog.Consumables.Values)
+        {
+            string at = $"consumable '{c.Id}'";
+            if (c.CargoSize < 1) errors.Add($"{at}: cargoSize must be at least 1.");
+            if (c.FastIronCost < 1) errors.Add($"{at}: fastIronCost must be at least 1.");
+            if (!catalog.Actions.TryGetValue(c.UseActionId, out var use))
+                errors.Add($"{at}: unknown useActionId '{c.UseActionId}'.");
+            else if (use.ConsumableItemId != c.Id)
+                errors.Add($"{at}: action '{use.Id}' must declare consumableItemId '{c.Id}'.");
+        }
+
+        foreach (var a in catalog.Actions.Values.Where(a => a.ConsumableItemId is not null))
+        {
+            if (!catalog.Consumables.ContainsKey(a.ConsumableItemId!))
+                errors.Add($"action '{a.Id}': consumes unknown consumable '{a.ConsumableItemId}'.");
+            if (!catalog.Equipment.Values.Any(e => e.CargoCapacity > 0 && e.GrantedActionIds.Contains(a.Id)))
+                errors.Add($"action '{a.Id}': consumable actions must be granted by a cargo component.");
+        }
+
+        foreach (var cfg in catalog.StarterConfigurations.Values)
+        {
+            foreach (var entry in cfg.Cargo.Where(e => e.Kind == CargoKind.Consumable))
+            {
+                if (entry.ItemId is null || !catalog.Consumables.ContainsKey(entry.ItemId))
+                    errors.Add($"configuration '{cfg.Id}': cargo has unknown consumable '{entry.ItemId}'.");
+            }
+        }
+
         // Encounters
         foreach (var enc in catalog.Encounters.Values)
         {
@@ -102,7 +131,8 @@ public static class ContentValidator
         IEnumerable<CrestConfiguration> configurations,
         IEnumerable<EnemyDefinition> enemies,
         IEnumerable<ExoticMaterialDefinition>? materials = null,
-        IEnumerable<EncounterDefinition>? encounters = null)
+        IEnumerable<EncounterDefinition>? encounters = null,
+        IEnumerable<ConsumableDefinition>? consumables = null)
     {
         var errors = new List<string>();
         void Check(string kind, IEnumerable<string> ids) =>
@@ -114,6 +144,7 @@ public static class ContentValidator
         Check("enemy", enemies.Select(e => e.Id));
         Check("material", (materials ?? []).Select(m => m.Id));
         Check("encounter", (encounters ?? []).Select(e => e.Id));
+        Check("consumable", (consumables ?? []).Select(c => c.Id));
         return errors;
     }
 

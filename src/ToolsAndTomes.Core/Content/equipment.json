@@ -73,7 +73,8 @@
       "spell_pull",
       "spell_aegis",
       "spell_gravity_crush",
-      "spell_square_summon"
+      "spell_square_summon",
+      "spell_shape_fast_iron"
     ]
   },
   {
@@ -277,5 +278,19 @@
     "isLocomotion": true,
     "loadCapacity": 90,
     "movementWitCost": 1
+  },
+  {
+    "id": "util_cargo_rack",
+    "name": "Cargo Rack",
+    "description": "Stowage for prepared items: carries 4 cargo units of fast-iron, ammo packs, or other consumables, and lets the Crest use them mid-fight. Its contents are unusable while it is disabled.",
+    "category": "Utility",
+    "maxDurability": 2,
+    "weight": 8,
+    "cargoCapacity": 4,
+    "grantedActionIds": [
+      "use_ammo_pack",
+      "throw_shaped_charge",
+      "use_iron_ward"
+    ]
   }
 ]

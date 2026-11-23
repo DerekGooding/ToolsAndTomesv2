@@ -4,6 +4,12 @@ public sealed record CrestStats
 {
     public int TotalWeight { get; init; }
 
+    /// <summary>Cargo units available in operational cargo components.</summary>
+    public int CargoCapacity { get; init; }
+
+    /// <summary>Cargo units currently filled.</summary>
+    public int CargoUsed { get; init; }
+
     /// <summary>Combined load capacity of operational locomotion.</summary>
     public int LoadCapacity { get; init; }
 

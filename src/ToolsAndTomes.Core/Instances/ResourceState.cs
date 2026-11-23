@@ -61,6 +61,17 @@ public sealed class ResourceState
             FastIron += amount;
     }
 
+    public bool TrySpendFastIron(int amount)
+    {
+        if (amount <= 0)
+            return true;
+        if (FastIron < amount)
+            return false;
+
+        FastIron -= amount;
+        return true;
+    }
+
     /// <summary>Advances Mote generation by one beat. Returns true when a Mote is generated.</summary>
     public bool AdvanceMoteTimer(int beatsPerMote, int maxMotes)
     {

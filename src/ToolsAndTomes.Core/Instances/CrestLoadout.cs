@@ -13,6 +13,8 @@ public sealed class CrestLoadout
 {
     private readonly List<EquipmentInstance> _installed = [];
     private readonly List<ReactionRule> _reactionRules = [];
+    private readonly List<(CargoEntry Entry, ConsumableDefinition? Def)> _cargoManifest = [];
+    private readonly Dictionary<string, (ConsumableDefinition Def, int Count)> _consumables = [];
     private int _structureVersion;
     private (int Structure, int Operational, RulesConfig Rules, CrestStats Stats)? _statsCache;
 
@@ -52,6 +54,7 @@ public sealed class CrestLoadout
         var loadout = new CrestLoadout(config.Id, config.Name, instances);
         foreach (var rule in config.ReactionRules)
             loadout.AddReactionRule(rule);
+        loadout.SetCargoManifest(config.Cargo, catalog);
         return loadout;
     }
 
@@ -63,7 +66,8 @@ public sealed class CrestLoadout
             Name = Name,
             Description = description ?? $"Saved assembly ({_installed.Count} components).",
             ComponentIds = _installed.Select(e => e.Definition.Id).ToList(),
-            ReactionRules = _reactionRules.ToList()
+            ReactionRules = _reactionRules.ToList(),
+            Cargo = _cargoManifest.Select(m => m.Entry).ToList()
         };
 
     /// <summary>
@@ -83,6 +87,110 @@ public sealed class CrestLoadout
         }
 
         _installed.Insert(insertAt, instance);
+        _structureVersion++;
+    }
+
+    // ---- Cargo -------------------------------------------------------------------------------
+
+    /// <summary>What the Workshop loads before each encounter.</summary>
+    public IReadOnlyList<CargoEntry> CargoManifest => _cargoManifest.Select(m => m.Entry).ToList();
+
+    /// <summary>Fast-iron currently carried in cargo.</summary>
+    public int CarriedFastIron { get; private set; }
+
+    /// <summary>Consumables currently carried, by id.</summary>
+    public IReadOnlyDictionary<string, int> CarriedConsumables =>
+        _consumables.ToDictionary(kv => kv.Key, kv => kv.Value.Count);
+
+    public int GetConsumableCount(string consumableId) =>
+        _consumables.TryGetValue(consumableId, out var c) ? c.Count : 0;
+
+    /// <summary>Replaces the manifest (resolving consumables against the catalog) and restocks to it.</summary>
+    public void SetCargoManifest(IEnumerable<CargoEntry> entries, GameCatalog catalog)
+    {
+        _cargoManifest.Clear();
+        foreach (var entry in entries.Where(e => e.Count > 0))
+        {
+            ConsumableDefinition? def = null;
+            if (entry.Kind == CargoKind.Consumable &&
+                (entry.ItemId is null || !catalog.Consumables.TryGetValue(entry.ItemId, out def)))
+                continue;
+
+            _cargoManifest.Add((entry, def));
+        }
+
+        RestockCargo();
+    }
+
+    /// <summary>Refills cargo to the manifest (the Workshop's supply is free).</summary>
+    public void RestockCargo()
+    {
+        CarriedFastIron = 0;
+        _consumables.Clear();
+        foreach (var (entry, def) in _cargoManifest)
+        {
+            if (entry.Kind == CargoKind.FastIron)
+                CarriedFastIron += entry.Count;
+            else if (def is not null)
+                _consumables[def.Id] = (def, GetConsumableCount(def.Id) + entry.Count);
+        }
+
+        _structureVersion++;
+    }
+
+    public int CargoUnitsUsed(RulesConfig rules) =>
+        CarriedFastIron * rules.FastIronCargoSize + _consumables.Values.Sum(c => c.Def.CargoSize * c.Count);
+
+    public int CargoWeight(RulesConfig rules) =>
+        CarriedFastIron * rules.FastIronWeight + _consumables.Values.Sum(c => c.Def.Weight * c.Count);
+
+    public bool TryTakeCarriedFastIron(int amount)
+    {
+        if (amount <= 0)
+            return true;
+        if (CarriedFastIron < amount)
+            return false;
+
+        CarriedFastIron -= amount;
+        _structureVersion++;
+        return true;
+    }
+
+    public bool TryTakeConsumable(string consumableId)
+    {
+        if (!_consumables.TryGetValue(consumableId, out var c) || c.Count <= 0)
+            return false;
+
+        if (c.Count == 1)
+            _consumables.Remove(consumableId);
+        else
+            _consumables[consumableId] = (c.Def, c.Count - 1);
+
+        _structureVersion++;
+        return true;
+    }
+
+    /// <summary>Adds a consumable to cargo if there is room in operational cargo components.</summary>
+    public bool TryAddConsumable(ConsumableDefinition def, RulesConfig rules)
+    {
+        if (CargoUnitsUsed(rules) + def.CargoSize > GetStats(rules).CargoCapacity)
+            return false;
+
+        _consumables[def.Id] = (def, GetConsumableCount(def.Id) + 1);
+        _structureVersion++;
+        return true;
+    }
+
+    /// <summary>
+    /// Installs a component at the very end of the Damage Order (after the Core). Components shaped in the field
+    /// always go here.
+    /// </summary>
+    public void InstallAtEnd(EquipmentInstance instance)
+    {
+        if (_installed.Any(e => e.InstanceId == instance.InstanceId))
+            return;
+
+        _installed.Add(instance);
         _structureVersion++;
     }
 
@@ -184,5 +292,7 @@ public sealed class CrestLoadout
             item.Repair();
             item.RefillAmmo();
         }
+
+        RestockCargo();
     }
 }

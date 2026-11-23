@@ -28,6 +28,9 @@ public static class ActionValidationRules
         if (provider is null)
             return ActionValidationResult.Fail($"No operational component provides {action.Name}.");
 
+        if (action.ConsumableItemId is not null && actor.Loadout.GetConsumableCount(action.ConsumableItemId) <= 0)
+            return ActionValidationResult.Fail($"No {action.ConsumableItemId} left in cargo.");
+
         if (action.RequiresSpellbook && !stats.HasSpellbook)
             return ActionValidationResult.Fail($"{action.Name} requires an operational Spellbook.");
 

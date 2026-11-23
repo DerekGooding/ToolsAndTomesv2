@@ -45,6 +45,15 @@ public sealed record EquipmentDefinition
     public bool IsSpellbook { get; init; }
     public bool IsSpellAmplifier { get; init; }
 
+    /// <summary>Cargo units this component can carry (fast-iron, consumables). 0 = not a cargo component.</summary>
+    public int CargoCapacity { get; init; }
+
+    /// <summary>Fast-iron needed to shape this component in the field. 0 = derived from weight (see ShapingRules).</summary>
+    public int FastIronCost { get; init; }
+
+    /// <summary>Fast-iron needed to shape a full ammo refill for this weapon in the field.</summary>
+    public int AmmoRefillFastIronCost { get; init; } = 1;
+
     public int MaxAmmo { get; init; }
     public IReadOnlyList<string> GrantedActionIds { get; init; } = [];
 }

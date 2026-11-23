@@ -110,13 +110,16 @@ internal sealed class ActorStateProcessor
             var target = FindTarget(allCombatants, cmd.TargetActorId);
             var validation = ActionValidationRules.ValidateUseAction(actor, def, target, cmd.TargetPoint, allCombatants);
             var provider = actor.FindFreeProvider(def.Id);
-            if (!validation.IsValid || provider is null)
+            var (shapingCheck, plan) = ShapingRules.Validate(actor, def, cmd, _catalog);
+            if (!validation.IsValid || !shapingCheck.IsValid || provider is null)
             {
-                Reject(actor, def, validation.FailureReason ?? "its component is busy", beat, events);
+                Reject(actor, def, validation.FailureReason ?? shapingCheck.FailureReason ?? "its component is busy", beat, events);
                 continue;
             }
 
             var act = actor.AddAction(def, provider.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
+            act.OwnComponentInstanceId = cmd.OwnComponentInstanceId;
+            act.ShapingPlan = plan;
             if (!TryCommitCosts(actor, act))
             {
                 actor.RemoveAction(act);
@@ -357,6 +360,13 @@ internal sealed class ActorStateProcessor
             return;
         }
 
+        var (shapingCheck, plan) = ShapingRules.Validate(actor, def, cmd, _catalog);
+        if (!shapingCheck.IsValid)
+        {
+            Reject(actor, def, shapingCheck.FailureReason!, beat, events);
+            return;
+        }
+
         bool inRange = ActionValidationRules.IsInRange(actor, def, target, cmd.TargetPoint);
         var legs = inRange ? null : actor.FindLocomotionProvider();
         if (!inRange && legs is null)
@@ -366,6 +376,8 @@ internal sealed class ActorStateProcessor
         }
 
         var act = actor.AddAction(def, provider.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
+        act.OwnComponentInstanceId = cmd.OwnComponentInstanceId;
+        act.ShapingPlan = plan;
 
         if (inRange)
         {
@@ -485,10 +497,19 @@ internal sealed class ActorStateProcessor
             return false;
         if (def.AmmoCost > 0 && provider.CurrentAmmo < def.AmmoCost)
             return false;
+        if (def.ConsumableItemId is not null && actor.Loadout.GetConsumableCount(def.ConsumableItemId) <= 0)
+            return false;
+
+        int fastIron = act.ShapingPlan?.FastIronCost ?? 0;
+        if (actor.TotalFastIron < fastIron)
+            return false;
 
         actor.Resources.TrySpendMotes(def.MoteCost);
         if (def.AmmoCost > 0)
             provider.TryConsumeAmmo(def.AmmoCost);
+        if (def.ConsumableItemId is not null)
+            actor.Loadout.TryTakeConsumable(def.ConsumableItemId);
+        actor.TrySpendFastIron(fastIron);
 
         act.CostsCommitted = true;
         return true;

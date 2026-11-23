@@ -1,3 +1,4 @@
+using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
 
 namespace ToolsAndTomes.Core.Simulation;
@@ -10,6 +11,8 @@ public sealed record UseActionCommand(
     string ActorId,
     string ActionId,
     string? TargetActorId = null,
-    Vec2? TargetPoint = null) : CombatCommand(ActorId);
+    Vec2? TargetPoint = null,
+    string? OwnComponentInstanceId = null,
+    ShapingOrder? Shaping = null) : CombatCommand(ActorId);
 
 public sealed record CancelActionCommand(string ActorId) : CombatCommand(ActorId);

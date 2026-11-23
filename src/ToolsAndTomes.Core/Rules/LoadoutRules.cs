@@ -37,6 +37,9 @@ public static class LoadoutRules
         if (available < 0)
             warnings.Add($"Wit over budget: passive Wit Tax {stats.EquipmentWitTax} exceeds capacity {stats.MaxWit}.");
 
+        if (stats.CargoUsed > stats.CargoCapacity)
+            warnings.Add($"Cargo over capacity: {stats.CargoUsed} units loaded, {stats.CargoCapacity} available.");
+
         return warnings;
     }
 
@@ -45,8 +48,8 @@ public static class LoadoutRules
     {
         var r = rules ?? RulesConfig.Default;
 
-        // All installed components contribute physical mass, even if disabled.
-        int totalWeight = loadout.Installed.Sum(e => e.Definition.Weight);
+        // All installed components contribute physical mass, even if disabled, as does carried cargo.
+        int totalWeight = loadout.Installed.Sum(e => e.Definition.Weight) + loadout.CargoWeight(r);
         var operational = loadout.Installed.Where(e => e.IsOperational).ToList();
 
         bool hasSpellbook = operational.Any(e => e.Definition.IsSpellbook);
@@ -79,6 +82,8 @@ public static class LoadoutRules
         {
             TotalWeight = totalWeight,
             LoadCapacity = loadCapacity,
+            CargoCapacity = operational.Sum(e => e.Definition.CargoCapacity),
+            CargoUsed = loadout.CargoUnitsUsed(r),
             MoveSpeed = moveSpeed,
             DisplacementResistance = dispResist,
             BonusProtectionDice = bonusProtectionDice,

@@ -56,6 +56,25 @@ public sealed class Combatant
     public RulesConfig Rules { get; set; } = RulesConfig.Default;
 
     public CrestStats Stats => Loadout.GetStats(Rules);
+
+    /// <summary>Blueprints this Crest may shape in the field (null = any component in the catalog).</summary>
+    public IReadOnlySet<string>? KnownBlueprints { get; set; }
+
+    /// <summary>Fast-iron available for shaping: loose (from Square Summon) plus carried in cargo.</summary>
+    public int TotalFastIron => Resources.FastIron + Loadout.CarriedFastIron;
+
+    /// <summary>Spends fast-iron, loose first, then from cargo.</summary>
+    public bool TrySpendFastIron(int amount)
+    {
+        if (amount <= 0)
+            return true;
+        if (TotalFastIron < amount)
+            return false;
+
+        int fromLoose = Math.Min(amount, Resources.FastIron);
+        Resources.TrySpendFastIron(fromLoose);
+        return Loadout.TryTakeCarriedFastIron(amount - fromLoose);
+    }
     public bool IsDefeated => !Stats.IsCoreOperational;
     public bool IsEvading => EvadeBeatsRemaining > 0;
     public bool HasActiveAegis => AegisBlocksRemaining > 0 && AegisBeatsRemaining > 0;

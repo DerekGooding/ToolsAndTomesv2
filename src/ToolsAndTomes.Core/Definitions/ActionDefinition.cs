@@ -47,6 +47,15 @@ public sealed record ActionDefinition
 
     public int FastIronProduced { get; init; }
 
+    /// <summary>A Shaping spell: turns fast-iron into a component, consumable, or ammo per the command's <see cref="ShapingOrder"/>.</summary>
+    public bool IsShaping { get; init; }
+
+    /// <summary>Refills the ammo of one of the Crest's own weapons (the command's own-component target).</summary>
+    public bool RefillsAmmo { get; init; }
+
+    /// <summary>If set, using this action consumes one of this consumable from cargo.</summary>
+    public string? ConsumableItemId { get; init; }
+
     public int InterruptionPower { get; init; }
     public int InterruptionResistance { get; init; }
 

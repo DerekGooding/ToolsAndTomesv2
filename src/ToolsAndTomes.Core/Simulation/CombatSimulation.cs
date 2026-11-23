@@ -116,6 +116,10 @@ public sealed class CombatSimulation
                 if (!validation.IsValid)
                     return validation;
 
+                var (shapingCheck, _) = ShapingRules.Validate(actor, def, use, _catalog);
+                if (!shapingCheck.IsValid)
+                    return shapingCheck;
+
                 if (def.IsReactive)
                     actor.AddPendingReaction(use);
                 else

@@ -23,7 +23,9 @@ public enum CombatEventType
     CommandRejected,
     ReactionRuleTriggered,
     WitCollapse,
-    FastIronProduced
+    FastIronProduced,
+    FieldShaped,
+    AmmoRefilled
 }
 
 public sealed record CombatEvent(

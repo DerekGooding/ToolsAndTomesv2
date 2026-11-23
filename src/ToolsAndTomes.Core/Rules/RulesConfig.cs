@@ -31,6 +31,16 @@ public sealed record RulesConfig
     /// <summary>Overheat clears once heat falls to this percentage of capacity or less.</summary>
     public int OverheatClearPercent { get; init; } = 40;
 
+    // ---- Fast-iron & cargo ----
+    /// <summary>Weight of one unit of carried fast-iron.</summary>
+    public int FastIronWeight { get; init; } = 2;
+
+    /// <summary>Cargo units occupied by one unit of fast-iron.</summary>
+    public int FastIronCargoSize { get; init; } = 1;
+
+    /// <summary>When a component sets no fastIronCost, shaping it costs ceil(weight / this), minimum 1.</summary>
+    public int ComponentWeightPerFastIron { get; init; } = 10;
+
     // ---- Damage ----
     /// <summary>d6 result needed to save a point of damage (1 always fails, 6 always saves).</summary>
     public int ProtectionSaveTarget { get; init; } = 5;

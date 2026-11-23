@@ -1,0 +1,29 @@
+[
+  {
+    "id": "con_ammo_pack",
+    "name": "Ammo Pack",
+    "description": "Prepared ammunition: fully refills one ammo-using weapon.",
+    "useActionId": "use_ammo_pack",
+    "cargoSize": 1,
+    "weight": 2,
+    "fastIronCost": 1
+  },
+  {
+    "id": "con_shaped_charge",
+    "name": "Shaped Charge",
+    "description": "A fast-iron charge thrown at an enemy: 2 damage in a small blast.",
+    "useActionId": "throw_shaped_charge",
+    "cargoSize": 1,
+    "weight": 2,
+    "fastIronCost": 1
+  },
+  {
+    "id": "con_iron_ward",
+    "name": "Iron Ward",
+    "description": "A folded fast-iron plate that snaps open to absorb one hit (reaction).",
+    "useActionId": "use_iron_ward",
+    "cargoSize": 1,
+    "weight": 1,
+    "fastIronCost": 2
+  }
+]
