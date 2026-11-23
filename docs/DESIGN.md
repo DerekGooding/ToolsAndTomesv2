@@ -79,6 +79,8 @@ This document tracks confirmed game rules, implementation decisions, open questi
 | **Hit Allocation** | Defender-chosen Damage Order: the installed component list order, set in the Workshop; each penetrating point hits the first operational component; no attacker targeting | Makes build order a meaningful defensive decision that works identically at the table. |
 | **Weight Tradeoffs** | No hard weight cap; weight beyond the operational legs' load capacity costs 1 movement per 40 over (minimum 1), and heavy Crests take trait bonus damage (Titan, Gravity Crush) | Aligns with emergent-tradeoff design philosophy. |
 | **Component Categories** | `ComponentCategory` is an organizational label only, never a hard slot restriction | Prevents arbitrary mech-builder slot limits; constraints emerge from Wit, heat, weight, and component rules. |
+| **Content as Data** | Actions, components, starter builds, enemies, and global rules live in `src/ToolsAndTomes.Core/Content/*.json` (embedded), loaded by `ContentSerializer` and checked by `ContentValidator`; `LoadFromDirectory` swaps in edited content | Content can be balanced, modded, or generated without code changes, and nothing unplayable gets in. |
+| **Rules Config** | All global tuning numbers live in `RulesConfig` (`rules.json`) | One place to tune; alternative rule sets can be tested side by side. |
 
 ---
 

@@ -4,11 +4,10 @@ namespace ToolsAndTomes.Core.Definitions;
 
 public sealed class GameCatalog
 {
-    public static GameCatalog Default { get; } = new(
-        ActionCatalog.All,
-        EquipmentCatalog.All,
-        ConfigurationCatalog.StarterConfigurations,
-        ConfigurationCatalog.Enemies);
+    /// <summary>The shipped content (embedded JSON under Content/), validated on first use.</summary>
+    public static GameCatalog Default => LazyDefault.Value;
+
+    private static readonly Lazy<GameCatalog> LazyDefault = new(Content.ContentSerializer.LoadEmbedded);
 
     public IReadOnlyDictionary<string, ActionDefinition> Actions { get; }
     public IReadOnlyDictionary<string, EquipmentDefinition> Equipment { get; }

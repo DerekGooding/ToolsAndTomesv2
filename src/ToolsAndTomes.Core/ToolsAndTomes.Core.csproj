@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Content/*.json" LogicalName="ToolsAndTomes.Content.%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,247 @@
+[
+  {
+    "id": "core_aether_dynamo",
+    "name": "Aether Dynamo Core",
+    "description": "Compact arcane-mechanical core. Light and responsive; if disabled, the Crest falls.",
+    "category": "Core",
+    "maxDurability": 3,
+    "weight": 22,
+    "heatCapacityContribution": 8,
+    "heatDissipationPerBeat": 1,
+    "isCore": true
+  },
+  {
+    "id": "core_aether_furnace",
+    "name": "Heavy Aether Furnace",
+    "description": "High-output core expanding Wit capacity (+2), Mote storage (+1), Mote interval (-1 beat), and thermal headroom.",
+    "category": "Core",
+    "maxDurability": 4,
+    "bonusWitCapacity": 2,
+    "weight": 48,
+    "displacementResistance": 1,
+    "heatCapacityContribution": 11,
+    "heatDissipationPerBeat": 1,
+    "bonusMoteStorage": 1,
+    "moteIntervalReductionBeats": 1,
+    "isCore": true
+  },
+  {
+    "id": "mob_stride_legs",
+    "name": "Articulated Stride Legs",
+    "description": "Lightweight bipedal actuators: fast, but rated for only 70 weight before slowing.",
+    "category": "Mobility",
+    "maxDurability": 2,
+    "weight": 16,
+    "moveSpeedBonus": 5,
+    "isLocomotion": true,
+    "loadCapacity": 70
+  },
+  {
+    "id": "mob_anchor_legs",
+    "name": "Reinforced Anchor Legs",
+    "description": "Heavy braced actuators rated for 150 weight, with strong displacement resistance.",
+    "category": "Mobility",
+    "maxDurability": 3,
+    "weight": 32,
+    "displacementResistance": 1,
+    "moveSpeedBonus": 3,
+    "isLocomotion": true,
+    "loadCapacity": 150
+  },
+  {
+    "id": "armor_heavy_plate",
+    "name": "Heavy Armor Plating",
+    "description": "Adds +1 protection d6 and resists displacement at the cost of weight.",
+    "category": "Armor",
+    "maxDurability": 3,
+    "weight": 35,
+    "bonusProtectionDice": 1,
+    "displacementResistance": 1,
+    "isArmor": true
+  },
+  {
+    "id": "spellbook_grimoire",
+    "name": "Inventor's Spellbook",
+    "description": "Raises pilot base Wit to 10, adds +2 Mote storage, and unlocks arcane spells.",
+    "category": "Arcane",
+    "maxDurability": 2,
+    "weight": 2,
+    "bonusMoteStorage": 2,
+    "isSpellbook": true,
+    "grantedActionIds": [
+      "spell_push",
+      "spell_pull",
+      "spell_aegis",
+      "spell_gravity_crush",
+      "spell_square_summon"
+    ]
+  },
+  {
+    "id": "eq_righteous",
+    "name": "Righteous Blade",
+    "description": "Reliable short-commitment melee blade.",
+    "category": "Weapon",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 10,
+    "grantedActionIds": [
+      "weapon_righteous"
+    ]
+  },
+  {
+    "id": "eq_vorpal",
+    "name": "Vorpal Edge",
+    "description": "Ultra-fast melee blade enabling rapid combinations.",
+    "category": "Weapon",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 6,
+    "grantedActionIds": [
+      "weapon_vorpal"
+    ]
+  },
+  {
+    "id": "eq_titan",
+    "name": "Titan Hammer",
+    "description": "Mote-driven heavy melee weapon that punishes heavy Crests.",
+    "category": "Weapon",
+    "maxDurability": 3,
+    "witTax": 2,
+    "weight": 24,
+    "grantedActionIds": [
+      "weapon_titan"
+    ]
+  },
+  {
+    "id": "eq_talon",
+    "name": "Talon Machine Pistol",
+    "description": "Quick conventional sidearm with low telegraphing.",
+    "category": "Weapon",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 8,
+    "grantedActionIds": [
+      "weapon_talon"
+    ]
+  },
+  {
+    "id": "eq_falconet",
+    "name": "Falconet Missile Pod",
+    "description": "Medium-range missile rack (6 ammo) firing committed 3-shot salvos.",
+    "category": "Weapon",
+    "maxDurability": 2,
+    "witTax": 2,
+    "weight": 18,
+    "maxAmmo": 6,
+    "grantedActionIds": [
+      "weapon_falconet"
+    ]
+  },
+  {
+    "id": "eq_dragons_breath",
+    "name": "Dragon's Breath Projector",
+    "description": "Short-range thermal weapon (4 ammo) that generates Crest heat.",
+    "category": "Weapon",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 14,
+    "maxAmmo": 4,
+    "grantedActionIds": [
+      "weapon_dragons_breath"
+    ]
+  },
+  {
+    "id": "eq_artillery_mortar",
+    "name": "Siege Mortar",
+    "description": "Long-range artillery tube firing telegraphed high-impact shells.",
+    "category": "Weapon",
+    "maxDurability": 2,
+    "witTax": 2,
+    "weight": 22,
+    "maxAmmo": 6,
+    "grantedActionIds": [
+      "weapon_artillery_mortar"
+    ]
+  },
+  {
+    "id": "eq_acid_sprayer",
+    "name": "Acid Sprayer",
+    "description": "Corrosive projector (6 ammo) that eats through armor plating.",
+    "category": "Weapon",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 10,
+    "maxAmmo": 6,
+    "grantedActionIds": [
+      "weapon_acid_spray"
+    ]
+  },
+  {
+    "id": "eq_shield_generator",
+    "name": "Shield Generator",
+    "description": "Passive defensive field granting +1 protection d6 while operational.",
+    "category": "Defense",
+    "maxDurability": 2,
+    "witTax": 2,
+    "weight": 10,
+    "bonusProtectionDice": 1
+  },
+  {
+    "id": "eq_repulsor",
+    "name": "Repulsor Emitter",
+    "description": "Reactive short-range pulse dealing 1 damage and shoving attackers away.",
+    "category": "Defense",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 8,
+    "grantedActionIds": [
+      "defense_repulsor"
+    ]
+  },
+  {
+    "id": "eq_blink_drive",
+    "name": "Blink Drive",
+    "description": "Reactive spatial shifter enabling evasion of committed attacks.",
+    "category": "Mobility",
+    "maxDurability": 2,
+    "witTax": 2,
+    "weight": 6,
+    "grantedActionIds": [
+      "defense_blink"
+    ]
+  },
+  {
+    "id": "eq_jump_jets",
+    "name": "Jump Jets",
+    "description": "Boosts movement (+1 unit per beat) and grants Jet Dash.",
+    "category": "Mobility",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 6,
+    "moveSpeedBonus": 1,
+    "grantedActionIds": [
+      "mobility_dash"
+    ]
+  },
+  {
+    "id": "eq_thermal_regulator",
+    "name": "Thermal Regulator",
+    "description": "Vents excess heat (+2 per beat) and adds +2 thermal capacity.",
+    "category": "Utility",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 8,
+    "heatCapacityContribution": 2,
+    "heatDissipationPerBeat": 2
+  },
+  {
+    "id": "eq_spell_amplifier",
+    "name": "Arcane Amplifier",
+    "description": "Channels heavy pilot spells such as Gravity Crush through the Crest.",
+    "category": "Arcane",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 6,
+    "isSpellAmplifier": true
+  }
+]

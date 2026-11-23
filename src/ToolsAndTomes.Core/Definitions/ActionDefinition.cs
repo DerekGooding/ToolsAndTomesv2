@@ -65,5 +65,6 @@ public sealed record ActionDefinition
     /// </summary>
     public bool IsReactive { get; init; }
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public int TotalBeats => WindupBeats + ImpactBeats + RecoveryBeats;
 }

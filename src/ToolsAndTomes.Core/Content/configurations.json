@@ -1,0 +1,50 @@
+[
+  {
+    "id": "cfg_agile_skirmish",
+    "name": "Agile Skirmish Assembly",
+    "description": "Illustrative light component build emphasizing Blink evasion, high speed, Vorpal/Talon strikes, and amplified spells.",
+    "componentIds": [
+      "eq_jump_jets",
+      "eq_talon",
+      "eq_vorpal",
+      "eq_spell_amplifier",
+      "eq_blink_drive",
+      "mob_stride_legs",
+      "spellbook_grimoire",
+      "core_aether_dynamo"
+    ],
+    "reactionRules": [
+      {
+        "actionId": "defense_blink",
+        "minIncomingDamage": 2
+      }
+    ]
+  },
+  {
+    "id": "cfg_heavy_anchor",
+    "name": "Heavy Anchor Assembly",
+    "description": "Illustrative heavy component build using a Heavy Aether Furnace, armor plating, Shield Generator, Repulsor, Titan Hammer, and Dragon's Breath.",
+    "componentIds": [
+      "armor_heavy_plate",
+      "eq_thermal_regulator",
+      "eq_dragons_breath",
+      "eq_repulsor",
+      "eq_shield_generator",
+      "eq_titan",
+      "mob_anchor_legs",
+      "spellbook_grimoire",
+      "core_aether_furnace"
+    ],
+    "reactionRules": [
+      {
+        "actionId": "defense_repulsor",
+        "minIncomingDamage": 1,
+        "telegraph": "MeleeCommit"
+      },
+      {
+        "actionId": "spell_aegis",
+        "minIncomingDamage": 2
+      }
+    ]
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "baseWitWithoutSpellbook": 5,
+  "baseWitWithSpellbook": 10,
+  "baseMoteStorage": 3,
+  "moteGenerationIntervalBeats": 5,
+  "minMoteGenerationIntervalBeats": 1,
+  "weightPerMovePenalty": 40,
+  "minMoveSpeed": 1,
+  "minHeatCapacity": 4,
+  "minHeatDissipationPerBeat": 1,
+  "overheatRecoveryPenaltyBeats": 1,
+  "overheatClearPercent": 40,
+  "protectionSaveTarget": 5,
+  "resolutionRangeTolerance": 1,
+  "interruption": {
+    "disruptionDelta": -1,
+    "interruptionDelta": 0,
+    "cancellationDelta": 2,
+    "disruptionDelayBeats": 1,
+    "interruptedStunBeats": 1,
+    "cancellationMinPenaltyBeats": 2
+  }
+}

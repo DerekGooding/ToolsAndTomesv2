@@ -1,0 +1,51 @@
+[
+  {
+    "id": "enemy_skirmisher",
+    "name": "Vesper Skirmisher",
+    "archetype": "Skirmisher",
+    "assembly": {
+      "id": "cfg_enemy_skirmisher",
+      "name": "Vesper Skirmisher",
+      "componentIds": [
+        "eq_jump_jets",
+        "eq_talon",
+        "mob_stride_legs",
+        "core_aether_dynamo"
+      ]
+    },
+    "preferredRange": 7
+  },
+  {
+    "id": "enemy_bruiser",
+    "name": "Ironclad Bruiser",
+    "archetype": "Bruiser",
+    "assembly": {
+      "id": "cfg_enemy_bruiser",
+      "name": "Ironclad Bruiser",
+      "componentIds": [
+        "armor_heavy_plate",
+        "eq_righteous",
+        "eq_titan",
+        "mob_anchor_legs",
+        "core_aether_furnace"
+      ]
+    },
+    "preferredRange": 2.2
+  },
+  {
+    "id": "enemy_artillery",
+    "name": "Bastion Artillery",
+    "archetype": "Artillery",
+    "assembly": {
+      "id": "cfg_enemy_artillery",
+      "name": "Bastion Artillery",
+      "componentIds": [
+        "eq_shield_generator",
+        "mob_anchor_legs",
+        "eq_artillery_mortar",
+        "core_aether_dynamo"
+      ]
+    },
+    "preferredRange": 11
+  }
+]
