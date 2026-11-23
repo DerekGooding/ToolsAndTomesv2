@@ -16,12 +16,12 @@ public sealed class EnemyAIAndEncounterTests
     {
         var loadout = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog);
         var sim = EncounterFactory.CreateTestEncounter(loadout, seed: 101);
-        var ai = new EnemyAIController(decisionIntervalTicks: 1);
+        var ai = new EnemyAIController(decisionIntervalBeats: 1);
 
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 3; i++)
         {
             ai.Update(sim);
-            sim.StepTick();
+            sim.StepBeat();
         }
 
         var skirmisher = sim.FindCombatant("enemy_1_skirmisher")!;
@@ -38,11 +38,30 @@ public sealed class EnemyAIAndEncounterTests
     }
 
     [TestMethod]
+    [DataRow("cfg_agile_skirmish")]
+    [DataRow("cfg_heavy_anchor")]
+    public void FullEncounter_AgainstIdlePlayer_RunsToAnOutcome(string configId)
+    {
+        var loadout = CrestLoadout.CreateFromConfiguration(_catalog.StarterConfigurations[configId], _catalog);
+        var sim = EncounterFactory.CreateTestEncounter(loadout, seed: 77);
+        var ai = new EnemyAIController();
+
+        for (int beat = 0; beat < 600 && sim.Outcome == EncounterOutcome.InProgress; beat++)
+        {
+            ai.Update(sim);
+            sim.StepBeat();
+        }
+
+        Assert.AreEqual(EncounterOutcome.PlayerDefeat, sim.Outcome);
+        Assert.IsTrue(sim.Events.Any(e => e.Type == CombatEventType.ComponentDamaged));
+    }
+
+    [TestMethod]
     public void EnemyAI_CannotUseDisabledWeaponComponent()
     {
         var loadout = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, _catalog);
         var sim = EncounterFactory.CreateTestEncounter(loadout, seed: 202);
-        var ai = new EnemyAIController(decisionIntervalTicks: 1);
+        var ai = new EnemyAIController(decisionIntervalBeats: 1);
 
         var artillery = sim.FindCombatant("enemy_3_artillery")!;
         var mortar = artillery.Loadout.Installed.First(e => e.Definition.Id == "eq_artillery_mortar");

@@ -33,12 +33,12 @@ public static class ActionBarBuilder
             if (def.WitReserve > 0) cost += $" W:{def.WitReserve}";
             if (def.MoteCost > 0) cost += $" M:{def.MoteCost}";
             if (def.AmmoCost > 0) cost += $" A:{def.AmmoCost}";
-            string cdText = cd > 0 ? $" ({cd * 0.05:F1}s)" : "";
+            string cdText = cd > 0 ? $" ({cd}s)" : "";
 
             var btn = new Button
             {
                 Content = $"{def.Name}{cost}{cdText}",
-                ToolTip = $"{def.Description}\nRange: {def.Range:F1}m | Windup: {def.WindupTicks * 0.05:F2}s | IntPower: {def.InterruptionPower}",
+                ToolTip = $"{def.Description}\nRange: {def.Range} | Windup/Impact/Recovery: {def.WindupBeats}/{def.ImpactBeats}/{def.RecoveryBeats}s | Cooldown: {def.CooldownBeats}s | IntPower: {def.InterruptionPower}",
                 Margin = new Thickness(0, 0, 6, 6),
                 Padding = new Thickness(10, 5, 10, 5),
                 IsEnabled = check.IsValid,

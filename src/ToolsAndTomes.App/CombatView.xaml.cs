@@ -23,8 +23,13 @@ public partial class CombatView : UserControl
         }
     }
 
+    /// <summary>Wall-clock length of one beat (one tabletop second) at normal speed.</summary>
+    private static readonly TimeSpan BeatDuration = TimeSpan.FromSeconds(1);
+
     private readonly AppSessionState _session;
     private readonly DispatcherTimer _timer;
+    private readonly System.Diagnostics.Stopwatch _frameClock = new();
+    private TimeSpan _beatElapsed;
     private string? _selectedCombatantId;
     private string? _targetedComponentId;
     private ActionDefinition? _armedPointAction;
@@ -32,11 +37,14 @@ public partial class CombatView : UserControl
 
     public event Action? ReturnToHangarRequested;
 
+    /// <summary>Progress through the current beat (0..1), used only to smooth presentation.</summary>
+    private double BeatFraction => Math.Clamp(_beatElapsed / BeatDuration, 0, 1);
+
     public CombatView(AppSessionState session)
     {
         InitializeComponent();
         _session = session;
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+        _timer = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(33) };
         _timer.Tick += Timer_Tick;
     }
 
@@ -47,8 +55,10 @@ public partial class CombatView : UserControl
         _targetedComponentId = null;
         _armedPointAction = null;
         _lastRenderedEventCount = 0;
+        _beatElapsed = TimeSpan.Zero;
         LstCombatLog.Items.Clear();
 
+        _frameClock.Restart();
         _timer.Start();
         RefreshAll();
     }
@@ -66,13 +76,27 @@ public partial class CombatView : UserControl
 
     private void Timer_Tick(object? sender, EventArgs e)
     {
+        var frameDelta = _frameClock.Elapsed;
+        _frameClock.Restart();
+
         var sim = _session.ActiveSimulation;
         if (sim is null || sim.IsPaused || sim.Outcome != EncounterOutcome.InProgress)
             return;
 
-        _session.ActiveAI.Update(sim);
-        sim.StepTick();
+        _beatElapsed += frameDelta;
+        while (_beatElapsed >= BeatDuration && sim.Outcome == EncounterOutcome.InProgress)
+        {
+            _beatElapsed -= BeatDuration;
+            AdvanceOneBeat(sim);
+        }
+
         RefreshAll();
+    }
+
+    private void AdvanceOneBeat(CombatSimulation sim)
+    {
+        _session.ActiveAI.Update(sim);
+        sim.StepBeat();
     }
 
     private void RefreshAll()
@@ -83,7 +107,7 @@ public partial class CombatView : UserControl
 
         BtnPauseToggle.Content = sim.IsPaused ? "▶ RESUME (Space)" : "⏸ PAUSE (Space)";
         BtnStepTick.IsEnabled = sim.IsPaused && sim.Outcome == EncounterOutcome.InProgress;
-        TxtClock.Text = $"{sim.ElapsedSeconds:F2}s | {(sim.IsPaused ? "PAUSED" : "RUNNING")}";
+        TxtClock.Text = $"Beat {sim.CurrentBeat} ({sim.CurrentBeat + BeatFraction:F1}s) | {(sim.IsPaused ? "PAUSED" : "RUNNING")}";
 
         TxtOutcome.Text = sim.Outcome switch
         {
@@ -103,13 +127,14 @@ public partial class CombatView : UserControl
             TxtPlayerResources.Text =
                 $"Wit: {availWit}/{stats.MaxWit} (Tax {stats.EquipmentWitTax}, Res {player.Resources.ReservedWit})  |  " +
                 $"Motes: {player.Resources.CurrentMotes}/{stats.MaxMotes}  |  " +
-                $"Heat: {player.Resources.CurrentHeat:F1}/{stats.HeatCapacity:F0}{heatWarn}{aegis}{evade}";
+                $"Heat: {player.Resources.CurrentHeat}/{stats.HeatCapacity}{heatWarn}{aegis}{evade}" +
+                (player.Resources.FastIron > 0 ? $"  |  Fast-iron: {player.Resources.FastIron}" : "");
 
             RebuildActionBar(sim, player);
         }
 
-        BattlefieldRenderer.Render(ArenaCanvas, sim, _selectedCombatantId, _armedPointAction);
-        TimelineRenderer.Render(TimelinePanel, sim.GetTimelineEntries());
+        BattlefieldRenderer.Render(ArenaCanvas, sim, _selectedCombatantId, _armedPointAction, BeatFraction);
+        TimelineRenderer.Render(TimelinePanel, sim.GetTimelineEntries(), BeatFraction);
         RefreshInspector(sim);
         RefreshCombatLog(sim);
     }
@@ -170,7 +195,7 @@ public partial class CombatView : UserControl
         TxtInspectorTitle.Text = $"{c.Name} ({c.Faction})";
         TxtInspectorStats.Text =
             $"State: {c.State} | Pos: ({c.Position.X:F1}, {c.Position.Y:F1})\n" +
-            $"Wt: {s.TotalWeight:F0} | Spd: {s.MoveSpeed:F2} | Prot: 1+{s.BonusProtectionDice} d6 | DispRes: {s.DisplacementResistance:P0}";
+            $"Wt: {s.TotalWeight:F0} | Spd: {s.MoveSpeed}/beat | Prot: 1+{s.BonusProtectionDice} d6 | DispRes: {s.DisplacementResistance}";
 
         var rows = c.Loadout.Installed.Select(e => new ComponentRow(e)).ToList();
         LstInspectorComponents.ItemsSource = rows;
@@ -184,7 +209,7 @@ public partial class CombatView : UserControl
         for (int i = _lastRenderedEventCount; i < sim.Events.Count; i++)
         {
             var ev = sim.Events[i];
-            LstCombatLog.Items.Insert(0, $"[{ev.Tick * 0.05:F2}s] {ev.Message}");
+            LstCombatLog.Items.Insert(0, $"[{ev.Beat}s] {ev.Message}");
         }
 
         _lastRenderedEventCount = sim.Events.Count;
@@ -263,9 +288,9 @@ public partial class CombatView : UserControl
             return;
 
         sim.Resume();
-        _session.ActiveAI.Update(sim);
-        sim.StepTick();
+        AdvanceOneBeat(sim);
         sim.Pause();
+        _beatElapsed = TimeSpan.Zero;
         RefreshAll();
     }
 

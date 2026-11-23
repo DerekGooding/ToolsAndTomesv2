@@ -7,11 +7,11 @@ namespace ToolsAndTomes.Core.AI;
 
 public sealed class EnemyAIController
 {
-    private readonly int _decisionIntervalTicks;
+    private readonly int _decisionIntervalBeats;
 
-    public EnemyAIController(int decisionIntervalTicks = 6)
+    public EnemyAIController(int decisionIntervalBeats = 1)
     {
-        _decisionIntervalTicks = Math.Max(1, decisionIntervalTicks);
+        _decisionIntervalBeats = Math.Max(1, decisionIntervalBeats);
     }
 
     public void Update(CombatSimulation simulation)
@@ -19,7 +19,7 @@ public sealed class EnemyAIController
         if (simulation.IsPaused || simulation.Outcome != EncounterOutcome.InProgress)
             return;
 
-        if (simulation.CurrentTick % _decisionIntervalTicks != 0)
+        if (simulation.CurrentBeat % _decisionIntervalBeats != 0)
             return;
 
         var playerTarget = simulation.Combatants
@@ -33,7 +33,7 @@ public sealed class EnemyAIController
             if (enemy.Faction != Faction.Enemy || enemy.IsDefeated)
                 continue;
 
-            if (enemy.State != ActionState.Idle)
+            if (enemy.State != ActionState.Idle || enemy.QueuedCommand is not null)
                 continue;
 
             var command = ChooseCommand(enemy, playerTarget, simulation);

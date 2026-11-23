@@ -1,4 +1,3 @@
-using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
 
 namespace ToolsAndTomes.Core.Rules;
@@ -8,12 +7,23 @@ public static class LoadoutRules
     public const int BaseWitWithoutSpellbook = 5;
     public const int BaseWitWithSpellbook = 10;
     public const int DefaultBaseMoteStorage = 3;
-    public const int MoteGenerationIntervalTicks = ActionCatalog.TicksPerSecond * 5; // 5 seconds = 100 ticks
+    public const int MoteGenerationIntervalBeats = 5;
+    public const int MinMoteGenerationIntervalBeats = 1;
+
+    /// <summary>Total weight a Crest can carry before movement is penalized.</summary>
+    public const int WeightPenaltyThreshold = 80;
+
+    /// <summary>Each full increment of weight above the threshold costs 1 unit of movement per beat.</summary>
+    public const int WeightPerMovePenalty = 60;
+    public const int MinMoveSpeed = 1;
+
+    public const int MinHeatCapacity = 4;
+    public const int MinHeatDissipationPerBeat = 1;
 
     public static CrestStats ComputeStats(CrestLoadout loadout)
     {
         // All installed components contribute physical mass, even if disabled.
-        double totalWeight = loadout.Installed.Sum(e => e.Definition.Weight);
+        int totalWeight = loadout.Installed.Sum(e => e.Definition.Weight);
         var operational = loadout.Installed.Where(e => e.IsOperational).ToList();
 
         bool hasSpellbook = operational.Any(e => e.Definition.IsSpellbook);
@@ -25,22 +35,20 @@ public static class LoadoutRules
         int witTax = operational.Sum(e => e.Definition.WitTax);
 
         int maxMotes = DefaultBaseMoteStorage + operational.Sum(e => e.Definition.BonusMoteStorage);
-        double moteRateBonus = Math.Max(0.0, operational.Sum(e => e.Definition.MoteGenerationRateBonus));
-        int moteIntervalTicks = Math.Max(20, (int)Math.Round(MoteGenerationIntervalTicks / (1.0 + moteRateBonus)));
+        int moteInterval = Math.Max(
+            MinMoteGenerationIntervalBeats,
+            MoteGenerationIntervalBeats - operational.Sum(e => e.Definition.MoteIntervalReductionBeats));
 
         int bonusProtectionDice = operational.Sum(e => e.Definition.BonusProtectionDice);
 
-        double speedFromComponents = operational.Sum(e => e.Definition.MoveSpeedBonus);
-        double weightPenalty = Math.Max(0, totalWeight - 45.0) * 0.02;
-        double moveSpeed = Math.Max(0.8, speedFromComponents - weightPenalty);
+        int speedFromComponents = operational.Sum(e => e.Definition.MoveSpeedBonus);
+        int weightPenalty = Math.Max(0, totalWeight - WeightPenaltyThreshold) / WeightPerMovePenalty;
+        int moveSpeed = Math.Max(MinMoveSpeed, speedFromComponents - weightPenalty);
 
-        double dispResist = Math.Clamp(
-            operational.Sum(e => e.Definition.DisplacementResistance),
-            0.0,
-            0.85);
+        int dispResist = Math.Max(0, operational.Sum(e => e.Definition.DisplacementResistance));
 
-        double heatCapacity = Math.Max(4.0, operational.Sum(e => e.Definition.HeatCapacityContribution));
-        double heatDissipation = Math.Max(0.5, operational.Sum(e => e.Definition.HeatDissipationPerSecond));
+        int heatCapacity = Math.Max(MinHeatCapacity, operational.Sum(e => e.Definition.HeatCapacityContribution));
+        int heatDissipation = Math.Max(MinHeatDissipationPerBeat, operational.Sum(e => e.Definition.HeatDissipationPerBeat));
 
         return new CrestStats
         {
@@ -54,9 +62,9 @@ public static class LoadoutRules
             MaxWit = maxWit,
             EquipmentWitTax = witTax,
             MaxMotes = maxMotes,
-            MoteGenerationIntervalTicks = moteIntervalTicks,
+            MoteGenerationIntervalBeats = moteInterval,
             HeatCapacity = heatCapacity,
-            HeatDissipationPerSecond = heatDissipation
+            HeatDissipationPerBeat = heatDissipation
         };
     }
 }

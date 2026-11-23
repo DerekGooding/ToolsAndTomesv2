@@ -3,22 +3,13 @@ using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
 using ToolsAndTomes.Core.Rules;
 using ToolsAndTomes.Core.Simulation;
+using static ToolsAndTomes.Tests.TestHelpers;
 
 namespace ToolsAndTomes.Tests;
-
-internal sealed class FixedRandom(params int[] rolls) : ISeededRandom
-{
-    private int _index;
-
-    public int RollD6() => rolls[_index++ % rolls.Length];
-    public int NextInt(int minInclusive, int maxExclusive) => minInclusive;
-}
 
 [TestClass]
 public sealed class DamageAndCombatRulesTests
 {
-    private readonly GameCatalog _catalog = GameCatalog.Default;
-
     [TestMethod]
     public void ProtectionRoll_OneAlwaysHits_SixAlwaysSaves()
     {
@@ -36,47 +27,64 @@ public sealed class DamageAndCombatRulesTests
     }
 
     [TestMethod]
-    public void BlinkDrive_WithinReactionWindow_CompletelyEvadesIncomingAttack()
+    public void BlinkDrive_DeclaredDuringIncomingImpact_ResolvesFirstAndEvades()
     {
         var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5));
         var enemy = CreateEnemy("enemy_bruiser", new Vec2(6, 5));
         var sim = new CombatSimulation([player, enemy], new FixedRandom(1));
 
         sim.IssueCommand(new UseActionCommand(enemy.Id, "weapon_titan", player.Id));
-        for (int i = 0; i < 10; i++) sim.StepTick();
+        StepUntil(sim, () => enemy.State == ActionState.Executing);
 
         var blinkResult = sim.IssueCommand(new UseActionCommand(player.Id, "defense_blink", TargetPoint: new Vec2(1, 5)));
         Assert.IsTrue(blinkResult.IsValid);
 
-        for (int i = 0; i < 15; i++) sim.StepTick();
+        sim.StepBeat(); // the impact beat: reaction resolves, then the impact
 
-        Assert.IsTrue(player.Loadout.Installed.All(c => c.CurrentDurability == c.Definition.MaxDurability));
+        Assert.IsTrue(IsUndamaged(player));
         Assert.IsLessThan(4.0, player.Position.X);
+        Assert.AreEqual(ActionState.Recovery, enemy.State, "Titan Cleave still resolved (and whiffed).");
+    }
+
+    [TestMethod]
+    public void Repulsor_DeclaredDuringIncomingImpact_CancelsTheAttackBeforeItLands()
+    {
+        var player = CreatePlayer(ConfigurationCatalog.HeavyAnchor, new Vec2(5, 5));
+        var enemy = CreateEnemy("enemy_bruiser", new Vec2(7, 5));
+        var sim = new CombatSimulation([player, enemy], new FixedRandom(1));
+
+        sim.IssueCommand(new UseActionCommand(enemy.Id, "weapon_righteous", player.Id));
+        StepUntil(sim, () => enemy.State == ActionState.Executing);
+
+        Assert.IsTrue(sim.IssueCommand(new UseActionCommand(player.Id, "defense_repulsor", enemy.Id)).IsValid);
+        sim.StepBeat();
+
+        Assert.IsTrue(IsUndamaged(player));
+        Assert.AreEqual(ActionState.Interrupted, enemy.State);
     }
 
     [TestMethod]
     public void AegisSpell_AbsorbsHitsAndReleasesReservedWitWhenDepleted()
     {
         var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5));
-        var enemy = CreateEnemy("enemy_skirmisher", new Vec2(8, 5));
-        var sim = new CombatSimulation([player, enemy], new FixedRandom(1));
+        var enemyA = CreateEnemy("enemy_skirmisher", new Vec2(8, 4), "enemy_a");
+        var enemyB = CreateEnemy("enemy_skirmisher", new Vec2(8, 6), "enemy_b");
+        var sim = new CombatSimulation([player, enemyA, enemyB], new FixedRandom(1));
 
         sim.IssueCommand(new UseActionCommand(player.Id, "spell_aegis"));
-        for (int i = 0; i < 8; i++) sim.StepTick();
+        sim.StepBeat(); // reactions resolve at the end of the beat they are declared
 
         Assert.IsTrue(player.HasActiveAegis);
         Assert.AreEqual(2, player.AegisBlocksRemaining);
         Assert.AreEqual(2, player.Resources.ReservedWit);
 
-        sim.IssueCommand(new UseActionCommand(enemy.Id, "weapon_talon", player.Id));
-        for (int i = 0; i < 20; i++) sim.StepTick();
-        Assert.AreEqual(1, player.AegisBlocksRemaining);
+        sim.IssueCommand(new UseActionCommand(enemyA.Id, "weapon_talon", player.Id));
+        sim.IssueCommand(new UseActionCommand(enemyB.Id, "weapon_talon", player.Id));
+        StepUntil(sim, () => enemyA.State == ActionState.Recovery);
 
-        sim.IssueCommand(new UseActionCommand(enemy.Id, "weapon_talon", player.Id));
-        for (int i = 0; i < 20; i++) sim.StepTick();
         Assert.AreEqual(0, player.AegisBlocksRemaining);
         Assert.AreEqual(0, player.Resources.ReservedWit);
-        Assert.IsTrue(player.Loadout.Installed.All(c => c.CurrentDurability == c.Definition.MaxDurability));
+        Assert.IsTrue(IsUndamaged(player));
     }
 
     [TestMethod]
@@ -87,17 +95,22 @@ public sealed class DamageAndCombatRulesTests
         var sim = new CombatSimulation([player, enemy], new FixedRandom(1));
 
         sim.IssueCommand(new UseActionCommand(enemy.Id, "weapon_artillery_mortar", TargetPoint: new Vec2(5, 5)));
-        sim.StepTick();
+        sim.StepBeat();
         Assert.AreEqual(ActionState.Windup, enemy.State);
 
         double startX = enemy.Position.X;
         var repulsor = sim.IssueCommand(new UseActionCommand(player.Id, "defense_repulsor", enemy.Id));
         Assert.IsTrue(repulsor.IsValid);
 
-        for (int i = 0; i < 6; i++) sim.StepTick();
+        sim.StepBeat();
 
-        Assert.IsGreaterThan(startX, enemy.Position.X);
+        // Push 4 minus displacement resistance 1 (anchor legs) = 3 units
+        Assert.AreEqual(startX + 3, enemy.Position.X, 1e-9);
         Assert.AreEqual(ActionState.Interrupted, enemy.State);
+
+        var entry = sim.GetTimelineEntries().Single(e => e.ActorId == enemy.Id);
+        Assert.AreEqual(enemy.InterruptedTotalBeats, entry.PhaseTotalBeats);
+        Assert.AreEqual(2, entry.PhaseTotalBeats, "Cancellation penalty = max(2, recovery 2).");
     }
 
     [TestMethod]
@@ -107,6 +120,15 @@ public sealed class DamageAndCombatRulesTests
         Assert.AreEqual(InterruptionTier.Disruption, InterruptionRules.Evaluate(2, actionResistance: 3, wasDisplaced: false));
         Assert.AreEqual(InterruptionTier.Interruption, InterruptionRules.Evaluate(3, actionResistance: 3, wasDisplaced: false));
         Assert.AreEqual(InterruptionTier.Cancellation, InterruptionRules.Evaluate(5, actionResistance: 3, wasDisplaced: false));
+    }
+
+    [TestMethod]
+    public void Displacement_ResistanceSubtractsWholeUnits_AndNeverReverses()
+    {
+        Assert.AreEqual(3, DamageResolutionService.EffectiveDisplacement(4, 1));
+        Assert.AreEqual(0, DamageResolutionService.EffectiveDisplacement(2, 3));
+        Assert.AreEqual(-1, DamageResolutionService.EffectiveDisplacement(-4, 3));
+        Assert.AreEqual(0, DamageResolutionService.EffectiveDisplacement(-2, 5));
     }
 
     [TestMethod]
@@ -124,9 +146,12 @@ public sealed class DamageAndCombatRulesTests
 
         for (int shot = 0; shot < 3; shot++)
         {
-            sim.IssueCommand(new UseActionCommand(player.Id, "weapon_dragons_breath", enemy.Id));
-            for (int t = 0; t < 35; t++) sim.StepTick();
+            StepUntil(sim, () => player.State == ActionState.Idle && player.GetCooldown("weapon_dragons_breath") == 0);
+            Assert.IsTrue(sim.IssueCommand(new UseActionCommand(player.Id, "weapon_dragons_breath", enemy.Id)).IsValid);
+            sim.StepBeat();
         }
+
+        StepUntil(sim, () => player.State == ActionState.Idle);
 
         Assert.AreEqual(startAmmo - 3, weapon.CurrentAmmo);
         Assert.IsTrue(sim.Events.Any(e => e.Type == CombatEventType.Overheated));
@@ -150,12 +175,33 @@ public sealed class DamageAndCombatRulesTests
         Assert.IsFalse(noAmp.IsValid);
     }
 
-    private Combatant CreatePlayer(CrestConfiguration cfg, Vec2 pos, int startingMotes = 2) =>
-        new("player", cfg.Name, Faction.Player, CrestLoadout.CreateFromConfiguration(cfg, _catalog, "p"), pos, startingMotes);
-
-    private Combatant CreateEnemy(string enemyId, Vec2 pos)
+    [TestMethod]
+    public void SquareSummon_SpendsFourMotes_AndProducesFastIron()
     {
-        var def = _catalog.Enemies[enemyId];
-        return new Combatant(enemyId, def.Name, Faction.Enemy, CrestLoadout.CreateFromConfiguration(def.Assembly, _catalog, "e"), pos, startingMotes: 2, def.Archetype, def.PreferredRange);
+        var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5), startingMotes: 3);
+        var enemy = CreateEnemy("enemy_bruiser", new Vec2(20, 5));
+        var sim = new CombatSimulation([player, enemy], seed: 5);
+
+        Assert.IsFalse(sim.IssueCommand(new UseActionCommand(player.Id, "spell_square_summon")).IsValid);
+
+        player.Resources.AddMotes(1, player.Stats.MaxMotes);
+        Assert.IsTrue(sim.IssueCommand(new UseActionCommand(player.Id, "spell_square_summon")).IsValid);
+
+        StepUntil(sim, () => player.Resources.FastIron == 1, maxBeats: 12);
+        Assert.IsTrue(sim.Events.Any(e => e.Type == CombatEventType.FastIronProduced));
+    }
+
+    [TestMethod]
+    public void MoteCostAboveStorageCapacity_IsRejected()
+    {
+        var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5), startingMotes: 5);
+        var book = player.Loadout.Installed.First(e => e.Definition.IsSpellbook);
+        var sixMoteSpell = GameCatalog.Default.GetAction("spell_square_summon") with { MoteCost = 6 };
+
+        var result = ActionValidationRules.ValidateUseAction(player, sixMoteSpell, null, null);
+
+        Assert.IsTrue(book.IsOperational);
+        Assert.IsFalse(result.IsValid);
+        Assert.Contains("can only store", result.FailureReason!);
     }
 }

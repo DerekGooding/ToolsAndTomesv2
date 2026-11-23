@@ -5,9 +5,10 @@ public sealed class ResourceState
     private readonly Dictionary<string, int> _witReservations = [];
 
     public int CurrentMotes { get; private set; }
-    public int MoteGenerationProgressTicks { get; private set; }
-    public double CurrentHeat { get; private set; }
+    public int MoteGenerationProgressBeats { get; private set; }
+    public int CurrentHeat { get; private set; }
     public bool IsOverheated { get; private set; }
+    public int FastIron { get; private set; }
 
     public int ReservedWit => _witReservations.Values.Sum();
 
@@ -54,18 +55,25 @@ public sealed class ResourceState
         CurrentMotes = Math.Min(maxMotes, CurrentMotes + amount);
     }
 
-    public bool AdvanceMoteTimer(int ticksPerMote, int maxMotes)
+    public void AddFastIron(int amount)
+    {
+        if (amount > 0)
+            FastIron += amount;
+    }
+
+    /// <summary>Advances Mote generation by one beat. Returns true when a Mote is generated.</summary>
+    public bool AdvanceMoteTimer(int beatsPerMote, int maxMotes)
     {
         if (CurrentMotes >= maxMotes)
         {
-            MoteGenerationProgressTicks = 0;
+            MoteGenerationProgressBeats = 0;
             return false;
         }
 
-        MoteGenerationProgressTicks++;
-        if (MoteGenerationProgressTicks >= ticksPerMote)
+        MoteGenerationProgressBeats++;
+        if (MoteGenerationProgressBeats >= beatsPerMote)
         {
-            MoteGenerationProgressTicks -= ticksPerMote;
+            MoteGenerationProgressBeats = 0;
             CurrentMotes = Math.Min(maxMotes, CurrentMotes + 1);
             return true;
         }
@@ -73,13 +81,14 @@ public sealed class ResourceState
         return false;
     }
 
-    public bool AddHeat(double amount, double heatCapacity)
+    /// <summary>Adds heat. Returns true if this addition caused an overheat.</summary>
+    public bool AddHeat(int amount, int heatCapacity)
     {
         if (amount <= 0)
             return false;
 
         CurrentHeat += amount;
-        if (CurrentHeat >= heatCapacity)
+        if (!IsOverheated && CurrentHeat >= heatCapacity)
         {
             IsOverheated = true;
             return true;
@@ -88,13 +97,14 @@ public sealed class ResourceState
         return false;
     }
 
-    public void CoolDown(double dissipationPerTick, double heatCapacity)
+    /// <summary>Dissipates heat for one beat. Overheat clears once heat falls to 40% of capacity or less.</summary>
+    public void CoolDown(int dissipationPerBeat, int heatCapacity)
     {
         if (CurrentHeat <= 0)
             return;
 
-        CurrentHeat = Math.Max(0, CurrentHeat - dissipationPerTick);
-        if (IsOverheated && CurrentHeat <= heatCapacity * 0.4)
+        CurrentHeat = Math.Max(0, CurrentHeat - dissipationPerBeat);
+        if (IsOverheated && CurrentHeat * 5 <= heatCapacity * 2)
         {
             IsOverheated = false;
         }

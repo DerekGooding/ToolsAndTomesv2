@@ -1,5 +1,8 @@
 namespace ToolsAndTomes.Core.Definitions;
 
+/// <summary>
+/// Data definition of a component. All quantities are small integers so they can be tracked at a table.
+/// </summary>
 public sealed record EquipmentDefinition
 {
     public required string Id { get; init; }
@@ -10,17 +13,23 @@ public sealed record EquipmentDefinition
     public int MaxDurability { get; init; } = 1;
     public int WitTax { get; init; }
     public int BonusWitCapacity { get; init; }
-    public double Weight { get; init; }
+    public int Weight { get; init; }
 
     public int BonusProtectionDice { get; init; }
-    public double DisplacementResistance { get; init; }
-    public double MoveSpeedBonus { get; init; }
 
-    public double HeatCapacityContribution { get; init; }
-    public double HeatDissipationPerSecond { get; init; }
+    /// <summary>Tabletop units subtracted from any push or pull applied to the Crest.</summary>
+    public int DisplacementResistance { get; init; }
+
+    /// <summary>Tabletop units of movement per beat contributed by this component.</summary>
+    public int MoveSpeedBonus { get; init; }
+
+    public int HeatCapacityContribution { get; init; }
+    public int HeatDissipationPerBeat { get; init; }
 
     public int BonusMoteStorage { get; init; }
-    public double MoteGenerationRateBonus { get; init; }
+
+    /// <summary>Beats removed from the Mote generation interval.</summary>
+    public int MoteIntervalReductionBeats { get; init; }
 
     public bool IsCore { get; init; }
     public bool IsArmor { get; init; }

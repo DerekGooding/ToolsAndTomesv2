@@ -1,5 +1,4 @@
 using ToolsAndTomes.Core.Definitions;
-using ToolsAndTomes.Core.Instances;
 
 namespace ToolsAndTomes.Core.Instances;
 
@@ -12,9 +11,14 @@ public sealed class ActiveAction
     public string? TargetComponentInstanceId { get; }
 
     public ActionState Phase { get; set; }
-    public int PhaseTicksRemaining { get; set; }
-    public int PhaseTotalTicks { get; set; }
+
+    /// <summary>Beats left in the current phase, including the beat in progress.</summary>
+    public int PhaseBeatsRemaining { get; set; }
+    public int PhaseTotalBeats { get; set; }
     public bool EffectApplied { get; set; }
+
+    /// <summary>Beat during which the current phase was entered outside the normal advance step (e.g. a reaction), or -1.</summary>
+    public int PhaseEnteredBeat { get; set; } = -1;
     public bool CostsCommitted { get; set; }
 
     public ActiveAction(
@@ -32,12 +36,16 @@ public sealed class ActiveAction
         Phase = ActionState.Windup;
     }
 
-    public int TicksUntilExecution()
+    /// <summary>
+    /// Beats until the impact resolves, counting the beat in progress (1 = resolves at the end of this beat).
+    /// Returns -1 once the impact has resolved.
+    /// </summary>
+    public int BeatsUntilImpact()
     {
         return Phase switch
         {
-            ActionState.Windup => PhaseTicksRemaining,
-            ActionState.Executing => 0,
+            ActionState.Windup => PhaseBeatsRemaining + Math.Max(1, Definition.ImpactBeats),
+            ActionState.Executing => PhaseBeatsRemaining,
             _ => -1
         };
     }

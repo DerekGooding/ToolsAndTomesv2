@@ -16,24 +16,24 @@ public static class EquipmentCatalog
                 Category = ComponentCategory.Core,
                 MaxDurability = 3,
                 Weight = 22,
-                HeatCapacityContribution = 8.5,
-                HeatDissipationPerSecond = 1.0,
+                HeatCapacityContribution = 8,
+                HeatDissipationPerBeat = 1,
                 IsCore = true
             },
             new()
             {
                 Id = "core_aether_furnace",
                 Name = "Heavy Aether Furnace",
-                Description = "High-output core expanding Wit capacity (+2), Mote storage (+1), Mote rate (+25%), and thermal headroom.",
+                Description = "High-output core expanding Wit capacity (+2), Mote storage (+1), Mote interval (-1 beat), and thermal headroom.",
                 Category = ComponentCategory.Core,
                 MaxDurability = 4,
                 Weight = 48,
                 BonusWitCapacity = 2,
                 BonusMoteStorage = 1,
-                MoteGenerationRateBonus = 0.25,
-                DisplacementResistance = 0.25,
-                HeatCapacityContribution = 11.5,
-                HeatDissipationPerSecond = 1.0,
+                MoteIntervalReductionBeats = 1,
+                DisplacementResistance = 1,
+                HeatCapacityContribution = 11,
+                HeatDissipationPerBeat = 1,
                 IsCore = true
             },
             new()
@@ -44,8 +44,7 @@ public static class EquipmentCatalog
                 Category = ComponentCategory.Mobility,
                 MaxDurability = 2,
                 Weight = 16,
-                MoveSpeedBonus = 4.6,
-                DisplacementResistance = 0.05
+                MoveSpeedBonus = 5
             },
             new()
             {
@@ -55,8 +54,8 @@ public static class EquipmentCatalog
                 Category = ComponentCategory.Mobility,
                 MaxDurability = 3,
                 Weight = 32,
-                MoveSpeedBonus = 3.2,
-                DisplacementResistance = 0.25
+                MoveSpeedBonus = 3,
+                DisplacementResistance = 1
             },
             new()
             {
@@ -67,7 +66,7 @@ public static class EquipmentCatalog
                 MaxDurability = 3,
                 Weight = 35,
                 BonusProtectionDice = 1,
-                DisplacementResistance = 0.35,
+                DisplacementResistance = 1,
                 IsArmor = true
             },
             new()
@@ -80,7 +79,7 @@ public static class EquipmentCatalog
                 Weight = 2,
                 BonusMoteStorage = 2,
                 IsSpellbook = true,
-                GrantedActionIds = ["spell_push", "spell_pull", "spell_aegis", "spell_gravity_crush"]
+                GrantedActionIds = ["spell_push", "spell_pull", "spell_aegis", "spell_gravity_crush", "spell_square_summon"]
             },
             new()
             {
@@ -199,24 +198,24 @@ public static class EquipmentCatalog
             {
                 Id = "eq_jump_jets",
                 Name = "Jump Jets",
-                Description = "Boosts Crest movement speed (+2.0 m/s) while operational.",
+                Description = "Boosts Crest movement speed (+2 units per beat) while operational.",
                 Category = ComponentCategory.Mobility,
                 MaxDurability = 2,
                 WitTax = 1,
                 Weight = 6,
-                MoveSpeedBonus = 2.0
+                MoveSpeedBonus = 2
             },
             new()
             {
                 Id = "eq_thermal_regulator",
                 Name = "Thermal Regulator",
-                Description = "Vents excess heat (+2.5/s) and adds +2.0 thermal capacity.",
+                Description = "Vents excess heat (+2 per beat) and adds +2 thermal capacity.",
                 Category = ComponentCategory.Utility,
                 MaxDurability = 2,
                 WitTax = 1,
                 Weight = 8,
-                HeatCapacityContribution = 2.0,
-                HeatDissipationPerSecond = 2.5
+                HeatCapacityContribution = 2,
+                HeatDissipationPerBeat = 2
             },
             new()
             {

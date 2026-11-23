@@ -73,15 +73,15 @@ public partial class HangarView : UserControl
         LstInstalled.ItemsSource = loadout.Installed.Select(e => new EquipmentListItem(e)).ToList();
         LstSpares.ItemsSource = _session.SpareInventory.Select(e => new EquipmentListItem(e)).ToList();
 
-        double moteSec = stats.MoteGenerationIntervalTicks / (double)ActionCatalog.TicksPerSecond;
+        int moteSec = stats.MoteGenerationIntervalBeats;
         TxtStatsSummary.Text =
             $"Total Weight       : {stats.TotalWeight:F0} {(stats.TotalWeight >= 90 ? "(HEAVY)" : "(LIGHT)")}\n" +
-            $"Move Speed         : {stats.MoveSpeed:F2} m/s\n" +
-            $"Displacement Resist: {stats.DisplacementResistance:P0}\n" +
+            $"Move Speed         : {stats.MoveSpeed} per beat\n" +
+            $"Displacement Resist: -{stats.DisplacementResistance} to push/pull\n" +
             $"Protection Dice    : 1 base + {stats.BonusProtectionDice} bonus (5+ save)\n" +
             $"Wit Capacity       : {stats.AvailableWit(0)} avail / {stats.MaxWit} max (Tax: {stats.EquipmentWitTax})\n" +
-            $"Motes              : {stats.MaxMotes} max (+1 per {moteSec:F1}s)\n" +
-            $"Heat Management    : {stats.HeatCapacity:F1} cap | -{stats.HeatDissipationPerSecond:F1}/s\n" +
+            $"Motes              : {stats.MaxMotes} max (+1 per {moteSec}s)\n" +
+            $"Heat Management    : {stats.HeatCapacity} cap | -{stats.HeatDissipationPerBeat} per beat\n" +
             $"Spellbook          : {(stats.HasSpellbook ? "Operational" : "Missing/Disabled")}\n" +
             $"Arcane Amplifier   : {(stats.HasSpellAmplifier ? "Operational" : "Missing/Disabled")}\n" +
             $"Core Status        : {(stats.IsCoreOperational ? "OPERATIONAL" : "MISSING/DISABLED (Install/Repair Core)")}";
@@ -90,7 +90,7 @@ public partial class HangarView : UserControl
             .Select(id => _session.Catalog.GetAction(id))
             .OrderBy(a => a.Category)
             .ThenBy(a => a.Name)
-            .Select(a => $"• {a.Name} [{a.Category}] — Range {a.Range:F1}m | Windup {a.WindupTicks * 0.05:F2}s | Wit {a.WitReserve} | Mote {a.MoteCost}");
+            .Select(a => $"• {a.Name} [{a.Category}] — Range {a.Range} | Beats {a.WindupBeats}/{a.ImpactBeats}/{a.RecoveryBeats} | Wit {a.WitReserve} | Mote {a.MoteCost}");
 
         TxtActionsSummary.Text = string.Join("\n", actions);
         BtnLaunch.IsEnabled = stats.IsCoreOperational;

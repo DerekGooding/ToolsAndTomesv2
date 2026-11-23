@@ -19,11 +19,13 @@ public enum CombatEventType
     AegisBlocked,
     MoteGenerated,
     Overheated,
-    CombatantDefeated
+    CombatantDefeated,
+    CommandRejected,
+    FastIronProduced
 }
 
 public sealed record CombatEvent(
-    int Tick,
+    int Beat,
     CombatEventType Type,
     string ActorId,
     string Message,

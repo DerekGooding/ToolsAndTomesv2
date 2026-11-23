@@ -11,6 +11,8 @@ public sealed record ActionValidationResult(bool IsValid, string? FailureReason 
 
 public static class ActionValidationRules
 {
+    private const double RangeEpsilon = 1e-6;
+
     public static ActionValidationResult ValidateUseAction(
         Combatant actor,
         ActionDefinition action,
@@ -38,6 +40,9 @@ public static class ActionValidationRules
         if (action.AmmoCost > 0 && provider.CurrentAmmo < action.AmmoCost)
             return ActionValidationResult.Fail($"Insufficient ammo for {action.Name}.");
 
+        if (action.MoteCost > stats.MaxMotes)
+            return ActionValidationResult.Fail($"{action.Name} needs {action.MoteCost} Motes; this Crest can only store {stats.MaxMotes}.");
+
         if (action.MoteCost > 0 && actor.Resources.CurrentMotes < action.MoteCost)
             return ActionValidationResult.Fail($"Requires {action.MoteCost} Mote(s).");
 
@@ -56,6 +61,16 @@ public static class ActionValidationRules
             return ActionValidationResult.Fail("Requires a target point.");
         }
 
+        if (action.IsReactive)
+        {
+            if (actor.State is not (ActionState.Idle or ActionState.Moving or ActionState.Windup))
+                return ActionValidationResult.Fail($"{action.Name} cannot be used while {actor.State}.");
+
+            // Reactions resolve in the beat they are declared, so they cannot walk into range.
+            if (action.Targeting == TargetingType.EnemyUnit && !IsInRange(actor, action, target, targetPoint))
+                return ActionValidationResult.Fail($"Target is out of range for {action.Name}.");
+        }
+
         return ActionValidationResult.Valid;
     }
 
@@ -68,6 +83,6 @@ public static class ActionValidationRules
         if (destination is null)
             return false;
 
-        return actor.Position.DistanceTo(destination.Value) <= action.Range + 0.05;
+        return actor.Position.DistanceTo(destination.Value) <= action.Range + RangeEpsilon;
     }
 }

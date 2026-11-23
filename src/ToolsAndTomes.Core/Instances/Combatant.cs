@@ -21,23 +21,36 @@ public sealed class Combatant
     public ResourceState Resources { get; }
 
     public Vec2 Position { get; set; }
+
+    /// <summary>Position at the start of the most recently resolved beat (for presentation interpolation).</summary>
+    public Vec2 PreviousPosition { get; set; }
     public Vec2? MoveDestination { get; set; }
 
     public ActionState State { get; set; } = ActionState.Idle;
     public ActiveAction? CurrentAction { get; set; }
+
+    /// <summary>Buffered command applied at the next beat boundary (or once the Crest is free to act).</summary>
     public CombatCommand? QueuedCommand { get; set; }
 
-    public int InterruptedTicksRemaining { get; set; }
-    public int EvadeTicksRemaining { get; set; }
+    /// <summary>Reaction declared during the current beat; resolves at the end of this beat before impacts.</summary>
+    public UseActionCommand? PendingReaction { get; set; }
+
+    /// <summary>A cancel request buffered for the next beat boundary.</summary>
+    public bool PendingCancel { get; set; }
+
+    public int InterruptedBeatsRemaining { get; set; }
+    public int InterruptedTotalBeats { get; set; }
+    public int EvadeBeatsRemaining { get; set; }
 
     public int AegisBlocksRemaining { get; set; }
-    public int AegisTicksRemaining { get; set; }
+    public int AegisBeatsRemaining { get; set; }
 
+    /// <summary>Beats remaining before each action may start again.</summary>
     public IReadOnlyDictionary<string, int> Cooldowns => _cooldowns;
     public CrestStats Stats => LoadoutRules.ComputeStats(Loadout);
     public bool IsDefeated => !Stats.IsCoreOperational;
-    public bool IsEvading => EvadeTicksRemaining > 0;
-    public bool HasActiveAegis => AegisBlocksRemaining > 0 && AegisTicksRemaining > 0;
+    public bool IsEvading => EvadeBeatsRemaining > 0;
+    public bool HasActiveAegis => AegisBlocksRemaining > 0 && AegisBeatsRemaining > 0;
 
     public Combatant(
         string id,
@@ -54,18 +67,19 @@ public sealed class Combatant
         Faction = faction;
         Loadout = loadout;
         Position = startPosition;
+        PreviousPosition = startPosition;
         Resources = new ResourceState(startingMotes);
         Archetype = archetype;
         PreferredRange = preferredRange;
     }
 
     public int GetCooldown(string actionId) =>
-        _cooldowns.TryGetValue(actionId, out var ticks) ? ticks : 0;
+        _cooldowns.TryGetValue(actionId, out var beats) ? beats : 0;
 
-    public void SetCooldown(string actionId, int ticks)
+    public void SetCooldown(string actionId, int beats)
     {
-        if (ticks > 0)
-            _cooldowns[actionId] = ticks;
+        if (beats > 0)
+            _cooldowns[actionId] = beats;
     }
 
     public void TickCooldowns()
@@ -82,17 +96,17 @@ public sealed class Combatant
         }
     }
 
-    public void ActivateAegis(int blocks, int durationTicks, int witReserve)
+    public void ActivateAegis(int blocks, int durationBeats, int witReserve)
     {
         AegisBlocksRemaining = blocks;
-        AegisTicksRemaining = durationTicks;
+        AegisBeatsRemaining = durationBeats;
         Resources.ReserveWit(AegisWitReservationKey, witReserve);
     }
 
     public void ClearAegis()
     {
         AegisBlocksRemaining = 0;
-        AegisTicksRemaining = 0;
+        AegisBeatsRemaining = 0;
         Resources.ReleaseWit(AegisWitReservationKey);
     }
 }

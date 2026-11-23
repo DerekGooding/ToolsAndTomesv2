@@ -33,7 +33,7 @@ public sealed class LoadoutAndResourceTests
         var withFurnace = LoadoutRules.ComputeStats(assembly);
         Assert.AreEqual(7, withFurnace.MaxWit);
         Assert.AreEqual(4, withFurnace.MaxMotes);
-        Assert.IsLessThan(LoadoutRules.MoteGenerationIntervalTicks, withFurnace.MoteGenerationIntervalTicks);
+        Assert.IsLessThan(LoadoutRules.MoteGenerationIntervalBeats, withFurnace.MoteGenerationIntervalBeats);
     }
 
     [TestMethod]
@@ -84,7 +84,7 @@ public sealed class LoadoutAndResourceTests
         regulator.ApplyDamage(regulator.Definition.MaxDurability);
 
         var heavyDamaged = LoadoutRules.ComputeStats(heavy);
-        Assert.IsLessThan(heavyBase.HeatDissipationPerSecond, heavyDamaged.HeatDissipationPerSecond);
+        Assert.IsLessThan(heavyBase.HeatDissipationPerBeat, heavyDamaged.HeatDissipationPerBeat);
     }
 
     [TestMethod]
@@ -128,14 +128,14 @@ public sealed class LoadoutAndResourceTests
         var resources = new ResourceState(startingMotes: 0);
         int maxMotes = 3;
 
-        for (int tick = 0; tick < LoadoutRules.MoteGenerationIntervalTicks - 1; tick++)
-            Assert.IsFalse(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalTicks, maxMotes));
+        for (int beat = 0; beat < LoadoutRules.MoteGenerationIntervalBeats - 1; beat++)
+            Assert.IsFalse(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalBeats, maxMotes));
 
-        Assert.IsTrue(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalTicks, maxMotes));
+        Assert.IsTrue(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalBeats, maxMotes));
         Assert.AreEqual(1, resources.CurrentMotes);
 
-        for (int tick = 0; tick < LoadoutRules.MoteGenerationIntervalTicks * 5; tick++)
-            resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalTicks, maxMotes);
+        for (int beat = 0; beat < LoadoutRules.MoteGenerationIntervalBeats * 5; beat++)
+            resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalBeats, maxMotes);
 
         Assert.AreEqual(maxMotes, resources.CurrentMotes);
     }

@@ -24,11 +24,23 @@ public static class BattlefieldRenderer
         return new Point(pos.X / sim.ArenaWidth * w, pos.Y / sim.ArenaHeight * h);
     }
 
+    /// <summary>
+    /// Smoothly interpolates a combatant toward where its movement will place it at the end of the current beat.
+    /// Presentation only: the simulation itself moves in whole beats.
+    /// </summary>
+    public static Vec2 DisplayPosition(CombatSimulation sim, Combatant c, double beatFraction)
+    {
+        var end = sim.ProjectEndOfBeatPosition(c);
+        double t = Math.Clamp(beatFraction, 0, 1);
+        return c.Position + (end - c.Position) * t;
+    }
+
     public static void Render(
         Canvas canvas,
         CombatSimulation sim,
         string? selectedCombatantId,
-        ActionDefinition? armedAction)
+        ActionDefinition? armedAction,
+        double beatFraction = 0)
     {
         canvas.Children.Clear();
         double w = canvas.ActualWidth;
@@ -37,8 +49,8 @@ public static class BattlefieldRenderer
             return;
 
         DrawGrid(canvas, w, h, sim);
-        DrawTelegraphs(canvas, sim);
-        DrawCombatants(canvas, sim, selectedCombatantId, armedAction);
+        DrawTelegraphs(canvas, sim, beatFraction);
+        DrawCombatants(canvas, sim, selectedCombatantId, armedAction, beatFraction);
     }
 
     private static void DrawGrid(Canvas canvas, double w, double h, CombatSimulation sim)
@@ -57,7 +69,7 @@ public static class BattlefieldRenderer
         }
     }
 
-    private static void DrawTelegraphs(Canvas canvas, CombatSimulation sim)
+    private static void DrawTelegraphs(Canvas canvas, CombatSimulation sim, double beatFraction)
     {
         double scaleX = canvas.ActualWidth / sim.ArenaWidth;
         double scaleY = canvas.ActualHeight / sim.ArenaHeight;
@@ -67,7 +79,7 @@ public static class BattlefieldRenderer
             if (actor.IsDefeated)
                 continue;
 
-            var start = WorldToCanvas(actor.Position, canvas, sim);
+            var start = WorldToCanvas(DisplayPosition(sim, actor, beatFraction), canvas, sim);
 
             if (actor.State == ActionState.Moving && actor.MoveDestination is { } dest)
             {
@@ -91,7 +103,7 @@ public static class BattlefieldRenderer
 
             Vec2? targetPos = act.TargetPoint;
             if (targetPos is null && act.TargetActorId is not null)
-                targetPos = sim.FindCombatant(act.TargetActorId)?.Position;
+                targetPos = sim.FindCombatant(act.TargetActorId) is { } tgt ? DisplayPosition(sim, tgt, beatFraction) : null;
 
             if (targetPos is not null)
             {
@@ -120,7 +132,7 @@ public static class BattlefieldRenderer
                     Canvas.SetTop(aoe, end.Y - ry);
                     canvas.Children.Add(aoe);
 
-                    double sec = act.TicksUntilExecution() / (double)ActionCatalog.TicksPerSecond;
+                    double sec = Math.Max(0, act.BeatsUntilImpact() - beatFraction);
                     var label = new TextBlock
                     {
                         Text = $"{act.Definition.Name} ({sec:F1}s)",
@@ -140,14 +152,15 @@ public static class BattlefieldRenderer
         Canvas canvas,
         CombatSimulation sim,
         string? selectedId,
-        ActionDefinition? armedAction)
+        ActionDefinition? armedAction,
+        double beatFraction = 0)
     {
         double scaleX = canvas.ActualWidth / sim.ArenaWidth;
         double scaleY = canvas.ActualHeight / sim.ArenaHeight;
 
         foreach (var c in sim.Combatants)
         {
-            var pt = WorldToCanvas(c.Position, canvas, sim);
+            var pt = WorldToCanvas(DisplayPosition(sim, c, beatFraction), canvas, sim);
 
             if (c.Faction == Faction.Player && !c.IsDefeated && armedAction is { Range: > 0 })
             {

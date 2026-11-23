@@ -23,7 +23,7 @@ This document tracks confirmed game rules, implementation decisions, open questi
 
 ### Core Philosophy
 - Real-time tactical simulation with pause/resume.
-- Deterministic, fixed-step simulation (`50 ms` per tick = 20 ticks/second) independent of rendering/animation.
+- Deterministic, beat-based simulation: **1 beat = 1 tabletop second**. All rules resolve on beat boundaries; the real-time client only interpolates presentation between beats.
 - Seeded random number generation for reproducible combat and automated tests.
 - Unified action/timeline model shared by weapons, spells, defensive reactions, and enemy AI.
 - Equipment instances are distinct from equipment definitions: damage and ammo consumption persist across unequip, transfer, re-equip, and encounters until repaired or replaced.
@@ -36,7 +36,7 @@ This document tracks confirmed game rules, implementation decisions, open questi
   - Active spells and Wit-costing abilities **Reserve** Wit while winding up, executing, or sustaining an effect (e.g., Aegis barrier), releasing it upon completion, expiration, or interruption.
   - `AvailableWit = MaxWit - ActiveEquipmentWitTax - ReservedWit`.
 - **Motes of Moment** (consumable magical resource):
-  - Base generation: **1 Mote every 5.0 seconds** (100 simulation ticks), accelerated by operational components with `MoteGenerationRateBonus` (e.g., *Heavy Aether Furnace* +25% → 4.0s).
+  - Base generation: **1 Mote every 5 beats**, shortened by operational components with `MoteIntervalReductionBeats` (e.g., *Heavy Aether Furnace* −1 → every 4 beats).
   - Default storage cap: **3 Motes** + bonuses from operational components (e.g., +2 from Spellbook, +1 from Heavy Aether Furnace).
   - Consumed by Mote-costing weapons (e.g., Titan Hammer) and spells (e.g., Gravity Crush, Aegis).
 
@@ -74,23 +74,99 @@ This document tracks confirmed game rules, implementation decisions, open questi
 | Area | Decision | Rationale |
 |---|---|---|
 | **Presentation Host** | WPF Desktop App (`net10.0-windows`) | Native Windows executable with direct in-process binding to `ToolsAndTomes.Core`. |
-| **Tick Rate** | 20 Hz (`50 ms` fixed tick) | Smooth real-time readability, zero floating-point drift, clean 20:1 mapping to future 1-second tabletop ticks. |
-| **Per-Actor Resolution Reconciliation** | End-of-tick `ResolutionPhase` batches all impacts per actor (sorted by `CombatantId`) | Preserves tabletop per-actor resolution semantics in real time without artificial delays or animation-order bias. |
+| **Beat Engine** | Simulation advances only in whole beats (`CombatSimulation.StepBeat`); the WPF client steps one beat per wall-clock second and interpolates movement and timers between beats | The digital game and the tabletop game run the exact same rules; nothing depends on sub-second timing. |
+| **Per-Actor Resolution Reconciliation** | End-of-beat resolution batches all impacts per actor (sorted by `CombatantId`) | Preserves tabletop per-actor resolution semantics in real time without artificial delays or animation-order bias. |
 | **Hit Allocation** | Default penetrating hits roll among operational non-core components (armor weighted 2x), falling through to Core when no outer components remain; explicit component targeting supported | Makes armor plating meaningfully protect subsystems and Core while supporting tactical targeting. |
 | **Weight Tradeoffs** | No hard weight cap; total component mass reduces move speed and increases vulnerability to heavy-target attacks (Titan, Gravity Crush) | Aligns with emergent-tradeoff design philosophy. |
 | **Component Categories** | `ComponentCategory` is an organizational label only, never a hard slot restriction | Prevents arbitrary mech-builder slot limits; constraints emerge from Wit, heat, weight, and component rules. |
 
 ---
 
+## 3a. Confirmed Design Direction (Nov 2026 review)
+
+These decisions are confirmed and **supersede** any conflicting rule above. Subsections marked **[Implemented]** are reflected in code; the rest are pending.
+
+### Dual-medium parity [Implemented]
+- The game is designed **equally** for digital play and tabletop play. Every rule must be executable by hand at a table.
+- All action timings are authored in **whole tabletop seconds ("beats")**. The real-time engine may subdivide beats for presentation and movement smoothness, but phase transitions and damage resolution happen on beat boundaries.
+- Rules quantities (damage, durability, Wit, Motes, heat, weight, movement, distances, displacement resistance) are small integers trackable with dice and tokens. Positions may be fractional (measured with a tape at the table).
+- Phases may be 0 beats long (reactions have no windup; light weapons may skip recovery), but every action has an impact window of at least 1 beat.
+- Cooldowns count beats **after** recovery ends.
+
+### Beat resolution order [Implemented]
+Each beat resolves in this order (simultaneous within each step; ties ordered by combatant id):
+1. **Passive timers** — Mote generation, heat dissipation, Aegis and evasion countdowns, interruption stun.
+2. **Reactions** declared during this beat resolve, then their hits resolve (so a reaction can cancel an attack in its final impact beat).
+3. **Actions in motion** consume the beat. Impact windows ending this beat resolve their effects (damage resolves at the **end** of the impact window).
+4. **Impact hits** resolve per target: protection rolls, component damage, displacement, interruption.
+5. **Movement** — moving Crests advance up to their speed in whole units.
+6. **Buffered commands** take effect, starting new actions in the next beat.
+7. **Cooldowns** count down.
+
+### Damage allocation (defender chooses)
+- **Attackers cannot target components.** The defender decides where damage is applied.
+- Each Crest has a **Damage Order**, set in the Workshop, listing its components in the order they absorb penetrating damage.
+- Each penetrating point goes to the first operational component in the Damage Order. When a component is destroyed it can no longer take damage, and remaining points flow to the next component in order.
+- A Crest is Defeated when its Core is no longer operational.
+
+### Defenses vs effects
+- Protection rolls, Shield Generators, and Aegis save against **damage only**, never against a hit's effects (push/pull, interruption, disruption). A fully saved hit still interrupts.
+- Exception: future components may be designed to protect against specific effects.
+- Blink Drive evasion avoids the attack entirely (evasion, not defense).
+
+### Impact window & reactions [Partially implemented: impact window, reactions resolve first; pending: reactions gated to incoming impacts, reaction rules, slow motion]
+- An action's Executing phase is its **impact window**. Damage and effects resolve at the end of the impact window, not at the end of windup.
+- Reactive actions (Blink, Repulsor, Aegis, etc.) are valid only **during the impact of an incoming attack** against the reacting Crest.
+- Digital play supports reactions two ways, combined: **pre-set reaction rules** configured on the Crest (condition → reaction, e.g. "incoming impact ≥ 2 damage → Blink"), and a **slow-motion window** during incoming impacts for manual reactions. Slow motion is presentation-only and does not affect simulation determinism.
+
+### Concurrent actions (Wit-gated)
+- Each component can run **one action at a time**.
+- Multiple components can run actions simultaneously as long as the Crest has enough available Wit for every committed action. Every action reserves Wit while active.
+- Carrying more equipment raises passive Wit Tax, which reduces how many actions can run at once — the core cost of over-equipping.
+
+### Interruption with concurrent actions
+- Interruptibility is a property of each action's stats. Some actions cannot be interrupted; others can (with their own resistance).
+- A successful interruption stops **all interruptible actions currently in motion** on the Crest. Uninterruptible actions continue.
+
+### Command buffering [Implemented]
+- Commands issued mid-beat are buffered and take effect at the next beat boundary.
+
+### Damage Order guidance
+- The Core may be placed anywhere in the Damage Order, but the Workshop warns when it is not last.
+
+### Trait checks
+- Trait-scaled bonuses check the target's **current state**, not the allocation: e.g., Acid's bonus applies if the target has any currently operational armor, regardless of which component its Damage Order sends the damage to.
+
+### Movement from mobility components
+- Movement is provided by mobility components, each with its own movement statistics and costs. Some legs move freely; others require Wit commitments. Mobility components may grant extra movement options (e.g., Dash).
+
+### Weight & trait-scaled damage
+- Heaviness is punishable but never unplayable: weight reduces mobility on a gentle curve with no hard floor doing the balancing.
+- Damage types scale against target traits with **additional damage**: e.g., Gravity deals extra to heavy targets; Acid deals extra to armored targets.
+
+### Combat style
+- Live-action tactical combat with optional pause (in the spirit of real-time-with-pause party RPGs).
+
+### Persistence (scope)
+- Repairs and restocking can be done in the field, so in the full game, damage persisting between fights costs time. **For the vertical slice**, Crests are fully repaired and restocked between encounters.
+
+### Next vertical slice: Workshop & Research
+- Exotic materials are discovered and researched. Once researched, they unlock new items that can be produced from **fast-iron**.
+- **Fast-iron** is created by the **Square Summon** spell, which costs **4 Motes of Moment**. A Crest that cannot store at least 4 Motes cannot produce fast-iron in the field.
+- Square Summon can be cast mid-combat, but it is slow unless the Crest has additional Mote generation.
+- In the Workshop, supply is effectively unlimited because time is not a factor.
+
+---
+
 ## 4. Deferred Long-Term Concepts (Preserved in Architecture)
 
-- Inventor's Workshop (Forge, Workbench, Research Desk, Crest Bays, Spell Lab, Storage).
+- Inventor's Workshop (Forge, Workbench, Research Desk, Crest Bays, Spell Lab, Storage). **Next slice** — see 3a.
 - Discovery, reverse engineering, and research trees.
 - Fast-iron, Square Summon, and Shaping spells.
 - Multiple simultaneous Crests / autonomous constructs (**Grip**).
 - Extradimensional storage and Mote-to-Wit conversion engines.
 - Exploration as engineering (environmental puzzles using combat spells).
-- Shared tabletop rules runner (1-second ticks, physical dice).
+- Shared tabletop rules runner (physical dice, driving the same beat engine).
 - Generative AI content operating within deterministic rules validation.
 
 ---

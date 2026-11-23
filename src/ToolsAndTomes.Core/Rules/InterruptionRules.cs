@@ -10,9 +10,9 @@ public sealed record InterruptionThresholds
     public int InterruptionDelta { get; init; } = 0;
     public int CancellationDelta { get; init; } = 2;
 
-    public int DisruptionDelayTicks { get; init; } = 6;
-    public int InterruptedStunTicks { get; init; } = 8;
-    public int CancellationMinPenaltyTicks { get; init; } = 10;
+    public int DisruptionDelayBeats { get; init; } = 1;
+    public int InterruptedStunBeats { get; init; } = 1;
+    public int CancellationMinPenaltyBeats { get; init; } = 2;
 }
 
 public static class InterruptionRules

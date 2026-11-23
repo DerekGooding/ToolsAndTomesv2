@@ -5,11 +5,17 @@ namespace ToolsAndTomes.Core.Simulation;
 
 internal static class ActionEffectResolver
 {
+    /// <summary>
+    /// Tabletop units beyond an action's range at which a committed impact still connects
+    /// (a target that steps barely out of reach during the impact beat is still hit).
+    /// </summary>
+    public const int ResolutionRangeTolerance = 1;
+
     public static void ApplyExecutionEffect(
         Combatant actor,
         ActiveAction active,
         IReadOnlyList<Combatant> allCombatants,
-        int tick,
+        int beat,
         double arenaWidth,
         double arenaHeight,
         List<IncomingHit> incomingHits,
@@ -24,33 +30,44 @@ internal static class ActionEffectResolver
             if (overheated)
             {
                 events.Add(new CombatEvent(
-                    tick,
+                    beat,
                     CombatEventType.Overheated,
                     actor.Id,
                     $"{actor.Name} OVERHEATED! Recovery extended due to thermal buildup."));
             }
         }
 
-        // Blink Drive: reactive teleport + evade window
-        if (def.BlinkDistance > 0 || def.EvadeDurationTicks > 0)
+        // Square Summon: condense Motes into fast-iron
+        if (def.FastIronProduced > 0)
         {
-            if (def.EvadeDurationTicks > 0)
-            {
-                actor.EvadeTicksRemaining = Math.Max(actor.EvadeTicksRemaining, def.EvadeDurationTicks);
-            }
+            actor.Resources.AddFastIron(def.FastIronProduced);
+            events.Add(new CombatEvent(
+                beat,
+                CombatEventType.FastIronProduced,
+                actor.Id,
+                $"{actor.Name} summoned {def.FastIronProduced} fast-iron (total {actor.Resources.FastIron}).",
+                Value: def.FastIronProduced));
+            return;
+        }
+
+        // Blink Drive: reactive teleport + evade window
+        if (def.BlinkDistance > 0 || def.EvadeBeats > 0)
+        {
+            if (def.EvadeBeats > 0)
+                actor.EvadeBeatsRemaining = Math.Max(actor.EvadeBeatsRemaining, def.EvadeBeats);
 
             if (def.BlinkDistance > 0)
             {
-                var targetPos = active.TargetPoint ?? (actor.Position + new Vec2(-def.BlinkDistance, 0));
+                var targetPos = active.TargetPoint ?? DefaultBlinkDestination(actor, allCombatants, def.BlinkDistance);
                 var delta = targetPos - actor.Position;
                 var clampedDist = Math.Min(def.BlinkDistance, delta.Length);
                 var newPos = delta.Length > 0.01
-                    ? (actor.Position + delta.Normalized() * clampedDist)
+                    ? actor.Position + delta.Normalized() * clampedDist
                     : actor.Position;
 
                 actor.Position = newPos.Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5);
                 events.Add(new CombatEvent(
-                    tick,
+                    beat,
                     CombatEventType.CombatantBlinked,
                     actor.Id,
                     $"{actor.Name} blinked to ({actor.Position.X:F1}, {actor.Position.Y:F1}) [Evading].",
@@ -63,12 +80,18 @@ internal static class ActionEffectResolver
         // Aegis Barrier: timed active defensive ward
         if (def.AegisBlocks > 0)
         {
-            actor.ActivateAegis(def.AegisBlocks, def.AegisDurationTicks, def.WitReserve);
+            actor.ActivateAegis(def.AegisBlocks, def.AegisDurationBeats, def.WitReserve);
             events.Add(new CombatEvent(
-                tick,
+                beat,
                 CombatEventType.AegisActivated,
                 actor.Id,
-                $"{actor.Name} raised Aegis Barrier ({def.AegisBlocks} blocks for {def.AegisDurationTicks / (double)ActionCatalog.TicksPerSecond:F1}s)."));
+                $"{actor.Name} raised Aegis Barrier ({def.AegisBlocks} blocks for {def.AegisDurationBeats} beats)."));
+            return;
+        }
+
+        if (def.Targeting == TargetingType.Self)
+        {
+            events.Add(new CombatEvent(beat, CombatEventType.ActionExecuted, actor.Id, $"{actor.Name} executed {def.Name}."));
             return;
         }
 
@@ -78,9 +101,7 @@ internal static class ActionEffectResolver
         {
             int damagePerHit = def.BaseDamage;
             if (def.HeavyBonusDamage > 0 && target.Stats.TotalWeight >= def.HeavyWeightThreshold)
-            {
                 damagePerHit += def.HeavyBonusDamage;
-            }
 
             int hitCount = Math.Max(1, def.HitCount);
             for (int i = 0; i < hitCount; i++)
@@ -98,11 +119,27 @@ internal static class ActionEffectResolver
         }
 
         events.Add(new CombatEvent(
-            tick,
+            beat,
             CombatEventType.ActionExecuted,
             actor.Id,
-            $"{actor.Name} executed {def.Name}" + (targets.Count == 0 ? " (no target in area)." : "."),
+            $"{actor.Name} executed {def.Name}" + (targets.Count == 0 ? " (no target in reach)." : "."),
             active.TargetActorId));
+    }
+
+    /// <summary>Without an explicit destination, Blink moves directly away from the nearest hostile combatant.</summary>
+    private static Vec2 DefaultBlinkDestination(Combatant actor, IReadOnlyList<Combatant> all, int distance)
+    {
+        var nearest = all
+            .Where(c => c.Faction != actor.Faction && !c.IsDefeated)
+            .OrderBy(c => c.Position.DistanceTo(actor.Position))
+            .ThenBy(c => c.Id, StringComparer.Ordinal)
+            .FirstOrDefault();
+
+        var away = nearest is null ? new Vec2(0, 0) : (actor.Position - nearest.Position).Normalized();
+        if (away.Length < 0.01)
+            away = actor.Faction == Faction.Player ? new Vec2(-1, 0) : new Vec2(1, 0);
+
+        return actor.Position + away * distance;
     }
 
     private static List<Combatant> ResolveTargets(
@@ -117,9 +154,7 @@ internal static class ActionEffectResolver
         {
             var center = active.TargetPoint;
             if (center is null && active.TargetActorId is not null)
-            {
                 center = allCombatants.FirstOrDefault(c => c.Id == active.TargetActorId)?.Position;
-            }
 
             if (center is not null)
             {
@@ -139,10 +174,8 @@ internal static class ActionEffectResolver
         if (active.TargetActorId is not null)
         {
             var target = allCombatants.FirstOrDefault(c => c.Id == active.TargetActorId && !c.IsDefeated);
-            if (target is not null && actor.Position.DistanceTo(target.Position) <= def.Range + 0.75)
-            {
+            if (target is not null && actor.Position.DistanceTo(target.Position) <= def.Range + ResolutionRangeTolerance)
                 results.Add(target);
-            }
         }
 
         return results;

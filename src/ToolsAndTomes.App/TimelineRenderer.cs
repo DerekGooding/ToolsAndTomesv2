@@ -8,7 +8,7 @@ namespace ToolsAndTomes.App;
 
 public static class TimelineRenderer
 {
-    public static void Render(StackPanel panel, IReadOnlyList<TimelineEntry> entries)
+    public static void Render(StackPanel panel, IReadOnlyList<TimelineEntry> entries, double beatFraction = 0)
     {
         panel.Children.Clear();
 
@@ -23,7 +23,7 @@ public static class TimelineRenderer
             return;
         }
 
-        foreach (var entry in entries.OrderBy(e => e.Faction).ThenBy(e => e.TicksUntilImpact < 0 ? 999 : e.TicksUntilImpact))
+        foreach (var entry in entries.OrderBy(e => e.Faction).ThenBy(e => e.BeatsUntilImpact < 0 ? 999 : e.BeatsUntilImpact))
         {
             var row = new Grid { Margin = new Thickness(0, 2, 0, 2) };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(165) });
@@ -43,7 +43,8 @@ public static class TimelineRenderer
             Grid.SetColumn(nameBlock, 0);
             row.Children.Add(nameBlock);
 
-            double progress = 1.0 - Math.Clamp(entry.TicksRemaining / (double)Math.Max(1, entry.PhaseTotalTicks), 0, 1);
+            double remaining = Math.Max(0, entry.BeatsRemaining - beatFraction);
+            double progress = 1.0 - Math.Clamp(remaining / Math.Max(1, entry.PhaseTotalBeats), 0, 1);
             var barColor = entry.State switch
             {
                 ActionState.Moving => Color.FromRgb(51, 65, 85),
@@ -89,15 +90,15 @@ public static class TimelineRenderer
             Grid.SetColumn(barContainer, 1);
             row.Children.Add(barContainer);
 
-            double remSec = entry.TicksRemaining / (double)ActionCatalog.TicksPerSecond;
-            string detail = entry.TicksUntilImpact >= 0
-                ? $"Impact: {entry.TicksUntilImpact / (double)ActionCatalog.TicksPerSecond:F1}s" + (entry.CanBeInterrupted ? " [INT]" : "")
+            double remSec = remaining;
+            string detail = entry.BeatsUntilImpact >= 0
+                ? $"Impact: {Math.Max(0, entry.BeatsUntilImpact - beatFraction):F1}s" + (entry.CanBeInterrupted ? " [INT]" : "")
                 : $"{remSec:F1}s";
 
             var detailBlock = new TextBlock
             {
                 Text = detail,
-                Foreground = entry.Faction == Faction.Enemy && entry.TicksUntilImpact >= 0
+                Foreground = entry.Faction == Faction.Enemy && entry.BeatsUntilImpact >= 0
                     ? Brushes.Orange
                     : Brushes.LightGray,
                 FontSize = 11,

@@ -17,7 +17,7 @@ public sealed class AppSessionState
     public string SelectedCrestId { get; set; }
 
     public CombatSimulation? ActiveSimulation { get; private set; }
-    public EnemyAIController ActiveAI { get; } = new(decisionIntervalTicks: 8);
+    public EnemyAIController ActiveAI { get; } = new(decisionIntervalBeats: 1);
     public int EncounterSeed { get; set; } = 1337;
 
     public CrestLoadout SelectedLoadout =>
@@ -102,6 +102,8 @@ public sealed class AppSessionState
 
     public CombatSimulation StartEncounter()
     {
+        // Vertical slice: Crests are fully repaired and restocked between encounters.
+        SelectedLoadout.RepairAll();
         ActiveSimulation = EncounterFactory.CreateTestEncounter(SelectedLoadout, EncounterSeed, Catalog);
         ActiveSimulation.Pause();
         return ActiveSimulation;
