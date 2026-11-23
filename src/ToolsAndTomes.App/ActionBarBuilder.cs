@@ -24,6 +24,8 @@ public static class ActionBarBuilder
         foreach (var actionId in player.Loadout.GetOperationalActionIds().OrderBy(id => id))
         {
             var def = sim.Catalog.GetAction(actionId);
+            if (def.IsShaping || def.RefillsAmmo)
+                continue; // parameterized: offered in the field shaping & cargo picker
             int cd = player.GetCooldown(actionId);
             var targetForValidation = def.Targeting == TargetingType.EnemyUnit ? selectedTarget : null;
             Vec2? pointForValidation = def.Targeting == TargetingType.Point ? player.Position : null;

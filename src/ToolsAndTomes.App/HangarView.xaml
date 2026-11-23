@@ -105,6 +105,16 @@
                             <TextBox x:Name="TxtRuleMinDamage" Width="28" Text="1" VerticalContentAlignment="Center" Background="#1E293B" Foreground="White" BorderBrush="#475569" Margin="0,0,4,0"/>
                             <Button Content="+ Rule" Padding="8,3" Click="BtnRuleAdd_Click"/>
                         </StackPanel>
+                        <Separator Margin="0,12,0,12" Background="#334155"/>
+                        <TextBlock x:Name="TxtCargoHeader" Text="Cargo (restocked from the Workshop before each fight)" FontSize="13" FontWeight="Bold" Foreground="#FBBF24" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                        <ListBox x:Name="LstCargo" Height="70" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#334155" FontSize="11.5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <ComboBox x:Name="CmbCargoItem" Width="150" Foreground="Black" Margin="0,0,4,0"/>
+                            <TextBlock Text="×" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                            <TextBox x:Name="TxtCargoCount" Width="28" Text="1" VerticalContentAlignment="Center" Background="#1E293B" Foreground="White" BorderBrush="#475569" Margin="0,0,4,0"/>
+                            <Button Content="+ Load" Padding="8,3" Margin="0,0,4,0" Click="BtnCargoAdd_Click"/>
+                            <Button Content="Unload" Padding="8,3" Click="BtnCargoRemove_Click"/>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Border>

@@ -88,6 +88,7 @@ public partial class HangarView : UserControl
         }
 
         RefreshFabricationList();
+        RefreshCargo(loadout, stats);
 
         var warnings = LoadoutRules.GetWarnings(loadout);
         var allWarnings = _session.ProfileWarnings.Concat(warnings).ToList();
@@ -153,6 +154,59 @@ public partial class HangarView : UserControl
     private void BtnSaveNew_Click(object sender, RoutedEventArgs e)
     {
         _session.SaveCurrentAsNewAssembly(TxtAssemblyName.Text + " (Copy)");
+        Commit();
+    }
+
+    private sealed record CargoOption(CargoKind Kind, string? ItemId, string Label)
+    {
+        public override string ToString() => Label;
+    }
+
+    private void RefreshCargo(CrestLoadout loadout, CrestStats stats)
+    {
+        TxtCargoHeader.Text = $"Cargo: {stats.CargoUsed}/{stats.CargoCapacity} units (restocked from the Workshop before each fight)";
+        LstCargo.ItemsSource = loadout.CargoManifest
+            .Select(e => e.Kind == CargoKind.FastIron
+                ? $"Fast-iron × {e.Count}"
+                : $"{_session.Catalog.Consumables[e.ItemId!].Name} × {e.Count}")
+            .ToList();
+
+        if (CmbCargoItem.ItemsSource is null)
+        {
+            CmbCargoItem.ItemsSource = new[] { new CargoOption(CargoKind.FastIron, null, "Fast-iron") }
+                .Concat(_session.Catalog.Consumables.Values.OrderBy(c => c.Name)
+                    .Select(c => new CargoOption(CargoKind.Consumable, c.Id, c.Name)))
+                .ToList();
+            CmbCargoItem.SelectedIndex = 0;
+        }
+    }
+
+    private void BtnCargoAdd_Click(object sender, RoutedEventArgs e)
+    {
+        if (CmbCargoItem.SelectedItem is not CargoOption opt)
+            return;
+
+        int count = int.TryParse(TxtCargoCount.Text, out var n) ? Math.Max(1, n) : 1;
+        var manifest = _session.SelectedLoadout.CargoManifest.ToList();
+        int existing = manifest.FindIndex(m => m.Kind == opt.Kind && m.ItemId == opt.ItemId);
+        if (existing >= 0)
+            manifest[existing] = manifest[existing] with { Count = manifest[existing].Count + count };
+        else
+            manifest.Add(new CargoEntry(opt.Kind, count, opt.ItemId));
+
+        _session.SelectedLoadout.SetCargoManifest(manifest, _session.Catalog);
+        Commit();
+    }
+
+    private void BtnCargoRemove_Click(object sender, RoutedEventArgs e)
+    {
+        int index = LstCargo.SelectedIndex;
+        var manifest = _session.SelectedLoadout.CargoManifest.ToList();
+        if (index < 0 || index >= manifest.Count)
+            return;
+
+        manifest.RemoveAt(index);
+        _session.SelectedLoadout.SetCargoManifest(manifest, _session.Catalog);
         Commit();
     }
 

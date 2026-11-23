@@ -176,6 +176,15 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - Shipped materials: Oathsteel (Oathsteel Plating, Righteous Strike), Corrodite (Acid Sprayer), Bastion Ore (Siege Mortar, Falconet), Stormglass (Stormglass Capacitor), Skyweave (Skystrider Legs: speed 7, load 90, 1 Wit to walk).
 - The Research Desk screen shows samples, research status, unlocks, and known blueprints; the hangar fabricates only known blueprints.
 
+### Cargo & field shaping [Implemented]
+- A **Cargo Rack** component carries prepared items: fast-iron and consumables (4 cargo units; carried items add weight). Its contents are unusable while it is disabled.
+- Each assembly has a **cargo manifest** set in the Workshop; cargo is restocked to it before every encounter (Workshop supply is free).
+- **Consumables** (`consumables.json`): Ammo Pack (refill one weapon), Shaped Charge (thrown, 2 damage), Iron Ward (reaction, absorbs one hit). Each is used through a cargo-rack action and consumed.
+- **Shape Fast-iron** (Spellbook spell, 1/1/1, 1 Wit, interruptible) turns fast-iron into **anything**: a component (any known blueprint), a consumable into cargo, or a weapon's ammunition. Fast-iron is spent from loose stock (Square Summon) first, then cargo, when the impact window opens, so an interrupted windup spends nothing.
+- **Costs are per recipe in content:** components use `fastIronCost`, else ceil(weight / 10); consumables use `fastIronCost`; ammo refills use the weapon's `ammoRefillFastIronCost`.
+- **Anything shaped in the field joins the very end of the Damage Order** (after the Core).
+- A Crest without Square Summon can still shape by carrying fast-iron in. Deferred: carrying ready-made spare components and installing them mid-fight, and between-encounter field repairs (the slice repairs automatically).
+
 ---
 
 ## 4. Deferred Long-Term Concepts (Preserved in Architecture)

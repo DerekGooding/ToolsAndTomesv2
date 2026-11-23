@@ -128,6 +128,7 @@ public sealed class AppSessionState
         SelectedLoadout.RepairAll();
         LastRewards = [];
         ActiveSimulation = EncounterFactory.CreateTestEncounter(SelectedLoadout, EncounterSeed, Catalog);
+        ActiveSimulation.FindCombatant(EncounterFactory.PlayerCombatantId)!.KnownBlueprints = Workshop.KnownComponentIds(Catalog);
         ActiveSimulation.Pause();
         return ActiveSimulation;
     }
@@ -237,7 +238,7 @@ public sealed class AppSessionState
                  {
                      "core_aether_dynamo", "core_aether_furnace", "mob_stride_legs", "mob_anchor_legs",
                      "eq_dragons_breath", "eq_shield_generator", "eq_repulsor", "eq_blink_drive",
-                     "armor_heavy_plate", "eq_thermal_regulator", "eq_spell_amplifier"
+                     "armor_heavy_plate", "eq_thermal_regulator", "eq_spell_amplifier", "util_cargo_rack"
                  })
         {
             AddSpare(id);

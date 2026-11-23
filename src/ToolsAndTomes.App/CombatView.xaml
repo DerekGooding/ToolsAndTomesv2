@@ -88,6 +88,11 @@
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" x:Name="TxtActionStatus" Text="Select a target and choose an operational weapon, defense, or spell:"
                            FontSize="11.5" Foreground="#38BDF8" Margin="0,0,0,6"/>
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="Field shaping &amp; cargo:" Foreground="#FBBF24" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="11.5"/>
+                    <ComboBox x:Name="CmbField" Width="380" Foreground="Black" DropDownOpened="CmbField_DropDownOpened"/>
+                    <Button x:Name="BtnFieldUse" Content="Shape / Use" Padding="10,4" Margin="6,0,0,0" Background="#B45309" Foreground="White" Click="BtnFieldUse_Click"/>
+                </StackPanel>
                 <WrapPanel x:Name="ActionBarPanel"/>
             </DockPanel>
         </Border>

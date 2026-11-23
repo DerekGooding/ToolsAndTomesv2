@@ -119,6 +119,78 @@ public partial class CombatView : UserControl
         RefreshAll();
     }
 
+    private sealed record FieldOption(string Label, UseActionCommand Command)
+    {
+        public override string ToString() => Label;
+    }
+
+    /// <summary>Everything the player can shape from fast-iron or use from cargo right now.</summary>
+    private static List<FieldOption> BuildFieldOptions(CombatSimulation sim, Combatant player)
+    {
+        var options = new List<FieldOption>();
+        var catalog = sim.Catalog;
+        var available = player.Loadout.GetOperationalActionIds().ToHashSet();
+        var ammoWeapons = player.Loadout.Installed
+            .Where(e => e.IsOperational && e.Definition.MaxAmmo > 0 && e.CurrentAmmo < e.Definition.MaxAmmo)
+            .ToList();
+
+        var shapeSpell = available.Select(catalog.GetAction).FirstOrDefault(a => a.IsShaping);
+        if (shapeSpell is not null)
+        {
+            foreach (var w in ammoWeapons)
+                options.Add(new FieldOption(
+                    $"Shape ammo → {w.Definition.Name} ({w.Definition.AmmoRefillFastIronCost} fast-iron)",
+                    new UseActionCommand(player.Id, shapeSpell.Id, OwnComponentInstanceId: w.InstanceId,
+                        Shaping: new ShapingOrder(ShapingKind.AmmoRefill))));
+
+            foreach (var c in catalog.Consumables.Values.OrderBy(c => c.Name))
+                options.Add(new FieldOption(
+                    $"Shape {c.Name} into cargo ({c.FastIronCost} fast-iron)",
+                    new UseActionCommand(player.Id, shapeSpell.Id, Shaping: new ShapingOrder(ShapingKind.Consumable, c.Id))));
+
+            var known = player.KnownBlueprints ?? catalog.Equipment.Keys.ToHashSet();
+            foreach (var e in catalog.Equipment.Values.Where(e => known.Contains(e.Id)).OrderBy(e => e.Category).ThenBy(e => e.Name))
+                options.Add(new FieldOption(
+                    $"Shape {e.Name} ({ShapingRules.ComponentCost(e, player.Rules)} fast-iron) — joins end of Damage Order",
+                    new UseActionCommand(player.Id, shapeSpell.Id, Shaping: new ShapingOrder(ShapingKind.Component, e.Id))));
+        }
+
+        foreach (var refill in available.Select(catalog.GetAction).Where(a => a.RefillsAmmo && a.ConsumableItemId is not null))
+        {
+            int count = player.Loadout.GetConsumableCount(refill.ConsumableItemId!);
+            if (count == 0)
+                continue;
+            foreach (var w in ammoWeapons)
+                options.Add(new FieldOption(
+                    $"{refill.Name} → {w.Definition.Name} ({count} carried)",
+                    new UseActionCommand(player.Id, refill.Id, OwnComponentInstanceId: w.InstanceId)));
+        }
+
+        return options;
+    }
+
+    private void CmbField_DropDownOpened(object? sender, EventArgs e)
+    {
+        var sim = _session.ActiveSimulation;
+        var player = sim?.FindCombatant(EncounterFactory.PlayerCombatantId);
+        CmbField.ItemsSource = sim is null || player is null ? null : BuildFieldOptions(sim, player);
+    }
+
+    private void BtnFieldUse_Click(object sender, RoutedEventArgs e)
+    {
+        var sim = _session.ActiveSimulation;
+        if (sim is null || CmbField.SelectedItem is not FieldOption option)
+        {
+            TxtActionStatus.Text = "Pick something to shape or use first.";
+            return;
+        }
+
+        var result = sim.IssueCommand(option.Command);
+        TxtActionStatus.Text = result.IsValid ? $"Issued: {option.Label}" : $"Cannot: {result.FailureReason}";
+        CmbField.SelectedItem = null;
+        RefreshAll();
+    }
+
     private string DescribeRewards(IReadOnlyList<MaterialCount> rewards) =>
         rewards.Count == 0
             ? "none"
@@ -170,7 +242,7 @@ public partial class CombatView : UserControl
                 $"Wit: {availWit}/{stats.MaxWit} (Tax {stats.EquipmentWitTax}, Res {player.Resources.ReservedWit})  |  " +
                 $"Motes: {player.Resources.CurrentMotes}/{stats.MaxMotes}  |  " +
                 $"Heat: {player.Resources.CurrentHeat}/{stats.HeatCapacity}{heatWarn}{aegis}{evade}" +
-                (player.Resources.FastIron > 0 ? $"  |  Fast-iron: {player.Resources.FastIron}" : "");
+                $"  |  Fast-iron: {player.TotalFastIron} ({player.Resources.FastIron} loose)  |  Cargo: {stats.CargoUsed}/{stats.CargoCapacity}";
 
             RebuildActionBar(sim, player);
         }
