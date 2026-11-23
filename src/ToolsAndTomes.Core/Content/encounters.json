@@ -1,0 +1,29 @@
+[
+  {
+    "id": "enc_proving_grounds",
+    "name": "Proving Grounds",
+    "description": "A Skirmisher, a Bruiser, and an Artillery Crest hold the far side of the field.",
+    "arenaWidth": 24,
+    "arenaHeight": 14,
+    "playerStart": { "x": 4, "y": 7 },
+    "playerStartingMotes": 2,
+    "enemies": [
+      { "enemyId": "enemy_skirmisher", "position": { "x": 16, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_bruiser", "position": { "x": 14.5, "y": 7 }, "startingMotes": 1 },
+      { "enemyId": "enemy_artillery", "position": { "x": 20.5, "y": 10.5 }, "startingMotes": 1 }
+    ],
+    "rewards": {
+      "guaranteed": [
+        { "materialId": "mat_oathsteel", "count": 1 }
+      ],
+      "draws": 3,
+      "pool": [
+        { "materialId": "mat_corrodite", "weight": 3 },
+        { "materialId": "mat_bastion_ore", "weight": 2 },
+        { "materialId": "mat_stormglass", "weight": 2 },
+        { "materialId": "mat_skyweave", "weight": 2 },
+        { "materialId": "mat_oathsteel", "weight": 1 }
+      ]
+    }
+  }
+]

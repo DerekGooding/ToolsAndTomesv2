@@ -243,5 +243,39 @@
     "witTax": 1,
     "weight": 6,
     "isSpellAmplifier": true
+  },
+  {
+    "id": "armor_oathsteel_plating",
+    "name": "Oathsteel Plating",
+    "description": "Researched armor: tougher and lighter than standard plating.",
+    "category": "Armor",
+    "maxDurability": 4,
+    "weight": 24,
+    "bonusProtectionDice": 1,
+    "displacementResistance": 1,
+    "isArmor": true
+  },
+  {
+    "id": "util_stormglass_capacitor",
+    "name": "Stormglass Capacitor",
+    "description": "Researched Mote reservoir: +1 Mote storage and Motes 1 beat faster. Helps fit Square Summon in the field.",
+    "category": "Arcane",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 4,
+    "bonusMoteStorage": 1,
+    "moteIntervalReductionBeats": 1
+  },
+  {
+    "id": "mob_skystrider_legs",
+    "name": "Skystrider Legs",
+    "description": "Researched locomotion: fast (7) and light, rated for 90 weight, but walking commits 1 Wit.",
+    "category": "Mobility",
+    "maxDurability": 2,
+    "weight": 12,
+    "moveSpeedBonus": 7,
+    "isLocomotion": true,
+    "loadCapacity": 90,
+    "movementWitCost": 1
   }
 ]

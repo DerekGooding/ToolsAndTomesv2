@@ -53,6 +53,46 @@ public static class ContentValidator
         foreach (var en in catalog.Enemies.Values)
             ValidateConfiguration(catalog, en.Assembly, $"enemy '{en.Id}'", errors);
 
+        // Exotic materials & research
+        foreach (var m in catalog.Materials.Values)
+        {
+            string at = $"material '{m.Id}'";
+            if (m.SamplesToResearch < 1) errors.Add($"{at}: samplesToResearch must be at least 1.");
+            if (m.UnlocksComponentIds.Count == 0) errors.Add($"{at}: unlocks nothing.");
+            foreach (var id in m.UnlocksComponentIds.Where(id => !catalog.Equipment.ContainsKey(id)))
+                errors.Add($"{at}: unlocks unknown component '{id}'.");
+            foreach (var id in m.UnlocksComponentIds.Where(catalog.BaselineComponentIds.Contains))
+                errors.Add($"{at}: unlocks '{id}', which is already known from a starter build.");
+        }
+
+        if (catalog.Materials.Count > 0)
+        {
+            var unlockable = catalog.Materials.Values.SelectMany(m => m.UnlocksComponentIds).ToHashSet();
+            foreach (var e in catalog.Equipment.Values)
+            {
+                if (!catalog.BaselineComponentIds.Contains(e.Id) && !unlockable.Contains(e.Id))
+                    errors.Add($"component '{e.Id}': not in a starter build and not unlocked by any material (unobtainable).");
+            }
+        }
+
+        // Encounters
+        foreach (var enc in catalog.Encounters.Values)
+        {
+            string at = $"encounter '{enc.Id}'";
+            if (enc.ArenaWidth < 4 || enc.ArenaHeight < 4) errors.Add($"{at}: arena must be at least 4x4.");
+            if (enc.Enemies.Count == 0) errors.Add($"{at}: has no enemies.");
+            foreach (var p in enc.Enemies.Where(p => !catalog.Enemies.ContainsKey(p.EnemyId)))
+                errors.Add($"{at}: unknown enemy '{p.EnemyId}'.");
+
+            var rewardIds = enc.Rewards.Guaranteed.Select(g => g.MaterialId).Concat(enc.Rewards.Pool.Select(p => p.MaterialId));
+            foreach (var id in rewardIds.Where(id => !catalog.Materials.ContainsKey(id)).Distinct())
+                errors.Add($"{at}: rewards unknown material '{id}'.");
+            if (enc.Rewards.Guaranteed.Any(g => g.Count < 1)) errors.Add($"{at}: guaranteed reward counts must be at least 1.");
+            if (enc.Rewards.Pool.Any(p => p.Weight < 1)) errors.Add($"{at}: reward pool weights must be at least 1.");
+            if (enc.Rewards.Draws < 0) errors.Add($"{at}: reward draws cannot be negative.");
+            if (enc.Rewards.Draws > 0 && enc.Rewards.Pool.Count == 0) errors.Add($"{at}: reward draws need a pool.");
+        }
+
         return errors;
     }
 
@@ -60,7 +100,9 @@ public static class ContentValidator
         IEnumerable<ActionDefinition> actions,
         IEnumerable<EquipmentDefinition> equipment,
         IEnumerable<CrestConfiguration> configurations,
-        IEnumerable<EnemyDefinition> enemies)
+        IEnumerable<EnemyDefinition> enemies,
+        IEnumerable<ExoticMaterialDefinition>? materials = null,
+        IEnumerable<EncounterDefinition>? encounters = null)
     {
         var errors = new List<string>();
         void Check(string kind, IEnumerable<string> ids) =>
@@ -70,6 +112,8 @@ public static class ContentValidator
         Check("component", equipment.Select(e => e.Id));
         Check("configuration", configurations.Select(c => c.Id));
         Check("enemy", enemies.Select(e => e.Id));
+        Check("material", (materials ?? []).Select(m => m.Id));
+        Check("encounter", (encounters ?? []).Select(e => e.Id));
         return errors;
     }
 

@@ -5,55 +5,50 @@ namespace ToolsAndTomes.Core.Simulation;
 
 public static class EncounterFactory
 {
+    public const string PlayerCombatantId = "player_crest";
+    public const string TestEncounterId = "enc_proving_grounds";
+
+    /// <summary>The Proving Grounds test encounter (defined in Content/encounters.json).</summary>
     public static CombatSimulation CreateTestEncounter(
         CrestLoadout playerLoadout,
         int seed = 1337,
         GameCatalog? catalog = null)
     {
         var cat = catalog ?? GameCatalog.Default;
+        return CreateEncounter(cat.Encounters[TestEncounterId], playerLoadout, seed, cat);
+    }
 
-        var player = new Combatant(
-            "player_crest",
-            playerLoadout.Name,
-            Faction.Player,
-            playerLoadout,
-            new Vec2(4.0, 7.0),
-            startingMotes: 2);
+    /// <summary>
+    /// Builds a simulation from an encounter definition. Enemy combatants are named
+    /// <c>enemy_{n}_{archetype}</c> in placement order.
+    /// </summary>
+    public static CombatSimulation CreateEncounter(
+        EncounterDefinition encounter,
+        CrestLoadout playerLoadout,
+        int seed,
+        GameCatalog catalog)
+    {
+        var combatants = new List<Combatant>
+        {
+            new(PlayerCombatantId, playerLoadout.Name, Faction.Player, playerLoadout,
+                encounter.PlayerStart, encounter.PlayerStartingMotes)
+        };
 
-        var skirmisherDef = cat.Enemies["enemy_skirmisher"];
-        var bruiserDef = cat.Enemies["enemy_bruiser"];
-        var artilleryDef = cat.Enemies["enemy_artillery"];
+        for (int i = 0; i < encounter.Enemies.Count; i++)
+        {
+            var placement = encounter.Enemies[i];
+            var def = catalog.Enemies[placement.EnemyId];
+            combatants.Add(new Combatant(
+                $"enemy_{i + 1}_{def.Archetype.ToString().ToLowerInvariant()}",
+                def.Name,
+                Faction.Enemy,
+                CrestLoadout.CreateFromConfiguration(def.Assembly, catalog, $"e{i + 1}"),
+                placement.Position,
+                placement.StartingMotes,
+                def.Archetype,
+                def.PreferredRange));
+        }
 
-        var skirmisher = new Combatant(
-            "enemy_1_skirmisher",
-            skirmisherDef.Name,
-            Faction.Enemy,
-            CrestLoadout.CreateFromConfiguration(skirmisherDef.Assembly, cat, "sk"),
-            new Vec2(16.0, 3.0),
-            startingMotes: 1,
-            skirmisherDef.Archetype,
-            skirmisherDef.PreferredRange);
-
-        var bruiser = new Combatant(
-            "enemy_2_bruiser",
-            bruiserDef.Name,
-            Faction.Enemy,
-            CrestLoadout.CreateFromConfiguration(bruiserDef.Assembly, cat, "br"),
-            new Vec2(14.5, 7.0),
-            startingMotes: 1,
-            bruiserDef.Archetype,
-            bruiserDef.PreferredRange);
-
-        var artillery = new Combatant(
-            "enemy_3_artillery",
-            artilleryDef.Name,
-            Faction.Enemy,
-            CrestLoadout.CreateFromConfiguration(artilleryDef.Assembly, cat, "ar"),
-            new Vec2(20.5, 10.5),
-            startingMotes: 1,
-            artilleryDef.Archetype,
-            artilleryDef.PreferredRange);
-
-        return new CombatSimulation([player, skirmisher, bruiser, artillery], seed, cat);
+        return new CombatSimulation(combatants, seed, catalog, arenaWidth: encounter.ArenaWidth, arenaHeight: encounter.ArenaHeight);
     }
 }

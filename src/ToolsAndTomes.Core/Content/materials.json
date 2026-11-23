@@ -1,0 +1,49 @@
+[
+  {
+    "id": "mat_oathsteel",
+    "name": "Oathsteel",
+    "description": "A metal that hardens under strain, as if it remembers every blow. Yields lighter, tougher plating and an honest blade.",
+    "samplesToResearch": 2,
+    "unlocksComponentIds": [
+      "armor_oathsteel_plating",
+      "eq_righteous"
+    ]
+  },
+  {
+    "id": "mat_corrodite",
+    "name": "Corrodite",
+    "description": "Weeping green crystal that slowly eats any metal it touches. Bottled under pressure, it strips armor.",
+    "samplesToResearch": 2,
+    "unlocksComponentIds": [
+      "eq_acid_sprayer"
+    ]
+  },
+  {
+    "id": "mat_bastion_ore",
+    "name": "Bastion Ore",
+    "description": "Dense, shock-tolerant ore salvaged from siege engines. Makes barrels and launch rails that survive their own recoil.",
+    "samplesToResearch": 3,
+    "unlocksComponentIds": [
+      "eq_artillery_mortar",
+      "eq_falconet"
+    ]
+  },
+  {
+    "id": "mat_stormglass",
+    "name": "Stormglass",
+    "description": "Glass that holds a faint charge long after a storm passes. A natural reservoir for Motes of Moment.",
+    "samplesToResearch": 3,
+    "unlocksComponentIds": [
+      "util_stormglass_capacitor"
+    ]
+  },
+  {
+    "id": "mat_skyweave",
+    "name": "Skyweave",
+    "description": "Fibers that pull faintly upward. Woven into actuators, they make legs light and quick, if Wit-hungry.",
+    "samplesToResearch": 3,
+    "unlocksComponentIds": [
+      "mob_skystrider_legs"
+    ]
+  }
+]
