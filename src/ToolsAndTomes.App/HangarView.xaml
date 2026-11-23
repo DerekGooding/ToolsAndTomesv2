@@ -1,0 +1,81 @@
+<UserControl x:Class="ToolsAndTomes.App.HangarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#0F172A" Foreground="#E2E8F0">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <TextBlock Text="TOOLS AND TOMES — CREST HANGAR" FontSize="20" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                <Button x:Name="BtnSelectStrider" Content="Strider Chassis" Margin="24,0,8,0" Padding="12,6" Click="BtnSelectStrider_Click"/>
+                <Button x:Name="BtnSelectBulwark" Content="Bulwark Chassis" Margin="0,0,8,0" Padding="12,6" Click="BtnSelectBulwark_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                <TextBlock Text="Seed:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#94A3B8"/>
+                <TextBox x:Name="TxtSeed" Width="70" Text="1337" VerticalContentAlignment="Center" Margin="0,0,12,0" Background="#1E293B" Foreground="White" BorderBrush="#475569"/>
+                <Button x:Name="BtnRepairAll" Content="Repair &amp; Refill All" Padding="12,6" Margin="0,0,8,0" Background="#0F766E" Foreground="White" Click="BtnRepairAll_Click"/>
+                <Button x:Name="BtnLaunch" Content="LAUNCH ENCOUNTER ▶" Padding="16,6" FontWeight="Bold" Background="#0284C7" Foreground="White" Click="BtnLaunch_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Main 3-column layout -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="1.0*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Installed Components -->
+            <Border Grid.Column="0" Background="#1E293B" CornerRadius="6" Padding="12" Margin="0,0,10,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" x:Name="TxtInstalledHeader" Text="Installed Components" FontSize="15" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,8"/>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Uninstall Selected" Padding="10,5" Margin="0,0,8,0" Click="BtnUninstall_Click"/>
+                        <Button Content="Repair Selected" Padding="10,5" Click="BtnRepairSelected_Click"/>
+                    </StackPanel>
+                    <ListBox x:Name="LstInstalled" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#334155"/>
+                </DockPanel>
+            </Border>
+
+            <!-- Spare Parts & Fabrication -->
+            <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="12" Margin="0,0,10,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Spare Component Instances (Damage Persists)" FontSize="15" FontWeight="Bold" Foreground="#F59E0B" Margin="0,0,0,8"/>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                        <Button Content="Install Selected Spare" Padding="10,5" Margin="0,0,0,8" Click="BtnInstallSpare_Click"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="+ Fabricate" Padding="10,4" Margin="6,0,0,0" Click="BtnFabricate_Click"/>
+                            <ComboBox x:Name="CmbCatalog" Background="#0F172A" Foreground="Black"/>
+                        </DockPanel>
+                    </StackPanel>
+                    <ListBox x:Name="LstSpares" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#334155"/>
+                </DockPanel>
+            </Border>
+
+            <!-- Crest Stats & Tradeoffs -->
+            <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="12">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Crest Performance &amp; Tradeoffs" FontSize="15" FontWeight="Bold" Foreground="#34D399" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="TxtCrestDesc" TextWrapping="Wrap" Foreground="#94A3B8" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="TxtStatsSummary" FontFamily="Consolas" FontSize="12" Foreground="#E2E8F0" TextWrapping="Wrap"/>
+                        <Separator Margin="0,12,0,12" Background="#334155"/>
+                        <TextBlock Text="Operational Combat Actions" FontSize="13" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,6"/>
+                        <TextBlock x:Name="TxtActionsSummary" FontSize="11.5" Foreground="#CBD5E1" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- Footer hint -->
+        <TextBlock Grid.Row="2" Margin="0,10,0,0" Foreground="#94A3B8" FontSize="11.5"
+                   Text="Tip: Strider excels at Blink evasion, fast Vorpal/Talon strikes, and Gravity Crush. Bulwark anchors with Heavy Armor, Shield Generator, Repulsor, Titan, and Dragon's Breath. Damaged parts stay damaged until repaired."/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,53 @@
+using ToolsAndTomes.Core.Definitions;
+
+namespace ToolsAndTomes.Core.Instances;
+
+public sealed class EquipmentInstance
+{
+    public string InstanceId { get; }
+    public EquipmentDefinition Definition { get; }
+    public int CurrentDurability { get; private set; }
+    public int CurrentAmmo { get; private set; }
+
+    public bool IsDisabled => CurrentDurability <= 0;
+    public bool IsOperational => CurrentDurability > 0;
+
+    public EquipmentInstance(string instanceId, EquipmentDefinition definition)
+    {
+        InstanceId = instanceId;
+        Definition = definition;
+        CurrentDurability = definition.MaxDurability;
+        CurrentAmmo = definition.MaxAmmo;
+    }
+
+    public bool ApplyDamage(int amount)
+    {
+        if (amount <= 0 || IsDisabled)
+            return false;
+
+        CurrentDurability = Math.Max(0, CurrentDurability - amount);
+        return IsDisabled;
+    }
+
+    public bool TryConsumeAmmo(int amount)
+    {
+        if (amount <= 0)
+            return true;
+
+        if (CurrentAmmo < amount)
+            return false;
+
+        CurrentAmmo -= amount;
+        return true;
+    }
+
+    public void Repair()
+    {
+        CurrentDurability = Definition.MaxDurability;
+    }
+
+    public void RefillAmmo()
+    {
+        CurrentAmmo = Definition.MaxAmmo;
+    }
+}

@@ -1,0 +1,73 @@
+using ToolsAndTomes.Core.Definitions;
+using ToolsAndTomes.Core.Instances;
+
+namespace ToolsAndTomes.Core.Rules;
+
+public sealed record ActionValidationResult(bool IsValid, string? FailureReason = null)
+{
+    public static ActionValidationResult Valid { get; } = new(true);
+    public static ActionValidationResult Fail(string reason) => new(false, reason);
+}
+
+public static class ActionValidationRules
+{
+    public static ActionValidationResult ValidateUseAction(
+        Combatant actor,
+        ActionDefinition action,
+        Combatant? target,
+        Vec2? targetPoint)
+    {
+        if (actor.IsDefeated)
+            return ActionValidationResult.Fail("Combatant is defeated.");
+
+        var stats = actor.Stats;
+
+        var provider = actor.Loadout.FindOperationalProviderForAction(action.Id);
+        if (provider is null)
+            return ActionValidationResult.Fail($"No operational component provides {action.Name}.");
+
+        if (action.RequiresSpellbook && !stats.HasSpellbook)
+            return ActionValidationResult.Fail($"{action.Name} requires an operational Spellbook.");
+
+        if (action.RequiresSpellAmplifier && !stats.HasSpellAmplifier)
+            return ActionValidationResult.Fail($"{action.Name} requires an operational Arcane Amplifier.");
+
+        if (actor.GetCooldown(action.Id) > 0)
+            return ActionValidationResult.Fail($"{action.Name} is on cooldown.");
+
+        if (action.AmmoCost > 0 && provider.CurrentAmmo < action.AmmoCost)
+            return ActionValidationResult.Fail($"Insufficient ammo for {action.Name}.");
+
+        if (action.MoteCost > 0 && actor.Resources.CurrentMotes < action.MoteCost)
+            return ActionValidationResult.Fail($"Requires {action.MoteCost} Mote(s).");
+
+        if (action.WitReserve > 0 && stats.AvailableWit(actor.Resources.ReservedWit) < action.WitReserve)
+            return ActionValidationResult.Fail($"Insufficient available Wit (needs {action.WitReserve}).");
+
+        if (action.Targeting == TargetingType.EnemyUnit)
+        {
+            if (target is null)
+                return ActionValidationResult.Fail("Requires a target combatant.");
+            if (target.IsDefeated)
+                return ActionValidationResult.Fail("Target is already defeated.");
+        }
+        else if (action.Targeting == TargetingType.Point && targetPoint is null && target is null)
+        {
+            return ActionValidationResult.Fail("Requires a target point.");
+        }
+
+        return ActionValidationResult.Valid;
+    }
+
+    public static bool IsInRange(Combatant actor, ActionDefinition action, Combatant? target, Vec2? targetPoint)
+    {
+        if (action.Targeting == TargetingType.Self || action.Range <= 0)
+            return true;
+
+        var destination = target?.Position ?? targetPoint;
+        if (destination is null)
+            return false;
+
+        return actor.Position.DistanceTo(destination.Value) <= action.Range + 0.05;
+    }
+}
