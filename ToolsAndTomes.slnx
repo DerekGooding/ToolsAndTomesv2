@@ -3,6 +3,9 @@
     <Project Path="src/ToolsAndTomes.App/ToolsAndTomes.App.csproj" />
     <Project Path="src/ToolsAndTomes.Core/ToolsAndTomes.Core.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/ToolsAndTomes.Balance/ToolsAndTomes.Balance.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ToolsAndTomes.Tests/ToolsAndTomes.Tests.csproj" />
   </Folder>

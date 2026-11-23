@@ -81,6 +81,7 @@ This document tracks confirmed game rules, implementation decisions, open questi
 | **Component Categories** | `ComponentCategory` is an organizational label only, never a hard slot restriction | Prevents arbitrary mech-builder slot limits; constraints emerge from Wit, heat, weight, and component rules. |
 | **Content as Data** | Actions, components, starter builds, enemies, and global rules live in `src/ToolsAndTomes.Core/Content/*.json` (embedded), loaded by `ContentSerializer` and checked by `ContentValidator`; `LoadFromDirectory` swaps in edited content | Content can be balanced, modded, or generated without code changes, and nothing unplayable gets in. |
 | **Rules Config** | All global tuning numbers live in `RulesConfig` (`rules.json`) | One place to tune; alternative rule sets can be tested side by side. |
+| **Balance Runner** | `BalanceRunner` plays every starter build against the test encounter across many seeds (player on a build-agnostic `AutoPilot`, enemies on `EnemyAIController`); `tools/ToolsAndTomes.Balance` prints win rate, fight length, components lost, and kills, optionally for an edited content directory | Balance changes are measured, not guessed. |
 
 ---
 
