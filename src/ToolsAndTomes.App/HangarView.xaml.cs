@@ -43,18 +43,13 @@ public partial class HangarView : UserControl
     private string? _reselectInstanceId;
 
     public event Action? LaunchEncounterRequested;
+    public event Action? ResearchRequested;
 
     public HangarView(AppSessionState session)
     {
         InitializeComponent();
         _session = session;
 
-        CmbCatalog.ItemsSource = _session.Catalog.Equipment.Values
-            .OrderBy(e => e.Category)
-            .ThenBy(e => e.Name)
-            .Select(e => new CatalogOption(e))
-            .ToList();
-        CmbCatalog.SelectedIndex = 0;
 
         CmbRuleTelegraph.ItemsSource = new[] { AnyTelegraph }
             .Concat(Enum.GetNames<TelegraphKind>().Where(n => n != nameof(TelegraphKind.DefensiveReaction)))
@@ -81,6 +76,7 @@ public partial class HangarView : UserControl
         var stats = LoadoutRules.ComputeStats(loadout);
 
         TxtAssemblyName.Text = loadout.Name;
+        TxtSeed.Text = _session.EncounterSeed.ToString();
         TxtInstalledHeader.Text = $"{loadout.Name} — Installed Components ({loadout.Installed.Count})";
 
         var installedItems = loadout.DamageOrder.Select(e => new EquipmentListItem(e)).ToList();
@@ -91,9 +87,12 @@ public partial class HangarView : UserControl
             _reselectInstanceId = null;
         }
 
+        RefreshFabricationList();
+
         var warnings = LoadoutRules.GetWarnings(loadout);
-        TxtWarnings.Text = string.Join("\n", warnings.Select(w => "⚠ " + w));
-        TxtWarnings.Visibility = warnings.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        var allWarnings = _session.ProfileWarnings.Concat(warnings).ToList();
+        TxtWarnings.Text = string.Join("\n", allWarnings.Select(w => "⚠ " + w));
+        TxtWarnings.Visibility = allWarnings.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         LstSpares.ItemsSource = _session.SpareInventory.Select(e => new EquipmentListItem(e)).ToList();
 
         int moteSec = stats.MoteGenerationIntervalBeats;
@@ -138,7 +137,7 @@ public partial class HangarView : UserControl
         if (CmbAssemblies.SelectedItem is AssemblyOption opt)
         {
             _session.SelectedCrestId = opt.Assembly.Id;
-            RefreshUI();
+            Commit();
         }
     }
 
@@ -147,14 +146,14 @@ public partial class HangarView : UserControl
         if (!string.IsNullOrWhiteSpace(TxtAssemblyName.Text))
         {
             _session.SelectedLoadout.Name = TxtAssemblyName.Text.Trim();
-            RefreshUI();
+            Commit();
         }
     }
 
     private void BtnSaveNew_Click(object sender, RoutedEventArgs e)
     {
         _session.SaveCurrentAsNewAssembly(TxtAssemblyName.Text + " (Copy)");
-        RefreshUI();
+        Commit();
     }
 
     private void BtnRuleAdd_Click(object sender, RoutedEventArgs e)
@@ -173,13 +172,13 @@ public partial class HangarView : UserControl
             MinIncomingDamage = minDamage,
             Telegraph = telegraph
         });
-        RefreshUI();
+        Commit();
     }
 
     private void BtnRuleRemove_Click(object sender, RoutedEventArgs e)
     {
         if (_session.SelectedLoadout.RemoveReactionRuleAt(LstReactionRules.SelectedIndex))
-            RefreshUI();
+            Commit();
     }
 
     private void BtnRuleUp_Click(object sender, RoutedEventArgs e) => MoveRule(-1);
@@ -190,7 +189,7 @@ public partial class HangarView : UserControl
         int index = LstReactionRules.SelectedIndex;
         if (_session.SelectedLoadout.MoveReactionRule(index, delta))
         {
-            RefreshUI();
+            Commit();
             LstReactionRules.SelectedIndex = index + delta;
         }
     }
@@ -204,7 +203,7 @@ public partial class HangarView : UserControl
             _session.SelectedLoadout.MoveInDamageOrder(item.Instance.InstanceId, delta))
         {
             _reselectInstanceId = item.Instance.InstanceId;
-            RefreshUI();
+            Commit();
         }
     }
 
@@ -213,7 +212,7 @@ public partial class HangarView : UserControl
         if (LstInstalled.SelectedItem is EquipmentListItem item)
         {
             _session.UninstallFromSelected(item.Instance.InstanceId);
-            RefreshUI();
+            Commit();
         }
     }
 
@@ -223,7 +222,7 @@ public partial class HangarView : UserControl
             CmbTransferTarget.SelectedItem is AssemblyOption target)
         {
             _session.TransferToOtherAssembly(item.Instance.InstanceId, target.Assembly.Id);
-            RefreshUI();
+            Commit();
         }
     }
 
@@ -232,7 +231,7 @@ public partial class HangarView : UserControl
         if (LstSpares.SelectedItem is EquipmentListItem item)
         {
             _session.InstallFromSpare(item.Instance.InstanceId);
-            RefreshUI();
+            Commit();
         }
     }
 
@@ -240,8 +239,8 @@ public partial class HangarView : UserControl
     {
         if (CmbCatalog.SelectedItem is CatalogOption opt)
         {
-            _session.AddSpare(opt.Def.Id);
-            RefreshUI();
+            _session.Fabricate(opt.Def.Id);
+            Commit();
         }
     }
 
@@ -251,7 +250,7 @@ public partial class HangarView : UserControl
         {
             item.Instance.Repair();
             item.Instance.RefillAmmo();
-            RefreshUI();
+            Commit();
         }
     }
 
@@ -263,8 +262,32 @@ public partial class HangarView : UserControl
             spare.Repair();
             spare.RefillAmmo();
         }
+        Commit();
+    }
+
+    /// <summary>Saves progress, then refreshes. Called after every change the player makes.</summary>
+    private void Commit()
+    {
+        _session.Save();
         RefreshUI();
     }
+
+    private void RefreshFabricationList()
+    {
+        string? previous = (CmbCatalog.SelectedItem as CatalogOption)?.Def.Id;
+        var known = _session.Workshop.KnownComponentIds(_session.Catalog);
+        var options = _session.Catalog.Equipment.Values
+            .Where(e => known.Contains(e.Id))
+            .OrderBy(e => e.Category)
+            .ThenBy(e => e.Name)
+            .Select(e => new CatalogOption(e))
+            .ToList();
+
+        CmbCatalog.ItemsSource = options;
+        CmbCatalog.SelectedItem = options.FirstOrDefault(o => o.Def.Id == previous) ?? options.FirstOrDefault();
+    }
+
+    private void BtnResearch_Click(object sender, RoutedEventArgs e) => ResearchRequested?.Invoke();
 
     private void BtnLaunch_Click(object sender, RoutedEventArgs e)
     {

@@ -1,0 +1,48 @@
+<UserControl x:Class="ToolsAndTomes.App.ResearchView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#0F172A" Foreground="#E2E8F0">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <TextBlock Text="TOOLS AND TOMES — RESEARCH DESK" FontSize="19" FontWeight="Bold" Foreground="#F472B6" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtSummary" Margin="18,0,0,0" VerticalAlignment="Center" Foreground="#94A3B8"/>
+            </StackPanel>
+            <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="← Back to Crest Bay" Padding="12,6"
+                    Background="#475569" Foreground="White" Click="BtnBack_Click"/>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#1E293B" CornerRadius="6" Padding="12" Margin="0,0,10,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Exotic Materials" FontSize="15" FontWeight="Bold" Foreground="#F472B6" Margin="0,0,0,4"/>
+                    <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="#94A3B8" FontSize="11.5" Margin="0,0,0,10"
+                               Text="Win encounters to collect material samples. Researching a material consumes its samples and permanently unlocks blueprints, which the Workshop fabricates from fast-iron at no cost."/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="MaterialsPanel"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="12">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Known Blueprints" FontSize="15" FontWeight="Bold" Foreground="#34D399" Margin="0,0,0,8"/>
+                    <ListBox x:Name="LstKnown" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#334155" FontSize="11.5"/>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <TextBlock Grid.Row="2" x:Name="TxtStatus" Margin="0,10,0,0" Foreground="#FACC15" FontSize="12"/>
+    </Grid>
+</UserControl>

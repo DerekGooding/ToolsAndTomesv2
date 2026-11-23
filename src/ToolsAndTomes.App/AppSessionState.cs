@@ -1,54 +1,49 @@
+using System.IO;
 using ToolsAndTomes.Core.AI;
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
 using ToolsAndTomes.Core.Simulation;
+using ToolsAndTomes.Core.Workshop;
 
 namespace ToolsAndTomes.App;
 
 public sealed class AppSessionState
 {
+    /// <summary>Saved progress lives in %LOCALAPPDATA%\ToolsAndTomes\profile.json.</summary>
+    public static string ProfilePath { get; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ToolsAndTomes", "profile.json");
+
     private int _nextInstanceCounter = 100;
     private int _nextAssemblyCounter = 1;
+    private CombatSimulation? _rewardedSimulation;
 
     public GameCatalog Catalog { get; } = GameCatalog.Default;
     public List<CrestLoadout> CrestAssemblies { get; } = [];
-    public List<CrestConfiguration> SavedBlueprints { get; } = [];
     public List<EquipmentInstance> SpareInventory { get; } = [];
-    public string SelectedCrestId { get; set; }
+    public WorkshopState Workshop { get; } = new();
+    public string SelectedCrestId { get; set; } = "";
+    public int EncountersWon { get; private set; }
+
+    /// <summary>Messages from loading the profile (e.g. content that no longer exists).</summary>
+    public IReadOnlyList<string> ProfileWarnings { get; private set; } = [];
 
     public CombatSimulation? ActiveSimulation { get; private set; }
     public EnemyAIController ActiveAI { get; } = new(decisionIntervalBeats: 1);
     public int EncounterSeed { get; set; } = 1337;
+
+    /// <summary>Samples granted by the most recent victory (shown on the combat screen).</summary>
+    public IReadOnlyList<MaterialCount> LastRewards { get; private set; } = [];
 
     public CrestLoadout SelectedLoadout =>
         CrestAssemblies.First(c => c.Id == SelectedCrestId);
 
     public AppSessionState()
     {
-        var agile = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, Catalog, "asm1");
-        var heavy = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, Catalog, "asm2");
-
-        CrestAssemblies.Add(agile);
-        CrestAssemblies.Add(heavy);
-        SavedBlueprints.Add(agile.ExportConfiguration());
-        SavedBlueprints.Add(heavy.ExportConfiguration());
-        SelectedCrestId = agile.Id;
-
-        AddSpare("core_aether_dynamo");
-        AddSpare("core_aether_furnace");
-        AddSpare("mob_stride_legs");
-        AddSpare("mob_anchor_legs");
-        AddSpare("eq_righteous");
-        AddSpare("eq_falconet");
-        AddSpare("eq_dragons_breath");
-        AddSpare("eq_acid_sprayer");
-        AddSpare("eq_shield_generator");
-        AddSpare("eq_repulsor");
-        AddSpare("eq_blink_drive");
-        AddSpare("armor_heavy_plate");
-        AddSpare("eq_thermal_regulator");
-        AddSpare("eq_spell_amplifier");
+        if (!TryLoadProfile())
+            CreateNewProfile();
     }
+
+    // ---- Assemblies & spares ----------------------------------------------------------------
 
     public EquipmentInstance CreateNewInstance(string equipmentDefId)
     {
@@ -58,12 +53,26 @@ public sealed class AppSessionState
 
     public void AddSpare(string equipmentDefId) => SpareInventory.Add(CreateNewInstance(equipmentDefId));
 
+    /// <summary>Fabricates a known blueprint from fast-iron (free in the Workshop).</summary>
+    public bool Fabricate(string equipmentDefId)
+    {
+        if (!Workshop.CanFabricate(Catalog, equipmentDefId))
+            return false;
+
+        AddSpare(equipmentDefId);
+        return true;
+    }
+
     public CrestLoadout SaveCurrentAsNewAssembly(string name)
     {
-        string id = $"custom_asm_{_nextAssemblyCounter++}";
+        string id;
+        do
+        {
+            id = $"custom_asm_{_nextAssemblyCounter++}";
+        } while (CrestAssemblies.Any(a => a.Id == id));
+
         var blueprint = SelectedLoadout.ExportConfiguration(id, $"Saved from {SelectedLoadout.Name}");
         blueprint = blueprint with { Name = string.IsNullOrWhiteSpace(name) ? $"Custom Assembly {_nextAssemblyCounter}" : name.Trim() };
-        SavedBlueprints.Add(blueprint);
 
         var freshAssembly = CrestLoadout.CreateFromConfiguration(blueprint, Catalog, id);
         CrestAssemblies.Add(freshAssembly);
@@ -101,12 +110,137 @@ public sealed class AppSessionState
         return SelectedLoadout.TransferComponentTo(instanceId, target);
     }
 
+    // ---- Research ---------------------------------------------------------------------------
+
+    public ResearchResult Research(string materialId)
+    {
+        var result = Workshop.Research(Catalog.Materials[materialId]);
+        if (result.Succeeded)
+            Save();
+        return result;
+    }
+
+    // ---- Encounters -------------------------------------------------------------------------
+
     public CombatSimulation StartEncounter()
     {
         // Vertical slice: Crests are fully repaired and restocked between encounters.
         SelectedLoadout.RepairAll();
+        LastRewards = [];
         ActiveSimulation = EncounterFactory.CreateTestEncounter(SelectedLoadout, EncounterSeed, Catalog);
         ActiveSimulation.Pause();
         return ActiveSimulation;
+    }
+
+    /// <summary>Grants victory rewards once per encounter. Returns the samples granted (empty if none).</summary>
+    public IReadOnlyList<MaterialCount> CompleteEncounter(CombatSimulation sim)
+    {
+        if (ReferenceEquals(sim, _rewardedSimulation) || sim.Outcome != EncounterOutcome.PlayerVictory)
+            return LastRewards;
+
+        _rewardedSimulation = sim;
+        LastRewards = RewardRoller.Roll(Catalog.Encounters[EncounterFactory.TestEncounterId], EncounterSeed);
+        Workshop.AddSamples(LastRewards);
+        EncountersWon++;
+        EncounterSeed++; // the next fight (and its rewards) differ
+        Save();
+        return LastRewards;
+    }
+
+    // ---- Profile ----------------------------------------------------------------------------
+
+    public void Save()
+    {
+        var profile = new PlayerProfile
+        {
+            SelectedAssemblyId = SelectedCrestId,
+            Assemblies = CrestAssemblies.Select(a => a.ExportConfiguration()).ToList(),
+            SpareComponentIds = SpareInventory.Select(e => e.Definition.Id).ToList(),
+            Samples = Workshop.Samples.ToDictionary(),
+            ResearchedMaterials = Workshop.ResearchedMaterials.Order(StringComparer.Ordinal).ToList(),
+            EncountersWon = EncountersWon
+        };
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(ProfilePath)!);
+            File.WriteAllText(ProfilePath, ProfileSerializer.Serialize(profile));
+        }
+        catch (IOException)
+        {
+            // Saving is best-effort; the session continues in memory.
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+    }
+
+    /// <summary>Discards saved progress and starts over with the starter builds.</summary>
+    public void ResetProfile()
+    {
+        CrestAssemblies.Clear();
+        SpareInventory.Clear();
+        Workshop.Restore(new Dictionary<string, int>(), []);
+        EncountersWon = 0;
+        CreateNewProfile();
+        Save();
+    }
+
+    private bool TryLoadProfile()
+    {
+        if (!File.Exists(ProfilePath))
+            return false;
+
+        try
+        {
+            var loaded = ProfileSerializer.Deserialize(File.ReadAllText(ProfilePath), Catalog);
+            var profile = loaded.Profile;
+            if (profile.Assemblies.Count == 0)
+                return false;
+
+            int index = 1;
+            foreach (var config in profile.Assemblies)
+                CrestAssemblies.Add(CrestLoadout.CreateFromConfiguration(config, Catalog, $"asm{index++}"));
+
+            foreach (var id in profile.SpareComponentIds)
+                AddSpare(id);
+
+            Workshop.Restore(profile.Samples, profile.ResearchedMaterials);
+            EncountersWon = profile.EncountersWon;
+            EncounterSeed = 1337 + EncountersWon;
+            SelectedCrestId = CrestAssemblies.Any(a => a.Id == profile.SelectedAssemblyId)
+                ? profile.SelectedAssemblyId!
+                : CrestAssemblies[0].Id;
+            _nextAssemblyCounter = CrestAssemblies.Count + 1;
+            ProfileWarnings = loaded.Warnings;
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
+        {
+            ProfileWarnings = [$"Saved profile could not be read ({ex.Message}); starting fresh."];
+            CrestAssemblies.Clear();
+            SpareInventory.Clear();
+            return false;
+        }
+    }
+
+    private void CreateNewProfile()
+    {
+        var agile = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, Catalog, "asm1");
+        var heavy = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, Catalog, "asm2");
+        CrestAssemblies.Add(agile);
+        CrestAssemblies.Add(heavy);
+        SelectedCrestId = agile.Id;
+
+        // A few spare starter-build parts to experiment with; everything else comes from research.
+        foreach (var id in new[]
+                 {
+                     "core_aether_dynamo", "core_aether_furnace", "mob_stride_legs", "mob_anchor_legs",
+                     "eq_dragons_breath", "eq_shield_generator", "eq_repulsor", "eq_blink_drive",
+                     "armor_heavy_plate", "eq_thermal_regulator", "eq_spell_amplifier"
+                 })
+        {
+            AddSpare(id);
+        }
     }
 }

@@ -24,6 +24,7 @@
                 <TextBlock Text="Seed:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#94A3B8"/>
                 <TextBox x:Name="TxtSeed" Width="64" Text="1337" VerticalContentAlignment="Center" Margin="0,0,10,0"
                          Background="#1E293B" Foreground="White" BorderBrush="#475569"/>
+                <Button Content="Research Desk" Padding="11,6" Margin="0,0,8,0" Background="#BE185D" Foreground="White" Click="BtnResearch_Click"/>
                 <Button Content="Repair &amp; Refill All" Padding="11,6" Margin="0,0,8,0" Background="#0F766E" Foreground="White" Click="BtnRepairAll_Click"/>
                 <Button x:Name="BtnLaunch" Content="LAUNCH ENCOUNTER ▶" Padding="14,6" FontWeight="Bold" Background="#0284C7" Foreground="White" Click="BtnLaunch_Click"/>
             </StackPanel>
@@ -66,11 +67,11 @@
             <!-- Spare Parts & Fabrication -->
             <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="12" Margin="0,0,10,0">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Spare Component Instances (Damage Persists)" FontSize="15" FontWeight="Bold" Foreground="#F59E0B" Margin="0,0,0,8"/>
+                    <TextBlock DockPanel.Dock="Top" Text="Spare Components (fabricate known blueprints)" FontSize="15" FontWeight="Bold" Foreground="#F59E0B" Margin="0,0,0,8"/>
                     <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
                         <Button Content="Install Selected Spare" Padding="10,5" Margin="0,0,0,8" Click="BtnInstallSpare_Click"/>
                         <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="+ Fabricate" Padding="10,4" Margin="6,0,0,0" Click="BtnFabricate_Click"/>
+                            <Button DockPanel.Dock="Right" Content="+ Fabricate (fast-iron)" Padding="10,4" Margin="6,0,0,0" Click="BtnFabricate_Click"/>
                             <ComboBox x:Name="CmbCatalog" Background="#0F172A" Foreground="Black"/>
                         </DockPanel>
                     </StackPanel>

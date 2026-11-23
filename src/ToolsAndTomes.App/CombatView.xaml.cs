@@ -119,6 +119,11 @@ public partial class CombatView : UserControl
         RefreshAll();
     }
 
+    private string DescribeRewards(IReadOnlyList<MaterialCount> rewards) =>
+        rewards.Count == 0
+            ? "none"
+            : string.Join(", ", rewards.Select(r => $"{_session.Catalog.Materials[r.MaterialId].Name} ×{r.Count}"));
+
     private void AdvanceOneBeat(CombatSimulation sim)
     {
         _session.ActiveAI.Update(sim);
@@ -148,7 +153,7 @@ public partial class CombatView : UserControl
 
         TxtOutcome.Text = sim.Outcome switch
         {
-            EncounterOutcome.PlayerVictory => "★ VICTORY! Return to Hangar to repair/reconfigure.",
+            EncounterOutcome.PlayerVictory => $"★ VICTORY! Samples recovered: {DescribeRewards(_session.CompleteEncounter(sim))}",
             EncounterOutcome.PlayerDefeat => "✖ DEFEAT! Core failed. Return to Hangar to repair.",
             _ => ""
         };

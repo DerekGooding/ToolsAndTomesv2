@@ -1,7 +1,7 @@
 ﻿<Window x:Class="ToolsAndTomes.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Tools and Tomes — Combat Vertical Slice"
+        Title="Tools and Tomes"
         Height="820" Width="1340"
         MinHeight="680" MinWidth="1050"
         Background="#0B1120"

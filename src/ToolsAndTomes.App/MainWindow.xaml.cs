@@ -8,6 +8,7 @@ public partial class MainWindow : Window
     private readonly AppSessionState _session = new();
     private readonly HangarView _hangarView;
     private readonly CombatView _combatView;
+    private readonly ResearchView _researchView;
 
     public MainWindow()
     {
@@ -15,9 +16,12 @@ public partial class MainWindow : Window
 
         _hangarView = new HangarView(_session);
         _combatView = new CombatView(_session);
+        _researchView = new ResearchView(_session);
 
         _hangarView.LaunchEncounterRequested += ShowCombat;
+        _hangarView.ResearchRequested += ShowResearch;
         _combatView.ReturnToHangarRequested += ShowHangar;
+        _researchView.BackRequested += ShowHangar;
 
         MainHost.Content = _hangarView;
     }
@@ -32,6 +36,12 @@ public partial class MainWindow : Window
     {
         _hangarView.RefreshUI();
         MainHost.Content = _hangarView;
+    }
+
+    private void ShowResearch()
+    {
+        _researchView.RefreshUI();
+        MainHost.Content = _researchView;
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

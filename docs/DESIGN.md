@@ -164,17 +164,23 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 ### Persistence (scope) [Implemented]
 - Repairs and restocking can be done in the field, so in the full game, damage persisting between fights costs time. **For the vertical slice**, Crests are fully repaired and restocked between encounters.
 
-### Next vertical slice: Workshop & Research
+### Workshop & Research slice [Implemented]
 - Exotic materials are discovered and researched. Once researched, they unlock new items that can be produced from **fast-iron**.
 - **Fast-iron** is created by the **Square Summon** spell, which costs **4 Motes of Moment**. A Crest that cannot store at least 4 Motes cannot produce fast-iron in the field.
 - Square Summon can be cast mid-combat, but it is slow unless the Crest has additional Mote generation.
 - In the Workshop, supply is effectively unlimited because time is not a factor.
+- **Discovery:** winning an encounter grants material samples from its reward table (`encounters.json`): guaranteed samples plus weighted draws, rolled from the encounter seed on a separate stream from the combat dice.
+- **Research:** each material (`materials.json`) needs `samplesToResearch` samples; researching consumes them and permanently unlocks its blueprints.
+- **Known blueprints:** only components in the starter builds are known at first; every other component must be unlocked by some material (enforced by `ContentValidator`).
+- **Fabrication:** known blueprints fabricate from fast-iron for free in the Workshop.
+- Shipped materials: Oathsteel (Oathsteel Plating, Righteous Strike), Corrodite (Acid Sprayer), Bastion Ore (Siege Mortar, Falconet), Stormglass (Stormglass Capacitor), Skyweave (Skystrider Legs: speed 7, load 90, 1 Wit to walk).
+- The Research Desk screen shows samples, research status, unlocks, and known blueprints; the hangar fabricates only known blueprints.
 
 ---
 
 ## 4. Deferred Long-Term Concepts (Preserved in Architecture)
 
-- Inventor's Workshop (Forge, Workbench, Research Desk, Crest Bays, Spell Lab, Storage). **Next slice** — see 3a.
+- Inventor's Workshop beyond the Research Desk (Forge, Workbench, Crest Bays, Spell Lab, Storage). The Research Desk slice is implemented — see 3a.
 - Discovery, reverse engineering, and research trees.
 - Fast-iron, Square Summon, and Shaping spells.
 - Multiple simultaneous Crests / autonomous constructs (**Grip**).
@@ -189,5 +195,5 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 
 - Single player-controlled Crest per encounter (architecture supports multiple friendly combatants).
 - Single test encounter with 3 enemy archetypes (Skirmisher, Bruiser, Artillery); repeatable with any custom Crest assembly.
-- Saved configurations live in session memory (JSON persistence can be added directly on top of `CrestConfiguration`).
+- Player progress (assemblies, spares, research, samples) is saved to `%LOCALAPPDATA%ToolsAndTomesprofile.json`; component damage is not saved (the Workshop repairs everything).
 - Functional vector/shape graphics in WPF rather than final art assets.
