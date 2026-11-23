@@ -8,17 +8,18 @@ public sealed record ProtectionRollResult(bool Saved, IReadOnlyList<int> Rolls);
 
 public sealed class DamageResolutionService
 {
-    public const int DefaultSaveTarget = 5;
-
+    private readonly RulesConfig _rules;
     private readonly InterruptionThresholds _thresholds;
 
-    public DamageResolutionService(InterruptionThresholds? thresholds = null)
+    public DamageResolutionService(RulesConfig? rules = null)
     {
-        _thresholds = thresholds ?? InterruptionThresholds.Default;
+        _rules = rules ?? RulesConfig.Default;
+        _thresholds = _rules.Interruption;
     }
 
-    public ProtectionRollResult RollProtection(int bonusProtectionDice, ISeededRandom rng, int saveTarget = DefaultSaveTarget)
+    public ProtectionRollResult RollProtection(int bonusProtectionDice, ISeededRandom rng, int? saveTarget = null)
     {
+        int target = saveTarget ?? _rules.ProtectionSaveTarget;
         int diceCount = Math.Max(1, 1 + bonusProtectionDice);
         var rolls = new int[diceCount];
         bool saved = false;
@@ -31,7 +32,7 @@ public sealed class DamageResolutionService
             if (roll == 1)
                 continue; // 1 always hits (fails protection roll)
 
-            if (roll == 6 || roll >= saveTarget)
+            if (roll == 6 || roll >= target)
                 saved = true;
         }
 

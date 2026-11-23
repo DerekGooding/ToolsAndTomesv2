@@ -52,7 +52,10 @@ public sealed class Combatant
 
     /// <summary>Beats remaining before each action may start again.</summary>
     public IReadOnlyDictionary<string, int> Cooldowns => _cooldowns;
-    public CrestStats Stats => LoadoutRules.ComputeStats(Loadout);
+    /// <summary>Global rules this Crest is evaluated under (set by the simulation from its catalog).</summary>
+    public RulesConfig Rules { get; set; } = RulesConfig.Default;
+
+    public CrestStats Stats => Loadout.GetStats(Rules);
     public bool IsDefeated => !Stats.IsCoreOperational;
     public bool IsEvading => EvadeBeatsRemaining > 0;
     public bool HasActiveAegis => AegisBlocksRemaining > 0 && AegisBeatsRemaining > 0;

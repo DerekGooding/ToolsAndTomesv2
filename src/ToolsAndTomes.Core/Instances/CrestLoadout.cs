@@ -1,4 +1,5 @@
 using ToolsAndTomes.Core.Definitions;
+using ToolsAndTomes.Core.Rules;
 
 namespace ToolsAndTomes.Core.Instances;
 
@@ -12,6 +13,8 @@ public sealed class CrestLoadout
 {
     private readonly List<EquipmentInstance> _installed = [];
     private readonly List<ReactionRule> _reactionRules = [];
+    private int _structureVersion;
+    private (int Structure, int Operational, RulesConfig Rules, CrestStats Stats)? _statsCache;
 
     public string Id { get; }
     public string Name { get; set; }
@@ -80,6 +83,7 @@ public sealed class CrestLoadout
         }
 
         _installed.Insert(insertAt, instance);
+        _structureVersion++;
     }
 
     public void AddReactionRule(ReactionRule rule) => _reactionRules.Add(rule);
@@ -108,6 +112,7 @@ public sealed class CrestLoadout
             return null;
 
         _installed.Remove(item);
+        _structureVersion++;
         return item;
     }
 
@@ -139,6 +144,25 @@ public sealed class CrestLoadout
 
         destination.Install(removed);
         return true;
+    }
+
+    /// <summary>
+    /// Cached <see cref="LoadoutRules.ComputeStats"/>. Recomputed only when components are installed or removed,
+    /// or one of them becomes operational/disabled (durability and ammo changes alone do not affect stats).
+    /// </summary>
+    public CrestStats GetStats(RulesConfig? rules = null)
+    {
+        var r = rules ?? RulesConfig.Default;
+        int operational = 0;
+        foreach (var e in _installed)
+            operational += e.OperationalVersion;
+
+        if (_statsCache is { } c && c.Structure == _structureVersion && c.Operational == operational && ReferenceEquals(c.Rules, r))
+            return c.Stats;
+
+        var stats = LoadoutRules.ComputeStats(this, r);
+        _statsCache = (_structureVersion, operational, r, stats);
+        return stats;
     }
 
     public EquipmentInstance? FindById(string instanceId) =>

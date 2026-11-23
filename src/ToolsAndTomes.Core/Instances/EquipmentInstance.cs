@@ -12,6 +12,9 @@ public sealed class EquipmentInstance
     public bool IsDisabled => CurrentDurability <= 0;
     public bool IsOperational => CurrentDurability > 0;
 
+    /// <summary>Increments whenever <see cref="IsOperational"/> flips; used to invalidate cached Crest stats.</summary>
+    public int OperationalVersion { get; private set; }
+
     public EquipmentInstance(string instanceId, EquipmentDefinition definition)
     {
         InstanceId = instanceId;
@@ -26,6 +29,8 @@ public sealed class EquipmentInstance
             return false;
 
         CurrentDurability = Math.Max(0, CurrentDurability - amount);
+        if (IsDisabled)
+            OperationalVersion++;
         return IsDisabled;
     }
 
@@ -43,7 +48,10 @@ public sealed class EquipmentInstance
 
     public void Repair()
     {
+        bool wasDisabled = IsDisabled;
         CurrentDurability = Definition.MaxDurability;
+        if (wasDisabled && IsOperational)
+            OperationalVersion++;
     }
 
     public void RefillAmmo()

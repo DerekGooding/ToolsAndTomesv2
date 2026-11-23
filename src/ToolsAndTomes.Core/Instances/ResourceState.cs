@@ -97,14 +97,14 @@ public sealed class ResourceState
         return false;
     }
 
-    /// <summary>Dissipates heat for one beat. Overheat clears once heat falls to 40% of capacity or less.</summary>
-    public void CoolDown(int dissipationPerBeat, int heatCapacity)
+    /// <summary>Dissipates heat for one beat. Overheat clears once heat falls to <paramref name="clearPercent"/>% of capacity or less.</summary>
+    public void CoolDown(int dissipationPerBeat, int heatCapacity, int clearPercent = 40)
     {
         if (CurrentHeat <= 0)
             return;
 
         CurrentHeat = Math.Max(0, CurrentHeat - dissipationPerBeat);
-        if (IsOverheated && CurrentHeat * 5 <= heatCapacity * 2)
+        if (IsOverheated && CurrentHeat * 100 <= heatCapacity * clearPercent)
         {
             IsOverheated = false;
         }

@@ -10,9 +10,6 @@ namespace ToolsAndTomes.Core.Simulation;
 /// </summary>
 internal sealed class ActorStateProcessor
 {
-    /// <summary>Extra beats of recovery while overheated.</summary>
-    public const int OverheatRecoveryPenaltyBeats = 1;
-
     private const double Epsilon = 1e-6;
 
     private readonly GameCatalog _catalog;
@@ -40,7 +37,7 @@ internal sealed class ActorStateProcessor
                 $"{actor.Name} generated 1 Mote ({actor.Resources.CurrentMotes}/{stats.MaxMotes})."));
         }
 
-        actor.Resources.CoolDown(stats.HeatDissipationPerBeat, stats.HeatCapacity);
+        actor.Resources.CoolDown(stats.HeatDissipationPerBeat, stats.HeatCapacity, actor.Rules.OverheatClearPercent);
 
         if (actor.EvadeBeatsRemaining > 0)
             actor.EvadeBeatsRemaining--;
@@ -438,7 +435,7 @@ internal sealed class ActorStateProcessor
 
     private static void EnterRecovery(Combatant actor, ActiveAction act, int? enteredThisBeat)
     {
-        int recovery = act.Definition.RecoveryBeats + (actor.Resources.IsOverheated ? OverheatRecoveryPenaltyBeats : 0);
+        int recovery = act.Definition.RecoveryBeats + (actor.Resources.IsOverheated ? actor.Rules.OverheatRecoveryPenaltyBeats : 0);
         if (recovery <= 0)
         {
             CompleteAction(actor, act);

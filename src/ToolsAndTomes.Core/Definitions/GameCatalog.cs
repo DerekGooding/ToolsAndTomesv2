@@ -1,3 +1,5 @@
+using ToolsAndTomes.Core.Rules;
+
 namespace ToolsAndTomes.Core.Definitions;
 
 public sealed class GameCatalog
@@ -12,13 +14,16 @@ public sealed class GameCatalog
     public IReadOnlyDictionary<string, EquipmentDefinition> Equipment { get; }
     public IReadOnlyDictionary<string, CrestConfiguration> StarterConfigurations { get; }
     public IReadOnlyDictionary<string, EnemyDefinition> Enemies { get; }
+    public RulesConfig Rules { get; }
 
     public GameCatalog(
         IReadOnlyDictionary<string, ActionDefinition> actions,
         IReadOnlyDictionary<string, EquipmentDefinition> equipment,
         IReadOnlyDictionary<string, CrestConfiguration> starterConfigurations,
-        IReadOnlyDictionary<string, EnemyDefinition> enemies)
+        IReadOnlyDictionary<string, EnemyDefinition> enemies,
+        RulesConfig? rules = null)
     {
+        Rules = rules ?? RulesConfig.Default;
         Actions = actions;
         Equipment = equipment;
         StarterConfigurations = starterConfigurations;

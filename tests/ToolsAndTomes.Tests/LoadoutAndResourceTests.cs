@@ -33,7 +33,7 @@ public sealed class LoadoutAndResourceTests
         var withFurnace = LoadoutRules.ComputeStats(assembly);
         Assert.AreEqual(7, withFurnace.MaxWit);
         Assert.AreEqual(4, withFurnace.MaxMotes);
-        Assert.IsLessThan(LoadoutRules.MoteGenerationIntervalBeats, withFurnace.MoteGenerationIntervalBeats);
+        Assert.IsLessThan(RulesConfig.Default.MoteGenerationIntervalBeats, withFurnace.MoteGenerationIntervalBeats);
     }
 
     [TestMethod]
@@ -128,14 +128,14 @@ public sealed class LoadoutAndResourceTests
         var resources = new ResourceState(startingMotes: 0);
         int maxMotes = 3;
 
-        for (int beat = 0; beat < LoadoutRules.MoteGenerationIntervalBeats - 1; beat++)
-            Assert.IsFalse(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalBeats, maxMotes));
+        for (int beat = 0; beat < RulesConfig.Default.MoteGenerationIntervalBeats - 1; beat++)
+            Assert.IsFalse(resources.AdvanceMoteTimer(RulesConfig.Default.MoteGenerationIntervalBeats, maxMotes));
 
-        Assert.IsTrue(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalBeats, maxMotes));
+        Assert.IsTrue(resources.AdvanceMoteTimer(RulesConfig.Default.MoteGenerationIntervalBeats, maxMotes));
         Assert.AreEqual(1, resources.CurrentMotes);
 
-        for (int beat = 0; beat < LoadoutRules.MoteGenerationIntervalBeats * 5; beat++)
-            resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalBeats, maxMotes);
+        for (int beat = 0; beat < RulesConfig.Default.MoteGenerationIntervalBeats * 5; beat++)
+            resources.AdvanceMoteTimer(RulesConfig.Default.MoteGenerationIntervalBeats, maxMotes);
 
         Assert.AreEqual(maxMotes, resources.CurrentMotes);
     }

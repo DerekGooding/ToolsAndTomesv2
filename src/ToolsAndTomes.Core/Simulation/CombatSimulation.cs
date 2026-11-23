@@ -67,7 +67,9 @@ public sealed class CombatSimulation
         _combatants.AddRange(combatants.OrderBy(c => c.Id, StringComparer.Ordinal));
         _rng = rng;
         _catalog = catalog ?? GameCatalog.Default;
-        _damageService = damageService ?? new DamageResolutionService();
+        _damageService = damageService ?? new DamageResolutionService(_catalog.Rules);
+        foreach (var c in _combatants)
+            c.Rules = _catalog.Rules;
         ArenaWidth = arenaWidth;
         ArenaHeight = arenaHeight;
         _stateProcessor = new ActorStateProcessor(_catalog, ArenaWidth, ArenaHeight);

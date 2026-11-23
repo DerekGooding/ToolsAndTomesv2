@@ -6,12 +6,6 @@ namespace ToolsAndTomes.Core.Simulation;
 
 internal static class ActionEffectResolver
 {
-    /// <summary>
-    /// Tabletop units beyond an action's range at which a committed impact still connects
-    /// (a target that steps barely out of reach during the impact beat is still hit).
-    /// </summary>
-    public const int ResolutionRangeTolerance = 1;
-
     public static void ApplyExecutionEffect(
         Combatant actor,
         ActiveAction active,
@@ -190,7 +184,7 @@ internal static class ActionEffectResolver
         if (active.TargetActorId is not null)
         {
             var target = allCombatants.FirstOrDefault(c => c.Id == active.TargetActorId && !c.IsDefeated);
-            if (target is not null && actor.Position.DistanceTo(target.Position) <= def.Range + ResolutionRangeTolerance)
+            if (target is not null && actor.Position.DistanceTo(target.Position) <= def.Range + actor.Rules.ResolutionRangeTolerance)
                 results.Add(target);
         }
 
