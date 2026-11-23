@@ -36,8 +36,35 @@ public partial class CombatView : UserControl
 
     public event Action? ReturnToHangarRequested;
 
+    /// <summary>How much longer a beat lasts (wall-clock) while the player has a reaction window open.</summary>
+    private const double SlowMotionFactor = 3.0;
+
+    private TimeSpan _currentBeatDuration = BeatDuration;
+
     /// <summary>Progress through the current beat (0..1), used only to smooth presentation.</summary>
-    private double BeatFraction => Math.Clamp(_beatElapsed / BeatDuration, 0, 1);
+    private double BeatFraction => Math.Clamp(_beatElapsed / _currentBeatDuration, 0, 1);
+
+    /// <summary>
+    /// The reactions the player could declare right now (an enemy impact is landing on them).
+    /// Presentation only: slow motion never changes simulation results.
+    /// </summary>
+    private List<ActionDefinition> AvailableReactions(CombatSimulation sim)
+    {
+        var player = sim.FindCombatant("player_crest");
+        if (player is null || player.IsDefeated)
+            return [];
+
+        var impacts = sim.GetIncomingImpacts(player);
+        if (impacts.Count == 0)
+            return [];
+
+        var attacker = impacts[0].Attacker;
+        return player.Loadout.GetOperationalActionIds()
+            .Select(id => sim.Catalog.GetAction(id))
+            .Where(a => a.IsReactive)
+            .Where(a => sim.ValidateUse(player, a, a.Targeting == TargetingType.EnemyUnit ? attacker : null, null).IsValid)
+            .ToList();
+    }
 
     public CombatView(AppSessionState session)
     {
@@ -54,6 +81,7 @@ public partial class CombatView : UserControl
         _armedPointAction = null;
         _lastRenderedEventCount = 0;
         _beatElapsed = TimeSpan.Zero;
+        _currentBeatDuration = BeatDuration;
         LstCombatLog.Items.Clear();
 
         _frameClock.Restart();
@@ -82,9 +110,9 @@ public partial class CombatView : UserControl
             return;
 
         _beatElapsed += frameDelta;
-        while (_beatElapsed >= BeatDuration && sim.Outcome == EncounterOutcome.InProgress)
+        while (_beatElapsed >= _currentBeatDuration && sim.Outcome == EncounterOutcome.InProgress)
         {
-            _beatElapsed -= BeatDuration;
+            _beatElapsed -= _currentBeatDuration;
             AdvanceOneBeat(sim);
         }
 
@@ -95,6 +123,17 @@ public partial class CombatView : UserControl
     {
         _session.ActiveAI.Update(sim);
         sim.StepBeat();
+        UpdateSlowMotion(sim);
+    }
+
+    private void UpdateSlowMotion(CombatSimulation sim)
+    {
+        var reactions = AvailableReactions(sim);
+        bool slow = ChkSlowMotion.IsChecked == true && reactions.Count > 0;
+        _currentBeatDuration = slow ? BeatDuration * SlowMotionFactor : BeatDuration;
+
+        if (reactions.Count > 0)
+            TxtActionStatus.Text = $"⚠ INCOMING IMPACT — react now: {string.Join(", ", reactions.Select(r => r.Name))}";
     }
 
     private void RefreshAll()
@@ -105,7 +144,7 @@ public partial class CombatView : UserControl
 
         BtnPauseToggle.Content = sim.IsPaused ? "▶ RESUME (Space)" : "⏸ PAUSE (Space)";
         BtnStepTick.IsEnabled = sim.IsPaused && sim.Outcome == EncounterOutcome.InProgress;
-        TxtClock.Text = $"Beat {sim.CurrentBeat} ({sim.CurrentBeat + BeatFraction:F1}s) | {(sim.IsPaused ? "PAUSED" : "RUNNING")}";
+        TxtClock.Text = $"Beat {sim.CurrentBeat} ({sim.CurrentBeat + BeatFraction:F1}s) | {(sim.IsPaused ? "PAUSED" : _currentBeatDuration > BeatDuration ? "SLOW-MO" : "RUNNING")}";
 
         TxtOutcome.Text = sim.Outcome switch
         {

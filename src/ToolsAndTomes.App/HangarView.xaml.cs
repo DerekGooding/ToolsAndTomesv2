@@ -31,6 +31,13 @@ public partial class HangarView : UserControl
         public override string ToString() => $"{Def.Name} ({Def.Category}, WitTax {Def.WitTax}, Wt {Def.Weight})";
     }
 
+    private sealed record ActionOption(ActionDefinition Def)
+    {
+        public override string ToString() => Def.Name;
+    }
+
+    private const string AnyTelegraph = "Any impact";
+
     private readonly AppSessionState _session;
     private bool _suppressSelection;
     private string? _reselectInstanceId;
@@ -48,6 +55,11 @@ public partial class HangarView : UserControl
             .Select(e => new CatalogOption(e))
             .ToList();
         CmbCatalog.SelectedIndex = 0;
+
+        CmbRuleTelegraph.ItemsSource = new[] { AnyTelegraph }
+            .Concat(Enum.GetNames<TelegraphKind>().Where(n => n != nameof(TelegraphKind.DefensiveReaction)))
+            .ToList();
+        CmbRuleTelegraph.SelectedIndex = 0;
 
         RefreshUI();
     }
@@ -104,6 +116,17 @@ public partial class HangarView : UserControl
             .Select(a => $"• {a.Name} [{a.Category}] — Range {a.Range} | Beats {a.WindupBeats}/{a.ImpactBeats}/{a.RecoveryBeats} | Wit {a.WitReserve} | Mote {a.MoteCost}");
 
         TxtActionsSummary.Text = string.Join("\n", actions);
+
+        LstReactionRules.ItemsSource = loadout.ReactionRules
+            .Select((r, i) => $"{i + 1}. {r.Describe(_session.Catalog)}")
+            .ToList();
+        CmbRuleAction.ItemsSource = loadout.GetOperationalActionIds()
+            .Select(id => _session.Catalog.GetAction(id))
+            .Where(a => a.IsReactive)
+            .Select(a => new ActionOption(a))
+            .ToList();
+        if (CmbRuleAction.Items.Count > 0 && CmbRuleAction.SelectedIndex < 0)
+            CmbRuleAction.SelectedIndex = 0;
         BtnLaunch.IsEnabled = stats.IsCoreOperational;
     }
 
@@ -132,6 +155,44 @@ public partial class HangarView : UserControl
     {
         _session.SaveCurrentAsNewAssembly(TxtAssemblyName.Text + " (Copy)");
         RefreshUI();
+    }
+
+    private void BtnRuleAdd_Click(object sender, RoutedEventArgs e)
+    {
+        if (CmbRuleAction.SelectedItem is not ActionOption opt)
+            return;
+
+        int minDamage = int.TryParse(TxtRuleMinDamage.Text, out var d) ? Math.Max(1, d) : 1;
+        TelegraphKind? telegraph = CmbRuleTelegraph.SelectedItem is string s && Enum.TryParse<TelegraphKind>(s, out var kind)
+            ? kind
+            : null;
+
+        _session.SelectedLoadout.AddReactionRule(new ReactionRule
+        {
+            ActionId = opt.Def.Id,
+            MinIncomingDamage = minDamage,
+            Telegraph = telegraph
+        });
+        RefreshUI();
+    }
+
+    private void BtnRuleRemove_Click(object sender, RoutedEventArgs e)
+    {
+        if (_session.SelectedLoadout.RemoveReactionRuleAt(LstReactionRules.SelectedIndex))
+            RefreshUI();
+    }
+
+    private void BtnRuleUp_Click(object sender, RoutedEventArgs e) => MoveRule(-1);
+    private void BtnRuleDown_Click(object sender, RoutedEventArgs e) => MoveRule(+1);
+
+    private void MoveRule(int delta)
+    {
+        int index = LstReactionRules.SelectedIndex;
+        if (_session.SelectedLoadout.MoveReactionRule(index, delta))
+        {
+            RefreshUI();
+            LstReactionRules.SelectedIndex = index + delta;
+        }
     }
 
     private void BtnMoveUp_Click(object sender, RoutedEventArgs e) => MoveSelected(-1);

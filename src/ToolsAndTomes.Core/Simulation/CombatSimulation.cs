@@ -16,7 +16,7 @@ public enum EncounterOutcome
 /// Every rule resolves on beat boundaries in a fixed order that can be executed by hand at a table:
 /// <list type="number">
 /// <item>Passive timers (Motes, heat, Aegis, evasion, interruption stun).</item>
-/// <item>Reactions declared during this beat resolve, then their hits resolve.</item>
+/// <item>Reaction rules are checked for Crests that declared no reaction; reactions resolve, then their hits resolve.</item>
 /// <item>Actions in motion consume the beat; impact windows that end this beat resolve.</item>
 /// <item>Impact hits resolve per target (sorted by combatant id).</item>
 /// <item>Movement.</item>
@@ -140,7 +140,11 @@ public sealed class CombatSimulation
         foreach (var actor in Living())
             _stateProcessor.UpdatePassiveTimers(actor, beat, _events);
 
-        // 2. Reactions declared this beat resolve before any impact
+        // 2. Reactions: Crests without a declared reaction check their reaction rules; then all reactions
+        //    resolve before any impact
+        foreach (var actor in Living())
+            _stateProcessor.EvaluateReactionRules(actor, _combatants, beat, _events);
+
         var reactionHits = new List<IncomingHit>();
         foreach (var actor in Living())
             _stateProcessor.ResolvePendingReactions(actor, _combatants, beat, reactionHits, _events);

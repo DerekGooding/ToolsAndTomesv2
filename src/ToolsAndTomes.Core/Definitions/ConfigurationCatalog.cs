@@ -21,6 +21,10 @@ public static class ConfigurationCatalog
             "mob_stride_legs",
             "spellbook_grimoire",
             "core_aether_dynamo"
+        ],
+        ReactionRules =
+        [
+            new ReactionRule { ActionId = "defense_blink", MinIncomingDamage = 2 }
         ]
     };
 
@@ -40,6 +44,11 @@ public static class ConfigurationCatalog
             "mob_anchor_legs",
             "spellbook_grimoire",
             "core_aether_furnace"
+        ],
+        ReactionRules =
+        [
+            new ReactionRule { ActionId = "defense_repulsor", Telegraph = TelegraphKind.MeleeCommit },
+            new ReactionRule { ActionId = "spell_aegis", MinIncomingDamage = 2 }
         ]
     };
 

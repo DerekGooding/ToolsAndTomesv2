@@ -21,6 +21,7 @@ public enum CombatEventType
     Overheated,
     CombatantDefeated,
     CommandRejected,
+    ReactionRuleTriggered,
     FastIronProduced
 }
 

@@ -56,7 +56,7 @@ public static class ActionValidationRules
             if (target.IsDefeated)
                 return ActionValidationResult.Fail("Target is already defeated.");
         }
-        else if (action.Targeting == TargetingType.Point && targetPoint is null && target is null)
+        else if (action.Targeting == TargetingType.Point && targetPoint is null && target is null && action.BlinkDistance == 0)
         {
             return ActionValidationResult.Fail("Requires a target point.");
         }

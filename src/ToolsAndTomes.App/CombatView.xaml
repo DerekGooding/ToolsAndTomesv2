@@ -16,6 +16,7 @@
                 <Button x:Name="BtnPauseToggle" Content="▶ RESUME (Space)" Padding="12,5" FontWeight="Bold" Background="#0284C7" Foreground="White" Margin="0,0,8,0" Click="BtnPauseToggle_Click"/>
                 <Button x:Name="BtnStepTick" Content="Step +1 beat" Padding="10,5" Background="#334155" Foreground="White" Margin="0,0,14,0" Click="BtnStepTick_Click"/>
                 <TextBlock x:Name="TxtClock" Text="0.00s | PAUSED" VerticalAlignment="Center" FontFamily="Consolas" FontSize="13" Foreground="#38BDF8" Margin="0,0,18,0"/>
+                <CheckBox x:Name="ChkSlowMotion" Content="Slow-mo on impact" IsChecked="True" VerticalAlignment="Center" Foreground="#E2E8F0" Margin="0,0,14,0"/>
                 <TextBlock x:Name="TxtPlayerResources" Text="Wit: -- | Motes: -- | Heat: --" VerticalAlignment="Center" FontFamily="Consolas" FontSize="12.5" Foreground="#F8FAFC"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">

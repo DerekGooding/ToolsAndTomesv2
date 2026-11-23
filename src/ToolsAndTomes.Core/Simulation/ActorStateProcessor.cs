@@ -57,6 +57,47 @@ internal sealed class ActorStateProcessor
 
     // ---- Step 2: reactions ------------------------------------------------------------------
 
+    /// <summary>
+    /// If the Crest has not declared a reaction this beat, its Workshop reaction rules are checked in order;
+    /// the first rule that matches an incoming impact and is legal is declared.
+    /// </summary>
+    public void EvaluateReactionRules(
+        Combatant actor,
+        IReadOnlyList<Combatant> allCombatants,
+        int beat,
+        List<CombatEvent> events)
+    {
+        if (actor.PendingReactions.Count > 0 || actor.Loadout.ReactionRules.Count == 0)
+            return;
+
+        var impacts = ImpactRules.GetIncomingImpacts(actor, allCombatants);
+        if (impacts.Count == 0)
+            return;
+
+        foreach (var rule in actor.Loadout.ReactionRules)
+        {
+            if (!_catalog.Actions.TryGetValue(rule.ActionId, out var def) || !def.IsReactive)
+                continue;
+
+            var trigger = impacts.FirstOrDefault(i =>
+                i.ExpectedDamage >= rule.MinIncomingDamage &&
+                (rule.Telegraph is null || i.Action.Definition.Telegraph == rule.Telegraph));
+            if (trigger is null)
+                continue;
+
+            var target = def.Targeting == TargetingType.EnemyUnit ? trigger.Attacker : null;
+            var cmd = new UseActionCommand(actor.Id, def.Id, target?.Id);
+            if (!ActionValidationRules.ValidateUseAction(actor, def, target, null, allCombatants).IsValid)
+                continue;
+
+            actor.AddPendingReaction(cmd);
+            events.Add(new CombatEvent(beat, CombatEventType.ReactionRuleTriggered, actor.Id,
+                $"{actor.Name}'s reaction rule fires: {def.Name} vs {trigger.Attacker.Name}'s {trigger.Action.Definition.Name}.",
+                trigger.Attacker.Id));
+            return;
+        }
+    }
+
     public void ResolvePendingReactions(
         Combatant actor,
         IReadOnlyList<Combatant> allCombatants,

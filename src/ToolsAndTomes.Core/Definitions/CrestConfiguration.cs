@@ -10,6 +10,9 @@ public sealed record CrestConfiguration
     public required string Name { get; init; }
     public string Description { get; init; } = "";
     public IReadOnlyList<string> ComponentIds { get; init; } = [];
+
+    /// <summary>Pre-set reactions, in priority order.</summary>
+    public IReadOnlyList<ReactionRule> ReactionRules { get; init; } = [];
 }
 
 public sealed record EnemyDefinition

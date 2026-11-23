@@ -11,6 +11,7 @@ namespace ToolsAndTomes.Core.Instances;
 public sealed class CrestLoadout
 {
     private readonly List<EquipmentInstance> _installed = [];
+    private readonly List<ReactionRule> _reactionRules = [];
 
     public string Id { get; }
     public string Name { get; set; }
@@ -20,6 +21,9 @@ public sealed class CrestLoadout
 
     /// <summary>Components in the order they absorb penetrating damage (same as <see cref="Installed"/>).</summary>
     public IReadOnlyList<EquipmentInstance> DamageOrder => _installed;
+
+    /// <summary>Pre-set reactions configured in the Workshop, in priority order.</summary>
+    public IReadOnlyList<ReactionRule> ReactionRules => _reactionRules;
 
     public CrestLoadout(string id, string name, IEnumerable<EquipmentInstance>? initialEquipment = null)
     {
@@ -42,7 +46,10 @@ public sealed class CrestLoadout
             instances.Add(new EquipmentInstance($"{idPrefix}_{index++}_{compId}", def));
         }
 
-        return new CrestLoadout(config.Id, config.Name, instances);
+        var loadout = new CrestLoadout(config.Id, config.Name, instances);
+        foreach (var rule in config.ReactionRules)
+            loadout.AddReactionRule(rule);
+        return loadout;
     }
 
     /// <summary>Exports the assembly; component order (the Damage Order) is preserved.</summary>
@@ -52,7 +59,8 @@ public sealed class CrestLoadout
             Id = overrideId ?? Id,
             Name = Name,
             Description = description ?? $"Saved assembly ({_installed.Count} components).",
-            ComponentIds = _installed.Select(e => e.Definition.Id).ToList()
+            ComponentIds = _installed.Select(e => e.Definition.Id).ToList(),
+            ReactionRules = _reactionRules.ToList()
         };
 
     /// <summary>
@@ -72,6 +80,25 @@ public sealed class CrestLoadout
         }
 
         _installed.Insert(insertAt, instance);
+    }
+
+    public void AddReactionRule(ReactionRule rule) => _reactionRules.Add(rule);
+
+    public bool RemoveReactionRuleAt(int index)
+    {
+        if (index < 0 || index >= _reactionRules.Count)
+            return false;
+        _reactionRules.RemoveAt(index);
+        return true;
+    }
+
+    public bool MoveReactionRule(int index, int delta)
+    {
+        int target = index + delta;
+        if (index < 0 || index >= _reactionRules.Count || target < 0 || target >= _reactionRules.Count)
+            return false;
+        (_reactionRules[index], _reactionRules[target]) = (_reactionRules[target], _reactionRules[index]);
+        return true;
     }
 
     public EquipmentInstance? Uninstall(string instanceId)

@@ -114,10 +114,12 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 - Exception: future components may be designed to protect against specific effects.
 - Blink Drive evasion avoids the attack entirely (evasion, not defense).
 
-### Impact window & reactions [Partially implemented: pending reaction rules, slow motion]
+### Impact window & reactions [Implemented]
 - An action's Executing phase is its **impact window**. Damage and effects resolve at the end of the impact window, not at the end of windup.
 - Reactive actions (Blink, Repulsor, Aegis, etc.) are valid only **during the impact of an incoming attack** against the reacting Crest.
 - Digital play supports reactions two ways, combined: **pre-set reaction rules** configured on the Crest (condition → reaction, e.g. "incoming impact ≥ 2 damage → Blink"), and a **slow-motion window** during incoming impacts for manual reactions. Slow motion is presentation-only and does not affect simulation determinism.
+- Reaction rules are stored on the Crest (and in saved configurations) as `ReactionRule` entries: reaction action, optional telegraph kind, and minimum incoming damage. At the start of the reaction step, a Crest that declared no reaction checks its rules in order and declares the first that matches and is legal. A manually declared reaction takes precedence. Enemy AI can use the same mechanism.
+- Slow motion: the WPF client stretches a beat to 3× wall-clock time whenever the player has a legal reaction available (toggleable).
 
 ### Concurrent actions (Wit-gated) [Implemented]
 - Each component can run **one action at a time**.
