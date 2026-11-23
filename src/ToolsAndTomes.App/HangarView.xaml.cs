@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
 using ToolsAndTomes.Core.Rules;
@@ -9,6 +8,11 @@ namespace ToolsAndTomes.App;
 
 public partial class HangarView : UserControl
 {
+    private sealed record AssemblyOption(CrestLoadout Assembly)
+    {
+        public override string ToString() => $"{Assembly.Name} ({Assembly.Installed.Count} parts)";
+    }
+
     private sealed record EquipmentListItem(EquipmentInstance Instance)
     {
         public override string ToString()
@@ -17,16 +21,18 @@ public partial class HangarView : UserControl
             string status = Instance.IsDisabled ? "[DISABLED]" : $"HP {Instance.CurrentDurability}/{d.MaxDurability}";
             string ammo = d.MaxAmmo > 0 ? $" | Ammo {Instance.CurrentAmmo}/{d.MaxAmmo}" : "";
             string tax = d.WitTax > 0 ? $" | WitTax {d.WitTax}" : "";
-            return $"{d.Name} ({d.SlotType}) — {status}{ammo}{tax} | Wt {d.Weight}";
+            string bonus = d.BonusWitCapacity > 0 ? $" | +Wit {d.BonusWitCapacity}" : "";
+            return $"{d.Name} ({d.Category}) — {status}{ammo}{tax}{bonus} | Wt {d.Weight}";
         }
     }
 
     private sealed record CatalogOption(EquipmentDefinition Def)
     {
-        public override string ToString() => $"{Def.Name} ({Def.SlotType}, WitTax {Def.WitTax}, Wt {Def.Weight})";
+        public override string ToString() => $"{Def.Name} ({Def.Category}, WitTax {Def.WitTax}, Wt {Def.Weight})";
     }
 
     private readonly AppSessionState _session;
+    private bool _suppressSelection;
 
     public event Action? LaunchEncounterRequested;
 
@@ -36,8 +42,7 @@ public partial class HangarView : UserControl
         _session = session;
 
         CmbCatalog.ItemsSource = _session.Catalog.Equipment.Values
-            .Where(e => !e.IsCore)
-            .OrderBy(e => e.SlotType)
+            .OrderBy(e => e.Category)
             .ThenBy(e => e.Name)
             .Select(e => new CatalogOption(e))
             .ToList();
@@ -48,36 +53,38 @@ public partial class HangarView : UserControl
 
     public void RefreshUI()
     {
+        _suppressSelection = true;
+        var assemblyOptions = _session.CrestAssemblies.Select(a => new AssemblyOption(a)).ToList();
+        CmbAssemblies.ItemsSource = assemblyOptions;
+        CmbAssemblies.SelectedItem = assemblyOptions.FirstOrDefault(o => o.Assembly.Id == _session.SelectedCrestId);
+
+        var otherAssemblies = assemblyOptions.Where(o => o.Assembly.Id != _session.SelectedCrestId).ToList();
+        CmbTransferTarget.ItemsSource = otherAssemblies;
+        if (otherAssemblies.Count > 0)
+            CmbTransferTarget.SelectedIndex = 0;
+        _suppressSelection = false;
+
         var loadout = _session.SelectedLoadout;
         var stats = LoadoutRules.ComputeStats(loadout);
 
-        BtnSelectStrider.Background = _session.SelectedCrestId == TemplateCatalog.Strider.Id
-            ? new SolidColorBrush(Color.FromRgb(2, 132, 199))
-            : new SolidColorBrush(Color.FromRgb(51, 65, 85));
-        BtnSelectStrider.Foreground = Brushes.White;
-
-        BtnSelectBulwark.Background = _session.SelectedCrestId == TemplateCatalog.Bulwark.Id
-            ? new SolidColorBrush(Color.FromRgb(2, 132, 199))
-            : new SolidColorBrush(Color.FromRgb(51, 65, 85));
-        BtnSelectBulwark.Foreground = Brushes.White;
-
-        TxtInstalledHeader.Text = $"{loadout.Template.Name} — Installed Components ({loadout.Installed.Count})";
-        TxtCrestDesc.Text = loadout.Template.Description;
+        TxtAssemblyName.Text = loadout.Name;
+        TxtInstalledHeader.Text = $"{loadout.Name} — Installed Components ({loadout.Installed.Count})";
 
         LstInstalled.ItemsSource = loadout.Installed.Select(e => new EquipmentListItem(e)).ToList();
         LstSpares.ItemsSource = _session.SpareInventory.Select(e => new EquipmentListItem(e)).ToList();
 
+        double moteSec = stats.MoteGenerationIntervalTicks / (double)ActionCatalog.TicksPerSecond;
         TxtStatsSummary.Text =
             $"Total Weight       : {stats.TotalWeight:F0} {(stats.TotalWeight >= 90 ? "(HEAVY)" : "(LIGHT)")}\n" +
             $"Move Speed         : {stats.MoveSpeed:F2} m/s\n" +
             $"Displacement Resist: {stats.DisplacementResistance:P0}\n" +
             $"Protection Dice    : 1 base + {stats.BonusProtectionDice} bonus (5+ save)\n" +
             $"Wit Capacity       : {stats.AvailableWit(0)} avail / {stats.MaxWit} max (Tax: {stats.EquipmentWitTax})\n" +
-            $"Mote Storage       : {stats.MaxMotes} max (+1 per 5.0s)\n" +
+            $"Motes              : {stats.MaxMotes} max (+1 per {moteSec:F1}s)\n" +
             $"Heat Management    : {stats.HeatCapacity:F1} cap | -{stats.HeatDissipationPerSecond:F1}/s\n" +
             $"Spellbook          : {(stats.HasSpellbook ? "Operational" : "Missing/Disabled")}\n" +
             $"Arcane Amplifier   : {(stats.HasSpellAmplifier ? "Operational" : "Missing/Disabled")}\n" +
-            $"Core Status        : {(stats.IsCoreOperational ? "OPERATIONAL" : "DISABLED (Repair to launch)")}";
+            $"Core Status        : {(stats.IsCoreOperational ? "OPERATIONAL" : "MISSING/DISABLED (Install/Repair Core)")}";
 
         var actions = loadout.GetOperationalActionIds()
             .Select(id => _session.Catalog.GetAction(id))
@@ -89,15 +96,30 @@ public partial class HangarView : UserControl
         BtnLaunch.IsEnabled = stats.IsCoreOperational;
     }
 
-    private void BtnSelectStrider_Click(object sender, RoutedEventArgs e)
+    private void CmbAssemblies_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        _session.SelectedCrestId = TemplateCatalog.Strider.Id;
-        RefreshUI();
+        if (_suppressSelection)
+            return;
+
+        if (CmbAssemblies.SelectedItem is AssemblyOption opt)
+        {
+            _session.SelectedCrestId = opt.Assembly.Id;
+            RefreshUI();
+        }
     }
 
-    private void BtnSelectBulwark_Click(object sender, RoutedEventArgs e)
+    private void BtnRename_Click(object sender, RoutedEventArgs e)
     {
-        _session.SelectedCrestId = TemplateCatalog.Bulwark.Id;
+        if (!string.IsNullOrWhiteSpace(TxtAssemblyName.Text))
+        {
+            _session.SelectedLoadout.Name = TxtAssemblyName.Text.Trim();
+            RefreshUI();
+        }
+    }
+
+    private void BtnSaveNew_Click(object sender, RoutedEventArgs e)
+    {
+        _session.SaveCurrentAsNewAssembly(TxtAssemblyName.Text + " (Copy)");
         RefreshUI();
     }
 
@@ -106,6 +128,16 @@ public partial class HangarView : UserControl
         if (LstInstalled.SelectedItem is EquipmentListItem item)
         {
             _session.UninstallFromSelected(item.Instance.InstanceId);
+            RefreshUI();
+        }
+    }
+
+    private void BtnTransfer_Click(object sender, RoutedEventArgs e)
+    {
+        if (LstInstalled.SelectedItem is EquipmentListItem item &&
+            CmbTransferTarget.SelectedItem is AssemblyOption target)
+        {
+            _session.TransferToOtherAssembly(item.Instance.InstanceId, target.Assembly.Id);
             RefreshUI();
         }
     }

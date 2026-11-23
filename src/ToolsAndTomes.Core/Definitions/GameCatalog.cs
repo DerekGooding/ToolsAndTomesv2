@@ -5,23 +5,23 @@ public sealed class GameCatalog
     public static GameCatalog Default { get; } = new(
         ActionCatalog.All,
         EquipmentCatalog.All,
-        TemplateCatalog.PlayerCrests,
-        TemplateCatalog.Enemies);
+        ConfigurationCatalog.StarterConfigurations,
+        ConfigurationCatalog.Enemies);
 
     public IReadOnlyDictionary<string, ActionDefinition> Actions { get; }
     public IReadOnlyDictionary<string, EquipmentDefinition> Equipment { get; }
-    public IReadOnlyDictionary<string, CrestTemplateDefinition> PlayerCrests { get; }
+    public IReadOnlyDictionary<string, CrestConfiguration> StarterConfigurations { get; }
     public IReadOnlyDictionary<string, EnemyDefinition> Enemies { get; }
 
     public GameCatalog(
         IReadOnlyDictionary<string, ActionDefinition> actions,
         IReadOnlyDictionary<string, EquipmentDefinition> equipment,
-        IReadOnlyDictionary<string, CrestTemplateDefinition> playerCrests,
+        IReadOnlyDictionary<string, CrestConfiguration> starterConfigurations,
         IReadOnlyDictionary<string, EnemyDefinition> enemies)
     {
         Actions = actions;
         Equipment = equipment;
-        PlayerCrests = playerCrests;
+        StarterConfigurations = starterConfigurations;
         Enemies = enemies;
     }
 

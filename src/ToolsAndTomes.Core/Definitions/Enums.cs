@@ -25,15 +25,18 @@ public enum TargetingType
     Point
 }
 
-public enum EquipmentSlotType
+/// <summary>
+/// Organizational category for a component. Does not enforce fixed chassis slot limits.
+/// </summary>
+public enum ComponentCategory
 {
     Core,
+    Mobility,
     Armor,
     Weapon,
     Defense,
-    Mobility,
     Utility,
-    Spellbook
+    Arcane
 }
 
 public enum InterruptionTier

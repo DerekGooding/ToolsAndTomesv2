@@ -22,7 +22,7 @@ internal sealed class ActorStateProcessor
         actor.TickCooldowns();
 
         var stats = actor.Stats;
-        if (actor.Resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalTicks, stats.MaxMotes))
+        if (actor.Resources.AdvanceMoteTimer(stats.MoteGenerationIntervalTicks, stats.MaxMotes))
         {
             events.Add(new CombatEvent(
                 tick,

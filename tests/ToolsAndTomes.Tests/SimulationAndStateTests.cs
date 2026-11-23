@@ -13,11 +13,10 @@ public sealed class SimulationAndStateTests
     [TestMethod]
     public void ActionStateTransitions_FollowMovingWindupExecutingRecoveryIdle()
     {
-        var player = CreatePlayer(TemplateCatalog.Strider, new Vec2(2, 5));
+        var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(2, 5));
         var enemy = CreateEnemy("enemy_skirmisher", new Vec2(7, 5));
         var sim = new CombatSimulation([player, enemy], seed: 42);
 
-        // Vorpal range is 2.0, enemy is 5.0m away -> should start Moving first
         var result = sim.IssueCommand(new UseActionCommand(player.Id, "weapon_vorpal", enemy.Id));
         Assert.IsTrue(result.IsValid);
         Assert.AreEqual(ActionState.Moving, player.State);
@@ -41,7 +40,7 @@ public sealed class SimulationAndStateTests
     [TestMethod]
     public void PauseAndResume_FreezesSimulationClockAndPositions()
     {
-        var player = CreatePlayer(TemplateCatalog.Strider, new Vec2(2, 5));
+        var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(2, 5));
         var enemy = CreateEnemy("enemy_bruiser", new Vec2(10, 5));
         var sim = new CombatSimulation([player, enemy], seed: 7);
 
@@ -78,8 +77,8 @@ public sealed class SimulationAndStateTests
     [TestMethod]
     public void WindupExecutionRecoveryTiming_MatchesActionDefinition()
     {
-        var player = CreatePlayer(TemplateCatalog.Strider, new Vec2(2, 5));
-        var enemy = CreateEnemy("enemy_bruiser", new Vec2(4, 5)); // In range of Vorpal (2.0)
+        var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(2, 5));
+        var enemy = CreateEnemy("enemy_bruiser", new Vec2(4, 5));
         var sim = new CombatSimulation([player, enemy], seed: 12);
 
         var vorpal = _catalog.GetAction("weapon_vorpal");
@@ -104,7 +103,7 @@ public sealed class SimulationAndStateTests
 
     private (Vec2 Position, List<string> Events, List<int> Durabilities) RunDeterministicScenario(int seed)
     {
-        var player = CreatePlayer(TemplateCatalog.Bulwark, new Vec2(3, 5));
+        var player = CreatePlayer(ConfigurationCatalog.HeavyAnchor, new Vec2(3, 5));
         var enemy = CreateEnemy("enemy_bruiser", new Vec2(5, 5));
         var sim = new CombatSimulation([player, enemy], seed);
 
@@ -118,12 +117,12 @@ public sealed class SimulationAndStateTests
         return (enemy.Position, sim.Events.Select(e => $"{e.Tick}:{e.Type}:{e.Message}").ToList(), durs);
     }
 
-    private Combatant CreatePlayer(CrestTemplateDefinition tpl, Vec2 pos) =>
-        new("player", tpl.Name, Faction.Player, CrestLoadout.CreateFromTemplate(tpl, _catalog, "p"), pos, startingMotes: 2);
+    private Combatant CreatePlayer(CrestConfiguration cfg, Vec2 pos) =>
+        new("player", cfg.Name, Faction.Player, CrestLoadout.CreateFromConfiguration(cfg, _catalog, "p"), pos, startingMotes: 2);
 
     private Combatant CreateEnemy(string enemyId, Vec2 pos)
     {
         var def = _catalog.Enemies[enemyId];
-        return new Combatant(enemyId, def.Name, Faction.Enemy, CrestLoadout.CreateFromTemplate(def.Template, _catalog, "e"), pos, startingMotes: 2, def.Archetype, def.PreferredRange);
+        return new Combatant(enemyId, def.Name, Faction.Enemy, CrestLoadout.CreateFromConfiguration(def.Assembly, _catalog, "e"), pos, startingMotes: 2, def.Archetype, def.PreferredRange);
     }
 }

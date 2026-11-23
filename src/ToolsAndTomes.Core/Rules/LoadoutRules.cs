@@ -12,31 +12,35 @@ public static class LoadoutRules
 
     public static CrestStats ComputeStats(CrestLoadout loadout)
     {
-        var template = loadout.Template;
-        double totalWeight = template.BaseWeight + loadout.Installed.Sum(e => e.Definition.Weight);
-
+        // All installed components contribute physical mass, even if disabled.
+        double totalWeight = loadout.Installed.Sum(e => e.Definition.Weight);
         var operational = loadout.Installed.Where(e => e.IsOperational).ToList();
 
         bool hasSpellbook = operational.Any(e => e.Definition.IsSpellbook);
         bool hasAmplifier = operational.Any(e => e.Definition.IsSpellAmplifier);
         bool isCoreOperational = operational.Any(e => e.Definition.IsCore);
 
-        int maxWit = hasSpellbook ? BaseWitWithSpellbook : BaseWitWithoutSpellbook;
+        int basePilotWit = hasSpellbook ? BaseWitWithSpellbook : BaseWitWithoutSpellbook;
+        int maxWit = basePilotWit + operational.Sum(e => e.Definition.BonusWitCapacity);
         int witTax = operational.Sum(e => e.Definition.WitTax);
+
         int maxMotes = DefaultBaseMoteStorage + operational.Sum(e => e.Definition.BonusMoteStorage);
+        double moteRateBonus = Math.Max(0.0, operational.Sum(e => e.Definition.MoteGenerationRateBonus));
+        int moteIntervalTicks = Math.Max(20, (int)Math.Round(MoteGenerationIntervalTicks / (1.0 + moteRateBonus)));
+
         int bonusProtectionDice = operational.Sum(e => e.Definition.BonusProtectionDice);
 
-        double speedBonus = operational.Sum(e => e.Definition.MoveSpeedBonus);
+        double speedFromComponents = operational.Sum(e => e.Definition.MoveSpeedBonus);
         double weightPenalty = Math.Max(0, totalWeight - 45.0) * 0.02;
-        double moveSpeed = Math.Max(1.2, template.BaseMoveSpeed + speedBonus - weightPenalty);
+        double moveSpeed = Math.Max(0.8, speedFromComponents - weightPenalty);
 
         double dispResist = Math.Clamp(
-            template.BaseDisplacementResistance + operational.Sum(e => e.Definition.DisplacementResistance),
+            operational.Sum(e => e.Definition.DisplacementResistance),
             0.0,
             0.85);
 
-        double heatDissipation = template.BaseHeatDissipationPerSecond +
-            operational.Sum(e => e.Definition.HeatDissipationPerSecond);
+        double heatCapacity = Math.Max(4.0, operational.Sum(e => e.Definition.HeatCapacityContribution));
+        double heatDissipation = Math.Max(0.5, operational.Sum(e => e.Definition.HeatDissipationPerSecond));
 
         return new CrestStats
         {
@@ -50,7 +54,8 @@ public static class LoadoutRules
             MaxWit = maxWit,
             EquipmentWitTax = witTax,
             MaxMotes = maxMotes,
-            HeatCapacity = template.BaseHeatCapacity,
+            MoteGenerationIntervalTicks = moteIntervalTicks,
+            HeatCapacity = heatCapacity,
             HeatDissipationPerSecond = heatDissipation
         };
     }

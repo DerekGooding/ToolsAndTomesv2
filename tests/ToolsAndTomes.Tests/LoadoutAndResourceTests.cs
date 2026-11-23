@@ -11,85 +11,115 @@ public sealed class LoadoutAndResourceTests
     private readonly GameCatalog _catalog = GameCatalog.Default;
 
     [TestMethod]
-    public void WitCapacity_Is10WithSpellbook_And5Without()
+    public void WitCapacity_Is10WithSpellbook_And5Without_PlusCoreBonuses()
     {
-        var loadout = CrestLoadout.CreateFromTemplate(TemplateCatalog.Strider, _catalog);
-        var withBook = LoadoutRules.ComputeStats(loadout);
+        var assembly = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog);
+        var withBook = LoadoutRules.ComputeStats(assembly);
         Assert.IsTrue(withBook.HasSpellbook);
         Assert.AreEqual(10, withBook.MaxWit);
         Assert.AreEqual(5, withBook.MaxMotes);
 
-        var book = loadout.Installed.First(e => e.Definition.IsSpellbook);
-        loadout.Uninstall(book.InstanceId);
+        var book = assembly.Installed.First(e => e.Definition.IsSpellbook);
+        assembly.Uninstall(book.InstanceId);
 
-        var withoutBook = LoadoutRules.ComputeStats(loadout);
+        var withoutBook = LoadoutRules.ComputeStats(assembly);
         Assert.IsFalse(withoutBook.HasSpellbook);
         Assert.AreEqual(5, withoutBook.MaxWit);
         Assert.AreEqual(3, withoutBook.MaxMotes);
+
+        // Installing a Heavy Aether Furnace expands Wit capacity (+2), Mote storage (+1), and accelerates Mote generation
+        var furnace = new EquipmentInstance("furnace_1", _catalog.GetEquipment("core_aether_furnace"));
+        assembly.Install(furnace);
+        var withFurnace = LoadoutRules.ComputeStats(assembly);
+        Assert.AreEqual(7, withFurnace.MaxWit);
+        Assert.AreEqual(4, withFurnace.MaxMotes);
+        Assert.IsLessThan(LoadoutRules.MoteGenerationIntervalTicks, withFurnace.MoteGenerationIntervalTicks);
     }
 
     [TestMethod]
     public void EquipmentWitTax_UpdatesOnInstallRemoveAndDamage()
     {
-        var loadout = CrestLoadout.CreateFromTemplate(TemplateCatalog.Bulwark, _catalog);
-        var initialStats = LoadoutRules.ComputeStats(loadout);
+        var assembly = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, _catalog);
+        var initialStats = LoadoutRules.ComputeStats(assembly);
 
-        var shield = loadout.Installed.First(e => e.Definition.Id == "eq_shield_generator");
+        var shield = assembly.Installed.First(e => e.Definition.Id == "eq_shield_generator");
         int shieldTax = shield.Definition.WitTax;
         Assert.IsGreaterThan(0, shieldTax);
         Assert.AreEqual(2, initialStats.BonusProtectionDice); // Heavy plate + Shield Generator
 
-        // Damage shield until disabled
         shield.ApplyDamage(shield.Definition.MaxDurability);
         Assert.IsTrue(shield.IsDisabled);
 
-        var damagedStats = LoadoutRules.ComputeStats(loadout);
+        var damagedStats = LoadoutRules.ComputeStats(assembly);
         Assert.AreEqual(initialStats.EquipmentWitTax - shieldTax, damagedStats.EquipmentWitTax);
-        Assert.AreEqual(1, damagedStats.BonusProtectionDice); // Shield bonus gone
+        Assert.AreEqual(1, damagedStats.BonusProtectionDice);
 
         // Reinstalling a damaged component must preserve its damage state
-        var removed = loadout.Uninstall(shield.InstanceId);
+        var removed = assembly.Uninstall(shield.InstanceId);
         Assert.IsNotNull(removed);
-        loadout.Install(removed);
+        assembly.Install(removed);
         Assert.IsTrue(removed.IsDisabled);
-        Assert.AreEqual(damagedStats.EquipmentWitTax, LoadoutRules.ComputeStats(loadout).EquipmentWitTax);
+        Assert.AreEqual(damagedStats.EquipmentWitTax, LoadoutRules.ComputeStats(assembly).EquipmentWitTax);
     }
 
     [TestMethod]
-    public void DisabledJumpJets_AndThermalRegulator_AndAmplifier_LoseFunctionality()
+    public void DisabledMobilityThermalAndAmplifierComponents_DegradeDerivedCapabilities()
     {
-        var strider = CrestLoadout.CreateFromTemplate(TemplateCatalog.Strider, _catalog);
-        var baseStats = LoadoutRules.ComputeStats(strider);
+        var agile = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog);
+        var baseStats = LoadoutRules.ComputeStats(agile);
 
-        var jets = strider.Installed.First(e => e.Definition.Id == "eq_jump_jets");
-        var amp = strider.Installed.First(e => e.Definition.Id == "eq_spell_amplifier");
+        var jets = agile.Installed.First(e => e.Definition.Id == "eq_jump_jets");
+        var amp = agile.Installed.First(e => e.Definition.Id == "eq_spell_amplifier");
 
         jets.ApplyDamage(jets.Definition.MaxDurability);
         amp.ApplyDamage(amp.Definition.MaxDurability);
 
-        var afterDamage = LoadoutRules.ComputeStats(strider);
+        var afterDamage = LoadoutRules.ComputeStats(agile);
         Assert.IsLessThan(baseStats.MoveSpeed, afterDamage.MoveSpeed);
         Assert.IsFalse(afterDamage.HasSpellAmplifier);
 
-        var bulwark = CrestLoadout.CreateFromTemplate(TemplateCatalog.Bulwark, _catalog);
-        var bulwarkBase = LoadoutRules.ComputeStats(bulwark);
-        var regulator = bulwark.Installed.First(e => e.Definition.Id == "eq_thermal_regulator");
+        var heavy = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, _catalog);
+        var heavyBase = LoadoutRules.ComputeStats(heavy);
+        var regulator = heavy.Installed.First(e => e.Definition.Id == "eq_thermal_regulator");
         regulator.ApplyDamage(regulator.Definition.MaxDurability);
 
-        var bulwarkDamaged = LoadoutRules.ComputeStats(bulwark);
-        Assert.IsLessThan(bulwarkBase.HeatDissipationPerSecond, bulwarkDamaged.HeatDissipationPerSecond);
+        var heavyDamaged = LoadoutRules.ComputeStats(heavy);
+        Assert.IsLessThan(heavyBase.HeatDissipationPerSecond, heavyDamaged.HeatDissipationPerSecond);
     }
 
     [TestMethod]
-    public void StriderAndBulwark_HaveDistinctEmergentTradeoffs()
+    public void DistinctComponentAssemblies_ProduceEmergentTradeoffsWithoutChassis()
     {
-        var striderStats = LoadoutRules.ComputeStats(CrestLoadout.CreateFromTemplate(TemplateCatalog.Strider, _catalog));
-        var bulwarkStats = LoadoutRules.ComputeStats(CrestLoadout.CreateFromTemplate(TemplateCatalog.Bulwark, _catalog));
+        var agileStats = LoadoutRules.ComputeStats(CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog));
+        var heavyStats = LoadoutRules.ComputeStats(CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, _catalog));
 
-        Assert.IsGreaterThan(bulwarkStats.MoveSpeed, striderStats.MoveSpeed);
-        Assert.IsGreaterThan(striderStats.TotalWeight, bulwarkStats.TotalWeight);
-        Assert.IsGreaterThan(striderStats.DisplacementResistance, bulwarkStats.DisplacementResistance);
-        Assert.IsGreaterThan(striderStats.BonusProtectionDice, bulwarkStats.BonusProtectionDice);
+        Assert.IsGreaterThan(heavyStats.MoveSpeed, agileStats.MoveSpeed);
+        Assert.IsGreaterThan(agileStats.TotalWeight, heavyStats.TotalWeight);
+        Assert.IsGreaterThan(agileStats.DisplacementResistance, heavyStats.DisplacementResistance);
+        Assert.IsGreaterThan(agileStats.BonusProtectionDice, heavyStats.BonusProtectionDice);
+        Assert.IsGreaterThan(agileStats.MaxWit, heavyStats.MaxWit); // Heavy Aether Furnace contributes +2 Wit
+    }
+
+    [TestMethod]
+    public void SavedConfigurationsAndComponentTransfer_PreserveAssemblyAndDamageState()
+    {
+        var assemblyA = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog, "a");
+        var assemblyB = new CrestLoadout("custom_b", "Experimental Rig");
+
+        var blink = assemblyA.Installed.First(e => e.Definition.Id == "eq_blink_drive");
+        blink.ApplyDamage(1);
+
+        // Transferring component instance moves it directly with its damage intact
+        Assert.IsTrue(assemblyA.TransferComponentTo(blink.InstanceId, assemblyB));
+        Assert.IsNull(assemblyA.FindById(blink.InstanceId));
+        var transferred = assemblyB.FindById(blink.InstanceId);
+        Assert.IsNotNull(transferred);
+        Assert.AreEqual(blink.Definition.MaxDurability - 1, transferred.CurrentDurability);
+
+        // Exporting and restoring a configuration reproduces the same derived stats deterministically
+        var saved = assemblyA.ExportConfiguration("saved_a");
+        var restored = CrestLoadout.CreateFromConfiguration(saved, _catalog, "r");
+        Assert.AreEqual(LoadoutRules.ComputeStats(assemblyA), LoadoutRules.ComputeStats(restored));
     }
 
     [TestMethod]
@@ -99,18 +129,13 @@ public sealed class LoadoutAndResourceTests
         int maxMotes = 3;
 
         for (int tick = 0; tick < LoadoutRules.MoteGenerationIntervalTicks - 1; tick++)
-        {
             Assert.IsFalse(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalTicks, maxMotes));
-        }
 
         Assert.IsTrue(resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalTicks, maxMotes));
         Assert.AreEqual(1, resources.CurrentMotes);
 
-        // Advance 25 seconds -> should cap at 3
         for (int tick = 0; tick < LoadoutRules.MoteGenerationIntervalTicks * 5; tick++)
-        {
             resources.AdvanceMoteTimer(LoadoutRules.MoteGenerationIntervalTicks, maxMotes);
-        }
 
         Assert.AreEqual(maxMotes, resources.CurrentMotes);
     }

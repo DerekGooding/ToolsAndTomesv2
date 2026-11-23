@@ -14,6 +14,7 @@ public sealed record CrestStats
     public int MaxWit { get; init; }
     public int EquipmentWitTax { get; init; }
     public int MaxMotes { get; init; }
+    public int MoteGenerationIntervalTicks { get; init; }
 
     public double HeatCapacity { get; init; }
     public double HeatDissipationPerSecond { get; init; }

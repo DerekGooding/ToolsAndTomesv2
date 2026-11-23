@@ -8,27 +8,36 @@ namespace ToolsAndTomes.App;
 public sealed class AppSessionState
 {
     private int _nextInstanceCounter = 100;
+    private int _nextAssemblyCounter = 1;
 
     public GameCatalog Catalog { get; } = GameCatalog.Default;
-    public Dictionary<string, CrestLoadout> PlayerCrests { get; }
+    public List<CrestLoadout> CrestAssemblies { get; } = [];
+    public List<CrestConfiguration> SavedBlueprints { get; } = [];
     public List<EquipmentInstance> SpareInventory { get; } = [];
-    public string SelectedCrestId { get; set; } = TemplateCatalog.Strider.Id;
+    public string SelectedCrestId { get; set; }
 
     public CombatSimulation? ActiveSimulation { get; private set; }
     public EnemyAIController ActiveAI { get; } = new(decisionIntervalTicks: 8);
     public int EncounterSeed { get; set; } = 1337;
 
-    public CrestLoadout SelectedLoadout => PlayerCrests[SelectedCrestId];
+    public CrestLoadout SelectedLoadout =>
+        CrestAssemblies.First(c => c.Id == SelectedCrestId);
 
     public AppSessionState()
     {
-        PlayerCrests = new Dictionary<string, CrestLoadout>
-        {
-            [TemplateCatalog.Strider.Id] = CrestLoadout.CreateFromTemplate(TemplateCatalog.Strider, Catalog, "strider"),
-            [TemplateCatalog.Bulwark.Id] = CrestLoadout.CreateFromTemplate(TemplateCatalog.Bulwark, Catalog, "bulwark")
-        };
+        var agile = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, Catalog, "asm1");
+        var heavy = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, Catalog, "asm2");
 
-        // Populate initial spare parts so the player can immediately experiment
+        CrestAssemblies.Add(agile);
+        CrestAssemblies.Add(heavy);
+        SavedBlueprints.Add(agile.ExportConfiguration());
+        SavedBlueprints.Add(heavy.ExportConfiguration());
+        SelectedCrestId = agile.Id;
+
+        AddSpare("core_aether_dynamo");
+        AddSpare("core_aether_furnace");
+        AddSpare("mob_stride_legs");
+        AddSpare("mob_anchor_legs");
         AddSpare("eq_righteous");
         AddSpare("eq_falconet");
         AddSpare("eq_dragons_breath");
@@ -46,9 +55,19 @@ public sealed class AppSessionState
         return new EquipmentInstance($"inv_{_nextInstanceCounter++}_{def.Id}", def);
     }
 
-    public void AddSpare(string equipmentDefId)
+    public void AddSpare(string equipmentDefId) => SpareInventory.Add(CreateNewInstance(equipmentDefId));
+
+    public CrestLoadout SaveCurrentAsNewAssembly(string name)
     {
-        SpareInventory.Add(CreateNewInstance(equipmentDefId));
+        string id = $"custom_asm_{_nextAssemblyCounter++}";
+        var blueprint = SelectedLoadout.ExportConfiguration(id, $"Saved from {SelectedLoadout.Name}");
+        blueprint = blueprint with { Name = string.IsNullOrWhiteSpace(name) ? $"Custom Assembly {_nextAssemblyCounter}" : name.Trim() };
+        SavedBlueprints.Add(blueprint);
+
+        var freshAssembly = CrestLoadout.CreateFromConfiguration(blueprint, Catalog, id);
+        CrestAssemblies.Add(freshAssembly);
+        SelectedCrestId = freshAssembly.Id;
+        return freshAssembly;
     }
 
     public bool UninstallFromSelected(string instanceId)
@@ -72,10 +91,19 @@ public sealed class AppSessionState
         return true;
     }
 
+    public bool TransferToOtherAssembly(string instanceId, string targetAssemblyId)
+    {
+        var target = CrestAssemblies.FirstOrDefault(c => c.Id == targetAssemblyId);
+        if (target is null)
+            return false;
+
+        return SelectedLoadout.TransferComponentTo(instanceId, target);
+    }
+
     public CombatSimulation StartEncounter()
     {
         ActiveSimulation = EncounterFactory.CreateTestEncounter(SelectedLoadout, EncounterSeed, Catalog);
-        ActiveSimulation.Pause(); // Start paused so player can inspect the battlefield and plan!
+        ActiveSimulation.Pause();
         return ActiveSimulation;
     }
 }
