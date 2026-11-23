@@ -61,8 +61,7 @@ public static class ActionCatalog
                 Range = 3,
                 MoteCost = 1,
                 BaseDamage = 1,
-                HeavyBonusDamage = 2,
-                HeavyWeightThreshold = 90,
+                TraitBonuses = [new TraitBonus(TargetTrait.Heavy, 2, WeightThreshold: 90)],
                 PushDistance = 2,
                 InterruptionPower = 5,
                 InterruptionResistance = 4
@@ -189,6 +188,26 @@ public static class ActionCatalog
             },
             new()
             {
+                Id = "weapon_acid_spray",
+                Name = "Acid Spray",
+                Description = "Corrosive short-range spray. Deals +1 damage per hit to Crests with operational armor.",
+                Category = ActionCategory.Weapon,
+                Targeting = TargetingType.EnemyUnit,
+                Telegraph = TelegraphKind.RangedQuick,
+                WindupBeats = 1,
+                ImpactBeats = 1,
+                RecoveryBeats = 1,
+                CooldownBeats = 2,
+                WitReserve = 1,
+                Range = 4,
+                AmmoCost = 1,
+                BaseDamage = 1,
+                TraitBonuses = [new TraitBonus(TargetTrait.Armored, 1)],
+                InterruptionPower = 1,
+                InterruptionResistance = 1
+            },
+            new()
+            {
                 Id = "mobility_dash",
                 Name = "Jet Dash",
                 Description = "Burst of jet thrust carrying the Crest up to 4 units toward a point.",
@@ -256,8 +275,7 @@ public static class ActionCatalog
                 WitReserve = 2,
                 MoteCost = 1,
                 BaseDamage = 1,
-                HeavyBonusDamage = 2,
-                HeavyWeightThreshold = 90,
+                TraitBonuses = [new TraitBonus(TargetTrait.Heavy, 2, WeightThreshold: 90)],
                 InterruptionPower = 5,
                 InterruptionResistance = 3,
                 RequiresSpellAmplifier = true

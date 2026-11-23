@@ -10,11 +10,13 @@ public static class LoadoutRules
     public const int MoteGenerationIntervalBeats = 5;
     public const int MinMoteGenerationIntervalBeats = 1;
 
-    /// <summary>Total weight a Crest can carry before movement is penalized.</summary>
-    public const int WeightPenaltyThreshold = 80;
+    /// <summary>
+    /// Each full increment of weight above the operational legs' combined load capacity costs 1 unit of
+    /// movement per beat. Heavy builds stay playable by fitting sturdier legs.
+    /// </summary>
+    public const int WeightPerMovePenalty = 40;
 
-    /// <summary>Each full increment of weight above the threshold costs 1 unit of movement per beat.</summary>
-    public const int WeightPerMovePenalty = 60;
+    /// <summary>Minimum speed while any locomotion is operational (heaviness slows, never immobilizes).</summary>
     public const int MinMoveSpeed = 1;
 
     public const int MinHeatCapacity = 4;
@@ -78,8 +80,10 @@ public static class LoadoutRules
         int bonusProtectionDice = operational.Sum(e => e.Definition.BonusProtectionDice);
 
         int speedFromComponents = operational.Sum(e => e.Definition.MoveSpeedBonus);
-        int weightPenalty = Math.Max(0, totalWeight - WeightPenaltyThreshold) / WeightPerMovePenalty;
-        int moveSpeed = Math.Max(MinMoveSpeed, speedFromComponents - weightPenalty);
+        var locomotion = operational.Where(e => e.Definition.IsLocomotion).ToList();
+        int loadCapacity = locomotion.Sum(e => e.Definition.LoadCapacity);
+        int weightPenalty = Math.Max(0, totalWeight - loadCapacity) / WeightPerMovePenalty;
+        int moveSpeed = locomotion.Count == 0 ? 0 : Math.Max(MinMoveSpeed, speedFromComponents - weightPenalty);
 
         int dispResist = Math.Max(0, operational.Sum(e => e.Definition.DisplacementResistance));
 
@@ -89,6 +93,7 @@ public static class LoadoutRules
         return new CrestStats
         {
             TotalWeight = totalWeight,
+            LoadCapacity = loadCapacity,
             MoveSpeed = moveSpeed,
             DisplacementResistance = dispResist,
             BonusProtectionDice = bonusProtectionDice,

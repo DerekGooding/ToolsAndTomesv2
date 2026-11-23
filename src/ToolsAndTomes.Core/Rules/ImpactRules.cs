@@ -29,9 +29,7 @@ public static class ImpactRules
                 if (!WouldAffect(defender, act, all))
                     continue;
 
-                int perHit = act.Definition.BaseDamage;
-                if (act.Definition.HeavyBonusDamage > 0 && defender.Stats.TotalWeight >= act.Definition.HeavyWeightThreshold)
-                    perHit += act.Definition.HeavyBonusDamage;
+                int perHit = TraitRules.DamagePerHit(act.Definition, defender);
 
                 results.Add(new IncomingImpact(attacker, act, perHit * Math.Max(1, act.Definition.HitCount)));
             }

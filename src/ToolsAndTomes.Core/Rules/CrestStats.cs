@@ -4,6 +4,9 @@ public sealed record CrestStats
 {
     public int TotalWeight { get; init; }
 
+    /// <summary>Combined load capacity of operational locomotion.</summary>
+    public int LoadCapacity { get; init; }
+
     /// <summary>Tabletop units moved per beat.</summary>
     public int MoveSpeed { get; init; }
 

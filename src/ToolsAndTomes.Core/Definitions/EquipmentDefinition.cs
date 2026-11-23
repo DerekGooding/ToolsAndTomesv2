@@ -34,6 +34,9 @@ public sealed record EquipmentDefinition
     /// <summary>Legs or other locomotion: required to walk. Walking occupies this component.</summary>
     public bool IsLocomotion { get; init; }
 
+    /// <summary>Weight this locomotion component carries before movement slows.</summary>
+    public int LoadCapacity { get; init; }
+
     /// <summary>Wit committed while this locomotion component is walking (0 = free movement).</summary>
     public int MovementWitCost { get; init; }
 

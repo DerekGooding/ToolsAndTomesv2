@@ -77,7 +77,7 @@ This document tracks confirmed game rules, implementation decisions, open questi
 | **Beat Engine** | Simulation advances only in whole beats (`CombatSimulation.StepBeat`); the WPF client steps one beat per wall-clock second and interpolates movement and timers between beats | The digital game and the tabletop game run the exact same rules; nothing depends on sub-second timing. |
 | **Per-Actor Resolution Reconciliation** | End-of-beat resolution batches all impacts per actor (sorted by `CombatantId`) | Preserves tabletop per-actor resolution semantics in real time without artificial delays or animation-order bias. |
 | **Hit Allocation** | Defender-chosen Damage Order: the installed component list order, set in the Workshop; each penetrating point hits the first operational component; no attacker targeting | Makes build order a meaningful defensive decision that works identically at the table. |
-| **Weight Tradeoffs** | No hard weight cap; total component mass reduces move speed and increases vulnerability to heavy-target attacks (Titan, Gravity Crush) | Aligns with emergent-tradeoff design philosophy. |
+| **Weight Tradeoffs** | No hard weight cap; weight beyond the operational legs' load capacity costs 1 movement per 40 over (minimum 1), and heavy Crests take trait bonus damage (Titan, Gravity Crush) | Aligns with emergent-tradeoff design philosophy. |
 | **Component Categories** | `ComponentCategory` is an organizational label only, never a hard slot restriction | Prevents arbitrary mech-builder slot limits; constraints emerge from Wit, heat, weight, and component rules. |
 
 ---
@@ -137,7 +137,7 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 ### Damage Order guidance [Implemented]
 - The Core may be placed anywhere in the Damage Order, but the Workshop warns when it is not last.
 
-### Trait checks
+### Trait checks [Implemented]
 - Trait-scaled bonuses check the target's **current state**, not the allocation: e.g., Acid's bonus applies if the target has any currently operational armor, regardless of which component its Damage Order sends the damage to.
 
 ### Movement from mobility components [Implemented]
@@ -145,9 +145,11 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 - Walking requires an operational locomotion component (`IsLocomotion`), reserves its `MovementWitCost` while walking, and runs alongside other actions. Actions out of range approach automatically using the legs.
 - Jump Jets grant **Jet Dash** (0/1/1, 4 units, 1 Wit, uninterruptible).
 
-### Weight & trait-scaled damage
+### Weight & trait-scaled damage [Implemented]
 - Heaviness is punishable but never unplayable: weight reduces mobility on a gentle curve with no hard floor doing the balancing.
 - Damage types scale against target traits with **additional damage**: e.g., Gravity deals extra to heavy targets; Acid deals extra to armored targets.
+- Implemented as `TraitBonus` entries on actions (`Heavy` with a weight threshold, `Armored`). Acid Spray (+1 vs Armored) comes from the new Acid Sprayer component.
+- Locomotion has a `LoadCapacity` (Stride Legs 70, Anchor Legs 150); heavy builds stay mobile by fitting sturdier legs.
 
 ### Combat style
 - Live-action tactical combat with optional pause (in the spirit of real-time-with-pause party RPGs).

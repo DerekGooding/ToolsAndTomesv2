@@ -98,7 +98,7 @@ public partial class HangarView : UserControl
 
         int moteSec = stats.MoteGenerationIntervalBeats;
         TxtStatsSummary.Text =
-            $"Total Weight       : {stats.TotalWeight:F0} {(stats.TotalWeight >= 90 ? "(HEAVY)" : "(LIGHT)")}\n" +
+            $"Weight / Leg Load  : {stats.TotalWeight} / {stats.LoadCapacity} {(stats.TotalWeight >= 90 ? "(HEAVY)" : "(LIGHT)")}\n" +
             $"Move Speed         : {stats.MoveSpeed} per beat\n" +
             $"Displacement Resist: -{stats.DisplacementResistance} to push/pull\n" +
             $"Protection Dice    : 1 base + {stats.BonusProtectionDice} bonus (5+ save)\n" +

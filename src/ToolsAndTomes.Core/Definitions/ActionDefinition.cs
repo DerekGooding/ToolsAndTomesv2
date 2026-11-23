@@ -34,8 +34,8 @@ public sealed record ActionDefinition
 
     public int BaseDamage { get; init; }
     public int HitCount { get; init; } = 1;
-    public int HeavyBonusDamage { get; init; }
-    public int HeavyWeightThreshold { get; init; } = 100;
+    /// <summary>Additional damage per hit against targets with particular traits (Heavy, Armored, ...).</summary>
+    public IReadOnlyList<TraitBonus> TraitBonuses { get; init; } = [];
 
     /// <summary>Positive pushes away from the source; negative pulls toward it.</summary>
     public int PushDistance { get; init; }

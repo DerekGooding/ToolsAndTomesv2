@@ -40,23 +40,25 @@ public static class EquipmentCatalog
             {
                 Id = "mob_stride_legs",
                 Name = "Articulated Stride Legs",
-                Description = "Lightweight bipedal actuators providing high base movement speed.",
+                Description = "Lightweight bipedal actuators: fast, but rated for only 70 weight before slowing.",
                 Category = ComponentCategory.Mobility,
                 MaxDurability = 2,
                 Weight = 16,
                 MoveSpeedBonus = 5,
-                IsLocomotion = true
+                IsLocomotion = true,
+                LoadCapacity = 70
             },
             new()
             {
                 Id = "mob_anchor_legs",
                 Name = "Reinforced Anchor Legs",
-                Description = "Heavy braced actuators trading top speed for strong displacement resistance.",
+                Description = "Heavy braced actuators rated for 150 weight, with strong displacement resistance.",
                 Category = ComponentCategory.Mobility,
                 MaxDurability = 3,
                 Weight = 32,
                 MoveSpeedBonus = 3,
                 IsLocomotion = true,
+                LoadCapacity = 150,
                 DisplacementResistance = 1
             },
             new()
@@ -162,6 +164,18 @@ public static class EquipmentCatalog
                 Weight = 22,
                 MaxAmmo = 6,
                 GrantedActionIds = ["weapon_artillery_mortar"]
+            },
+            new()
+            {
+                Id = "eq_acid_sprayer",
+                Name = "Acid Sprayer",
+                Description = "Corrosive projector (6 ammo) that eats through armor plating.",
+                Category = ComponentCategory.Weapon,
+                MaxDurability = 2,
+                WitTax = 1,
+                Weight = 10,
+                MaxAmmo = 6,
+                GrantedActionIds = ["weapon_acid_spray"]
             },
             new()
             {

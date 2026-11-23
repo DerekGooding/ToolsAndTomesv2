@@ -1,5 +1,6 @@
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
+using ToolsAndTomes.Core.Rules;
 
 namespace ToolsAndTomes.Core.Simulation;
 
@@ -117,9 +118,7 @@ internal static class ActionEffectResolver
         var targets = ResolveTargets(actor, active, allCombatants);
         foreach (var target in targets)
         {
-            int damagePerHit = def.BaseDamage;
-            if (def.HeavyBonusDamage > 0 && target.Stats.TotalWeight >= def.HeavyWeightThreshold)
-                damagePerHit += def.HeavyBonusDamage;
+            int damagePerHit = TraitRules.DamagePerHit(def, target);
 
             int hitCount = Math.Max(1, def.HitCount);
             for (int i = 0; i < hitCount; i++)

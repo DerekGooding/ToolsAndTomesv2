@@ -41,6 +41,7 @@ public sealed class AppSessionState
         AddSpare("eq_righteous");
         AddSpare("eq_falconet");
         AddSpare("eq_dragons_breath");
+        AddSpare("eq_acid_sprayer");
         AddSpare("eq_shield_generator");
         AddSpare("eq_repulsor");
         AddSpare("eq_blink_drive");
