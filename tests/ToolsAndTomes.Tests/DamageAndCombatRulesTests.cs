@@ -71,16 +71,16 @@ public sealed class DamageAndCombatRulesTests
         var enemyB = CreateEnemy("enemy_skirmisher", new Vec2(8, 6), "enemy_b");
         var sim = new CombatSimulation([player, enemyA, enemyB], new FixedRandom(1));
 
-        sim.IssueCommand(new UseActionCommand(player.Id, "spell_aegis"));
-        sim.StepBeat(); // reactions resolve at the end of the beat they are declared
-
-        Assert.IsTrue(player.HasActiveAegis);
-        Assert.AreEqual(2, player.AegisBlocksRemaining);
-        Assert.AreEqual(2, player.Resources.ReservedWit);
+        Assert.IsFalse(sim.IssueCommand(new UseActionCommand(player.Id, "spell_aegis")).IsValid,
+            "Reactions need an incoming impact.");
 
         sim.IssueCommand(new UseActionCommand(enemyA.Id, "weapon_talon", player.Id));
         sim.IssueCommand(new UseActionCommand(enemyB.Id, "weapon_talon", player.Id));
-        StepUntil(sim, () => enemyA.State == ActionState.Recovery);
+        StepUntil(sim, () => enemyA.State == ActionState.Executing);
+
+        Assert.HasCount(2, sim.GetIncomingImpacts(player));
+        Assert.IsTrue(sim.IssueCommand(new UseActionCommand(player.Id, "spell_aegis")).IsValid);
+        sim.StepBeat(); // Aegis resolves first, then both impacts land on it
 
         Assert.AreEqual(0, player.AegisBlocksRemaining);
         Assert.AreEqual(0, player.Resources.ReservedWit);
@@ -88,7 +88,24 @@ public sealed class DamageAndCombatRulesTests
     }
 
     [TestMethod]
-    public void Repulsor_PushesTargetBack_AndInterruptsCommittedWindup()
+    public void Aegis_AbsorbsDamageButNotEffects()
+    {
+        var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5));
+        var enemy = CreateEnemy("enemy_bruiser", new Vec2(6, 5));
+        var sim = new CombatSimulation([player, enemy], new FixedRandom(1));
+
+        sim.IssueCommand(new UseActionCommand(enemy.Id, "weapon_titan", player.Id));
+        StepUntil(sim, () => enemy.State == ActionState.Executing);
+
+        Assert.IsTrue(sim.IssueCommand(new UseActionCommand(player.Id, "spell_aegis")).IsValid);
+        sim.StepBeat();
+
+        Assert.IsTrue(IsUndamaged(player), "Aegis absorbed the damage.");
+        Assert.AreEqual(2.0, player.Position.X, 1e-9, "Titan Cleave's push (2) still applied.");
+    }
+
+    [TestMethod]
+    public void Reaction_OutsideAnIncomingImpact_IsRejected()
     {
         var player = CreatePlayer(ConfigurationCatalog.HeavyAnchor, new Vec2(5, 5));
         var enemy = CreateEnemy("enemy_artillery", new Vec2(7, 5));
@@ -98,11 +115,27 @@ public sealed class DamageAndCombatRulesTests
         sim.StepBeat();
         Assert.AreEqual(ActionState.Windup, enemy.State);
 
+        var tooEarly = sim.IssueCommand(new UseActionCommand(player.Id, "defense_repulsor", enemy.Id));
+        Assert.IsFalse(tooEarly.IsValid);
+        Assert.Contains("incoming impact", tooEarly.FailureReason!);
+    }
+
+    [TestMethod]
+    public void Repulsor_DuringAreaImpact_PushesAttackerBack_AndCancelsTheBombardment()
+    {
+        var player = CreatePlayer(ConfigurationCatalog.HeavyAnchor, new Vec2(5, 5));
+        var enemy = CreateEnemy("enemy_artillery", new Vec2(7, 5));
+        var sim = new CombatSimulation([player, enemy], new FixedRandom(1));
+
+        sim.IssueCommand(new UseActionCommand(enemy.Id, "weapon_artillery_mortar", TargetPoint: new Vec2(5, 5)));
+        StepUntil(sim, () => enemy.State == ActionState.Executing);
+
         double startX = enemy.Position.X;
         var repulsor = sim.IssueCommand(new UseActionCommand(player.Id, "defense_repulsor", enemy.Id));
         Assert.IsTrue(repulsor.IsValid);
 
         sim.StepBeat();
+        Assert.IsTrue(IsUndamaged(player), "The bombardment was canceled before it landed.");
 
         // Push 4 minus displacement resistance 1 (anchor legs) = 3 units
         Assert.AreEqual(startX + 3, enemy.Position.X, 1e-9);

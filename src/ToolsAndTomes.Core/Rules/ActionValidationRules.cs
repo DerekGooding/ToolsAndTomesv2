@@ -74,6 +74,27 @@ public static class ActionValidationRules
         return ActionValidationResult.Valid;
     }
 
+    /// <summary>
+    /// Full validation including battlefield context: reactions are only valid while an enemy impact
+    /// is landing on the actor.
+    /// </summary>
+    public static ActionValidationResult ValidateUseAction(
+        Combatant actor,
+        ActionDefinition action,
+        Combatant? target,
+        Vec2? targetPoint,
+        IReadOnlyList<Combatant> battlefield)
+    {
+        var basic = ValidateUseAction(actor, action, target, targetPoint);
+        if (!basic.IsValid)
+            return basic;
+
+        if (action.IsReactive && ImpactRules.GetIncomingImpacts(actor, battlefield).Count == 0)
+            return ActionValidationResult.Fail($"{action.Name} can only be used during an incoming impact.");
+
+        return ActionValidationResult.Valid;
+    }
+
     public static bool IsInRange(Combatant actor, ActionDefinition action, Combatant? target, Vec2? targetPoint)
     {
         if (action.Targeting == TargetingType.Self || action.Range <= 0)

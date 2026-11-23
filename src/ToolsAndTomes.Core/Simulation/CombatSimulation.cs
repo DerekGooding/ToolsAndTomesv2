@@ -79,6 +79,14 @@ public sealed class CombatSimulation
 
     public Combatant? FindCombatant(string id) => _combatants.FirstOrDefault(c => c.Id == id);
 
+    /// <summary>Validates an action with full battlefield context (e.g. reaction windows), without issuing it.</summary>
+    public ActionValidationResult ValidateUse(Combatant actor, ActionDefinition action, Combatant? target, Vec2? targetPoint) =>
+        ActionValidationRules.ValidateUseAction(actor, action, target, targetPoint, _combatants);
+
+    /// <summary>Enemy impacts currently landing on <paramref name="defender"/> (the reaction window).</summary>
+    public IReadOnlyList<IncomingImpact> GetIncomingImpacts(Combatant defender) =>
+        ImpactRules.GetIncomingImpacts(defender, _combatants);
+
     /// <summary>
     /// Validates and buffers a command. Nothing changes until the next beat boundary:
     /// reactions resolve at the end of the current beat; all other commands take effect at the start of the next beat.
@@ -102,7 +110,7 @@ public sealed class CombatSimulation
                     return ActionValidationResult.Fail("Unknown action.");
 
                 var target = use.TargetActorId is not null ? FindCombatant(use.TargetActorId) : null;
-                var validation = ActionValidationRules.ValidateUseAction(actor, def, target, use.TargetPoint);
+                var validation = ActionValidationRules.ValidateUseAction(actor, def, target, use.TargetPoint, _combatants);
                 if (!validation.IsValid)
                     return validation;
 

@@ -27,7 +27,7 @@ public static class ActionBarBuilder
             int cd = player.GetCooldown(actionId);
             var targetForValidation = def.Targeting == TargetingType.EnemyUnit ? selectedTarget : null;
             Vec2? pointForValidation = def.Targeting == TargetingType.Point ? player.Position : null;
-            var check = ActionValidationRules.ValidateUseAction(player, def, targetForValidation, pointForValidation);
+            var check = sim.ValidateUse(player, def, targetForValidation, pointForValidation);
 
             string cost = "";
             if (def.WitReserve > 0) cost += $" W:{def.WitReserve}";

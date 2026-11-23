@@ -78,7 +78,7 @@ internal sealed class ActorStateProcessor
             return;
 
         var target = FindTarget(allCombatants, cmd.TargetActorId);
-        var validation = ActionValidationRules.ValidateUseAction(actor, def, target, cmd.TargetPoint);
+        var validation = ActionValidationRules.ValidateUseAction(actor, def, target, cmd.TargetPoint, allCombatants);
         if (!validation.IsValid)
         {
             events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,

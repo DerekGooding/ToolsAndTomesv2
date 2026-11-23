@@ -109,12 +109,12 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 - Each penetrating point goes to the first operational component in the Damage Order. When a component is destroyed it can no longer take damage, and remaining points flow to the next component in order.
 - A Crest is Defeated when its Core is no longer operational.
 
-### Defenses vs effects
+### Defenses vs effects [Implemented]
 - Protection rolls, Shield Generators, and Aegis save against **damage only**, never against a hit's effects (push/pull, interruption, disruption). A fully saved hit still interrupts.
 - Exception: future components may be designed to protect against specific effects.
 - Blink Drive evasion avoids the attack entirely (evasion, not defense).
 
-### Impact window & reactions [Partially implemented: impact window, reactions resolve first; pending: reactions gated to incoming impacts, reaction rules, slow motion]
+### Impact window & reactions [Partially implemented: pending reaction rules, slow motion]
 - An action's Executing phase is its **impact window**. Damage and effects resolve at the end of the impact window, not at the end of windup.
 - Reactive actions (Blink, Repulsor, Aegis, etc.) are valid only **during the impact of an incoming attack** against the reacting Crest.
 - Digital play supports reactions two ways, combined: **pre-set reaction rules** configured on the Crest (condition → reaction, e.g. "incoming impact ≥ 2 damage → Blink"), and a **slow-motion window** during incoming impacts for manual reactions. Slow motion is presentation-only and does not affect simulation determinism.

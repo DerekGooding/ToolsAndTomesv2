@@ -29,6 +29,9 @@ public sealed class Combatant
     public ActionState State { get; set; } = ActionState.Idle;
     public ActiveAction? CurrentAction { get; set; }
 
+    /// <summary>All actions currently running on this Crest.</summary>
+    public IReadOnlyList<ActiveAction> ActionsInMotion => CurrentAction is null ? [] : [CurrentAction];
+
     /// <summary>Buffered command applied at the next beat boundary (or once the Crest is free to act).</summary>
     public CombatCommand? QueuedCommand { get; set; }
 

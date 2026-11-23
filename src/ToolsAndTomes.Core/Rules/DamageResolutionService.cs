@@ -76,25 +76,26 @@ public sealed class DamageResolutionService
             if (target.IsDefeated)
                 break;
 
-            if (hit.DamagePoints > 0 && target.HasActiveAegis)
+            // Defenses save against damage, never against effects: interruption and displacement always apply.
+            maxInterruptionPower = Math.Max(maxInterruptionPower, hit.InterruptionPower);
+
+            int damagePoints = hit.DamagePoints;
+            if (damagePoints > 0 && target.HasActiveAegis)
             {
+                damagePoints = 0;
                 target.AegisBlocksRemaining--;
                 events.Add(new CombatEvent(
                     beat,
                     CombatEventType.AegisBlocked,
                     target.Id,
-                    $"{target.Name}'s Aegis absorbed {hit.SourceActionName} ({target.AegisBlocksRemaining} block(s) left).",
+                    $"{target.Name}'s Aegis absorbed the damage of {hit.SourceActionName} ({target.AegisBlocksRemaining} block(s) left).",
                     hit.SourceActorId));
 
                 if (target.AegisBlocksRemaining <= 0)
                     target.ClearAegis();
-
-                continue;
             }
 
-            maxInterruptionPower = Math.Max(maxInterruptionPower, hit.InterruptionPower);
-
-            for (int p = 0; p < hit.DamagePoints && !target.IsDefeated; p++)
+            for (int p = 0; p < damagePoints && !target.IsDefeated; p++)
             {
                 var rollResult = RollProtection(target.Stats.BonusProtectionDice, rng);
                 string diceText = string.Join(",", rollResult.Rolls);
