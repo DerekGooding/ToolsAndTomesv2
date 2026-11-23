@@ -18,7 +18,7 @@ public enum EncounterOutcome
 /// <item>Passive timers (Motes, heat, Aegis, evasion, interruption stun).</item>
 /// <item>Reaction rules are checked for Crests that declared no reaction; reactions resolve, then their hits resolve.</item>
 /// <item>Actions in motion consume the beat; impact windows that end this beat resolve.</item>
-/// <item>Impact hits resolve per target (sorted by combatant id).</item>
+/// <item>Impact hits resolve per target (sorted by combatant id); a Crest whose Wit budget went negative drops its newest commitments.</item>
 /// <item>Movement.</item>
 /// <item>Buffered commands take effect for the next beat.</item>
 /// <item>Cooldowns count down.</item>
@@ -211,6 +211,16 @@ public sealed class CombatSimulation
                 ArenaWidth,
                 ArenaHeight,
                 _events);
+
+            if (target.IsDefeated)
+                continue;
+
+            var dropped = target.EnforceWitBudget();
+            if (dropped.Count > 0)
+            {
+                _events.Add(new CombatEvent(beat, CombatEventType.WitCollapse, target.Id,
+                    $"{target.Name}'s Wit collapses! Dropped: {string.Join(", ", dropped)}."));
+            }
         }
     }
 

@@ -24,7 +24,7 @@ This document tracks confirmed game rules, implementation decisions, open questi
 ### Core Philosophy
 - Real-time tactical simulation with pause/resume.
 - Deterministic, beat-based simulation: **1 beat = 1 tabletop second**. All rules resolve on beat boundaries; the real-time client only interpolates presentation between beats.
-- Seeded random number generation for reproducible combat and automated tests.
+- Seeded random number generation (PCG32, fully specified in code) for combat that reproduces identically across .NET versions, replays, and tests.
 - Unified action/timeline model shared by weapons, spells, defensive reactions, and enemy AI.
 - Equipment instances are distinct from equipment definitions: damage and ammo consumption persist across unequip, transfer, re-equip, and encounters until repaired or replaced.
 
@@ -103,6 +103,10 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 6. **Buffered commands** take effect, starting new actions in the next beat.
 7. **Cooldowns** count down.
 
+After each hit-resolution pass, a Crest whose available Wit fell below zero (a Wit-granting component was destroyed) suffers **Wit collapse**: its newest Wit commitments drop (actions, then Aegis, then paid movement) until the budget balances.
+
+`TabletopTranscript` renders the event log beat by beat; a hand-resolved fight is kept as a regression test (`TabletopParityTests`).
+
 ### Damage allocation (defender chooses) [Implemented]
 - **Attackers cannot target components.** The defender decides where damage is applied.
 - Each Crest has a **Damage Order**, set in the Workshop, listing its components in the order they absorb penetrating damage.
@@ -154,7 +158,7 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 ### Combat style
 - Live-action tactical combat with optional pause (in the spirit of real-time-with-pause party RPGs).
 
-### Persistence (scope)
+### Persistence (scope) [Implemented]
 - Repairs and restocking can be done in the field, so in the full game, damage persisting between fights costs time. **For the vertical slice**, Crests are fully repaired and restocked between encounters.
 
 ### Next vertical slice: Workshop & Research

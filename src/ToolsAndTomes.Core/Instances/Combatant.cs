@@ -160,6 +160,43 @@ public sealed class Combatant
         }
     }
 
+    /// <summary>
+    /// Wit collapse: if available Wit has fallen below zero (e.g. a Wit-granting component was destroyed),
+    /// drop Wit commitments newest-first — actions, then Aegis, then paid movement — until the budget balances.
+    /// Returns the names of what was dropped.
+    /// </summary>
+    public List<string> EnforceWitBudget()
+    {
+        var dropped = new List<string>();
+        int Available() => Stats.AvailableWit(Resources.ReservedWit);
+
+        foreach (var act in _actions.Where(a => a.Definition.WitReserve > 0).OrderByDescending(a => a.Id).ToList())
+        {
+            if (Available() >= 0)
+                return dropped;
+
+            if (Resources.ReservedWit == 0)
+                break;
+
+            RemoveAction(act);
+            dropped.Add(act.Definition.Name);
+        }
+
+        if (Available() < 0 && HasActiveAegis)
+        {
+            ClearAegis();
+            dropped.Add("Aegis Barrier");
+        }
+
+        if (Available() < 0 && Movement is not null)
+        {
+            StopMovement();
+            dropped.Add("movement");
+        }
+
+        return dropped;
+    }
+
     /// <summary>Stops everything (used on defeat).</summary>
     public void ClearAllActivity()
     {

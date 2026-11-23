@@ -22,6 +22,7 @@ public enum CombatEventType
     CombatantDefeated,
     CommandRejected,
     ReactionRuleTriggered,
+    WitCollapse,
     FastIronProduced
 }
 
