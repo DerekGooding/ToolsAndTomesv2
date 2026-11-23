@@ -40,8 +40,16 @@
             <!-- Installed Components -->
             <Border Grid.Column="0" Background="#1E293B" CornerRadius="6" Padding="12" Margin="0,0,10,0">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" x:Name="TxtInstalledHeader" Text="Installed Components" FontSize="15" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,8"/>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock DockPanel.Dock="Top" x:Name="TxtInstalledHeader" Text="Installed Components" FontSize="15" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,8"/>
+                        <TextBlock Text="Listed in Damage Order: penetrating damage hits the first operational component, then flows down the list." TextWrapping="Wrap" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,6"/>
+                        <TextBlock x:Name="TxtWarnings" TextWrapping="Wrap" Foreground="#FBBF24" FontSize="11.5" Margin="0,0,0,6"/>
+                    </StackPanel>
                     <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button Content="▲ Earlier" Padding="10,5" Margin="0,0,6,0" Click="BtnMoveUp_Click"/>
+                            <Button Content="▼ Later" Padding="10,5" Click="BtnMoveDown_Click"/>
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                             <Button Content="Uninstall to Spares" Padding="10,5" Margin="0,0,8,0" Click="BtnUninstall_Click"/>
                             <Button Content="Repair Selected" Padding="10,5" Click="BtnRepairSelected_Click"/>
@@ -88,6 +96,6 @@
 
         <!-- Footer hint -->
         <TextBlock Grid.Row="2" Margin="0,10,0,0" Foreground="#94A3B8" FontSize="11.5"
-                   Text="Tip: Swap Cores, Legs, Armor, Weapons, or Defenses freely between assemblies. Heavy Aether Furnace expands Wit (+2), Mote storage (+1), and Mote rate (+25%)."/>
+                   Text="Tip: Swap Cores, Legs, Armor, Weapons, or Defenses freely between assemblies. Order components so expendable parts absorb damage first; keep the Core last."/>
     </Grid>
 </UserControl>

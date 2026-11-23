@@ -10,7 +10,6 @@ public sealed record UseActionCommand(
     string ActorId,
     string ActionId,
     string? TargetActorId = null,
-    Vec2? TargetPoint = null,
-    string? TargetComponentInstanceId = null) : CombatCommand(ActorId);
+    Vec2? TargetPoint = null) : CombatCommand(ActorId);
 
 public sealed record CancelActionCommand(string ActorId) : CombatCommand(ActorId);

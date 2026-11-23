@@ -12,14 +12,14 @@ namespace ToolsAndTomes.App;
 
 public partial class CombatView : UserControl
 {
-    private sealed record ComponentRow(EquipmentInstance Instance)
+    private sealed record ComponentRow(EquipmentInstance Instance, int OrderIndex)
     {
         public override string ToString()
         {
             var d = Instance.Definition;
             string hp = Instance.IsDisabled ? "[DISABLED]" : $"{Instance.CurrentDurability}/{d.MaxDurability}";
             string ammo = d.MaxAmmo > 0 ? $" | Ammo {Instance.CurrentAmmo}/{d.MaxAmmo}" : "";
-            return $"{d.Name} — {hp}{ammo}";
+            return $"{OrderIndex}. {d.Name} — {hp}{ammo}";
         }
     }
 
@@ -31,7 +31,6 @@ public partial class CombatView : UserControl
     private readonly System.Diagnostics.Stopwatch _frameClock = new();
     private TimeSpan _beatElapsed;
     private string? _selectedCombatantId;
-    private string? _targetedComponentId;
     private ActionDefinition? _armedPointAction;
     private int _lastRenderedEventCount;
 
@@ -52,7 +51,6 @@ public partial class CombatView : UserControl
     {
         var sim = _session.StartEncounter();
         _selectedCombatantId = sim.Combatants.FirstOrDefault(c => c.Faction == Faction.Enemy)?.Id;
-        _targetedComponentId = null;
         _armedPointAction = null;
         _lastRenderedEventCount = 0;
         _beatElapsed = TimeSpan.Zero;
@@ -171,13 +169,10 @@ public partial class CombatView : UserControl
         }
 
         _armedPointAction = null;
-        string? compTarget = target is not null && target.Id == _selectedCombatantId ? _targetedComponentId : null;
         var res = sim.IssueCommand(new UseActionCommand(
             player.Id,
             def.Id,
-            def.Targeting == TargetingType.EnemyUnit ? target?.Id : null,
-            null,
-            compTarget));
+            def.Targeting == TargetingType.EnemyUnit ? target?.Id : null));
 
         TxtActionStatus.Text = res.IsValid
             ? $"Issued {def.Name}" + (target is not null && def.Targeting == TargetingType.EnemyUnit ? $" -> {target.Name}" : ".")
@@ -197,7 +192,7 @@ public partial class CombatView : UserControl
             $"State: {c.State} | Pos: ({c.Position.X:F1}, {c.Position.Y:F1})\n" +
             $"Wt: {s.TotalWeight:F0} | Spd: {s.MoveSpeed}/beat | Prot: 1+{s.BonusProtectionDice} d6 | DispRes: {s.DisplacementResistance}";
 
-        var rows = c.Loadout.Installed.Select(e => new ComponentRow(e)).ToList();
+        var rows = c.Loadout.DamageOrder.Select((e, i) => new ComponentRow(e, i + 1)).ToList();
         LstInspectorComponents.ItemsSource = rows;
     }
 
@@ -242,10 +237,6 @@ public partial class CombatView : UserControl
         if (nearest is not null)
         {
             _selectedCombatantId = nearest.Id;
-            _targetedComponentId = null;
-            TxtTargetedCompHint.Text = nearest.Faction == Faction.Enemy
-                ? $"Selected {nearest.Name}. Click a component to aim specifically at it."
-                : "Inspecting Player Crest.";
             RefreshAll();
         }
     }
@@ -262,20 +253,6 @@ public partial class CombatView : UserControl
         sim.IssueCommand(new MoveCommand(player.Id, world));
         TxtActionStatus.Text = $"Move command issued -> ({world.X:F1}, {world.Y:F1}).";
         RefreshAll();
-    }
-
-    private void LstInspectorComponents_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (LstInspectorComponents.SelectedItem is ComponentRow row)
-        {
-            var sim = _session.ActiveSimulation;
-            var selected = _selectedCombatantId is not null ? sim?.FindCombatant(_selectedCombatantId) : null;
-            if (selected?.Faction == Faction.Enemy && row.Instance.IsOperational)
-            {
-                _targetedComponentId = row.Instance.InstanceId;
-                TxtTargetedCompHint.Text = $"Aiming at: {row.Instance.Definition.Name}";
-            }
-        }
     }
 
     private void ArenaCanvas_SizeChanged(object sender, SizeChangedEventArgs e) => RefreshAll();

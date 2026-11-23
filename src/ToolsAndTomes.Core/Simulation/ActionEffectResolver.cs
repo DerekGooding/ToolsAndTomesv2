@@ -113,8 +113,7 @@ internal static class ActionEffectResolver
                     actor.Position,
                     damagePerHit,
                     i == 0 ? def.PushDistance : 0,
-                    def.InterruptionPower,
-                    active.TargetComponentInstanceId));
+                    def.InterruptionPower));
             }
         }
 

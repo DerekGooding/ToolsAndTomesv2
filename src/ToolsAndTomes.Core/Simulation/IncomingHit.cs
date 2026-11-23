@@ -9,5 +9,4 @@ public sealed record IncomingHit(
     Vec2 SourcePosition,
     int DamagePoints,
     int PushDistance,
-    int InterruptionPower,
-    string? TargetComponentInstanceId = null);
+    int InterruptionPower);

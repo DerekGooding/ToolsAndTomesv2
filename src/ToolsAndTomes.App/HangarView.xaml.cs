@@ -33,6 +33,7 @@ public partial class HangarView : UserControl
 
     private readonly AppSessionState _session;
     private bool _suppressSelection;
+    private string? _reselectInstanceId;
 
     public event Action? LaunchEncounterRequested;
 
@@ -70,7 +71,17 @@ public partial class HangarView : UserControl
         TxtAssemblyName.Text = loadout.Name;
         TxtInstalledHeader.Text = $"{loadout.Name} — Installed Components ({loadout.Installed.Count})";
 
-        LstInstalled.ItemsSource = loadout.Installed.Select(e => new EquipmentListItem(e)).ToList();
+        var installedItems = loadout.DamageOrder.Select(e => new EquipmentListItem(e)).ToList();
+        LstInstalled.ItemsSource = installedItems;
+        if (_reselectInstanceId is not null)
+        {
+            LstInstalled.SelectedItem = installedItems.FirstOrDefault(i => i.Instance.InstanceId == _reselectInstanceId);
+            _reselectInstanceId = null;
+        }
+
+        var warnings = LoadoutRules.GetWarnings(loadout);
+        TxtWarnings.Text = string.Join("\n", warnings.Select(w => "⚠ " + w));
+        TxtWarnings.Visibility = warnings.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         LstSpares.ItemsSource = _session.SpareInventory.Select(e => new EquipmentListItem(e)).ToList();
 
         int moteSec = stats.MoteGenerationIntervalBeats;
@@ -121,6 +132,19 @@ public partial class HangarView : UserControl
     {
         _session.SaveCurrentAsNewAssembly(TxtAssemblyName.Text + " (Copy)");
         RefreshUI();
+    }
+
+    private void BtnMoveUp_Click(object sender, RoutedEventArgs e) => MoveSelected(-1);
+    private void BtnMoveDown_Click(object sender, RoutedEventArgs e) => MoveSelected(+1);
+
+    private void MoveSelected(int delta)
+    {
+        if (LstInstalled.SelectedItem is EquipmentListItem item &&
+            _session.SelectedLoadout.MoveInDamageOrder(item.Instance.InstanceId, delta))
+        {
+            _reselectInstanceId = item.Instance.InstanceId;
+            RefreshUI();
+        }
     }
 
     private void BtnUninstall_Click(object sender, RoutedEventArgs e)

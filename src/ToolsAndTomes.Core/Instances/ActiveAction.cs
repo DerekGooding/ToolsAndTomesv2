@@ -8,7 +8,6 @@ public sealed class ActiveAction
     public string? SourceEquipmentInstanceId { get; }
     public string? TargetActorId { get; }
     public Vec2? TargetPoint { get; set; }
-    public string? TargetComponentInstanceId { get; }
 
     public ActionState Phase { get; set; }
 
@@ -25,14 +24,12 @@ public sealed class ActiveAction
         ActionDefinition definition,
         string? sourceEquipmentInstanceId,
         string? targetActorId,
-        Vec2? targetPoint,
-        string? targetComponentInstanceId)
+        Vec2? targetPoint)
     {
         Definition = definition;
         SourceEquipmentInstanceId = sourceEquipmentInstanceId;
         TargetActorId = targetActorId;
         TargetPoint = targetPoint;
-        TargetComponentInstanceId = targetComponentInstanceId;
         Phase = ActionState.Windup;
     }
 

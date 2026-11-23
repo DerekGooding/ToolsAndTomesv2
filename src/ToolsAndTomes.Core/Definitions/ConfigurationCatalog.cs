@@ -1,7 +1,7 @@
 namespace ToolsAndTomes.Core.Definitions;
 
 /// <summary>
-/// Illustrative starter component assemblies. These are saved component lists,
+/// Illustrative starter component assemblies. These are saved component lists (in Damage Order, Core last),
 /// not predefined Crest classes or chassis types.
 /// </summary>
 public static class ConfigurationCatalog
@@ -13,14 +13,14 @@ public static class ConfigurationCatalog
         Description = "Illustrative light component build emphasizing Blink evasion, high speed, Vorpal/Talon strikes, and amplified spells.",
         ComponentIds =
         [
-            "core_aether_dynamo",
+            "eq_jump_jets",
+            "eq_talon",
+            "eq_vorpal",
+            "eq_spell_amplifier",
+            "eq_blink_drive",
             "mob_stride_legs",
             "spellbook_grimoire",
-            "eq_vorpal",
-            "eq_talon",
-            "eq_blink_drive",
-            "eq_jump_jets",
-            "eq_spell_amplifier"
+            "core_aether_dynamo"
         ]
     };
 
@@ -31,15 +31,15 @@ public static class ConfigurationCatalog
         Description = "Illustrative heavy component build using a Heavy Aether Furnace, armor plating, Shield Generator, Repulsor, Titan Hammer, and Dragon's Breath.",
         ComponentIds =
         [
-            "core_aether_furnace",
-            "mob_anchor_legs",
             "armor_heavy_plate",
-            "spellbook_grimoire",
-            "eq_titan",
+            "eq_thermal_regulator",
             "eq_dragons_breath",
-            "eq_shield_generator",
             "eq_repulsor",
-            "eq_thermal_regulator"
+            "eq_shield_generator",
+            "eq_titan",
+            "mob_anchor_legs",
+            "spellbook_grimoire",
+            "core_aether_furnace"
         ]
     };
 
@@ -64,7 +64,7 @@ public static class ConfigurationCatalog
             {
                 Id = "cfg_enemy_skirmisher",
                 Name = "Vesper Skirmisher",
-                ComponentIds = ["core_aether_dynamo", "mob_stride_legs", "eq_talon", "eq_jump_jets"]
+                ComponentIds = ["eq_jump_jets", "eq_talon", "mob_stride_legs", "core_aether_dynamo"]
             }
         };
 
@@ -78,7 +78,7 @@ public static class ConfigurationCatalog
             {
                 Id = "cfg_enemy_bruiser",
                 Name = "Ironclad Bruiser",
-                ComponentIds = ["core_aether_furnace", "mob_anchor_legs", "armor_heavy_plate", "eq_titan", "eq_righteous"]
+                ComponentIds = ["armor_heavy_plate", "eq_righteous", "eq_titan", "mob_anchor_legs", "core_aether_furnace"]
             }
         };
 
@@ -92,7 +92,7 @@ public static class ConfigurationCatalog
             {
                 Id = "cfg_enemy_artillery",
                 Name = "Bastion Artillery",
-                ComponentIds = ["core_aether_dynamo", "mob_anchor_legs", "eq_artillery_mortar", "eq_shield_generator"]
+                ComponentIds = ["eq_shield_generator", "mob_anchor_legs", "eq_artillery_mortar", "core_aether_dynamo"]
             }
         };
 

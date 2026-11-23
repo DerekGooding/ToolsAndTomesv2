@@ -56,9 +56,9 @@
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" x:Name="TxtInspectorTitle" Text="Inspector" FontWeight="Bold" FontSize="14" Foreground="#38BDF8" Margin="0,0,0,4"/>
                         <TextBlock DockPanel.Dock="Top" x:Name="TxtInspectorStats" FontFamily="Consolas" FontSize="11" Foreground="#CBD5E1" Margin="0,0,0,6" TextWrapping="Wrap"/>
-                        <TextBlock DockPanel.Dock="Bottom" x:Name="TxtTargetedCompHint" Text="Click an enemy component to aim at it (optional)." FontSize="10.5" Foreground="#94A3B8" Margin="0,4,0,0"/>
+                        <TextBlock DockPanel.Dock="Bottom" x:Name="TxtTargetedCompHint" Text="Damage Order: penetrating damage hits the first operational component." FontSize="10.5" Foreground="#94A3B8" Margin="0,4,0,0"/>
                         <ListBox x:Name="LstInspectorComponents" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#334155" FontSize="11"
-                                 SelectionChanged="LstInspectorComponents_SelectionChanged"/>
+                                 />
                     </DockPanel>
                 </Border>
 

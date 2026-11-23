@@ -49,7 +49,7 @@ This document tracks confirmed game rules, implementation decisions, open questi
 - **Component-Only Damage:**
   - Every penetrating point of damage hits an installed component (reducing its durability by 1).
   - When a component reaches 0 durability, it is **Disabled**: its functionality stops, passive bonuses stop applying, and its Wit Tax is immediately released.
-  - Once all outer operational components are disabled (or if an attacker explicitly targets Core), penetrating hits damage the Crest's **Core**.
+  - Each penetrating point hits the first operational component in the defender's **Damage Order**; the Core takes damage when its turn in the order arrives (recommended: last).
   - When a Crest has no operational **Core**, the Crest is **Defeated**.
 
 ### Defensive Systems & Spells
@@ -76,7 +76,7 @@ This document tracks confirmed game rules, implementation decisions, open questi
 | **Presentation Host** | WPF Desktop App (`net10.0-windows`) | Native Windows executable with direct in-process binding to `ToolsAndTomes.Core`. |
 | **Beat Engine** | Simulation advances only in whole beats (`CombatSimulation.StepBeat`); the WPF client steps one beat per wall-clock second and interpolates movement and timers between beats | The digital game and the tabletop game run the exact same rules; nothing depends on sub-second timing. |
 | **Per-Actor Resolution Reconciliation** | End-of-beat resolution batches all impacts per actor (sorted by `CombatantId`) | Preserves tabletop per-actor resolution semantics in real time without artificial delays or animation-order bias. |
-| **Hit Allocation** | Default penetrating hits roll among operational non-core components (armor weighted 2x), falling through to Core when no outer components remain; explicit component targeting supported | Makes armor plating meaningfully protect subsystems and Core while supporting tactical targeting. |
+| **Hit Allocation** | Defender-chosen Damage Order: the installed component list order, set in the Workshop; each penetrating point hits the first operational component; no attacker targeting | Makes build order a meaningful defensive decision that works identically at the table. |
 | **Weight Tradeoffs** | No hard weight cap; total component mass reduces move speed and increases vulnerability to heavy-target attacks (Titan, Gravity Crush) | Aligns with emergent-tradeoff design philosophy. |
 | **Component Categories** | `ComponentCategory` is an organizational label only, never a hard slot restriction | Prevents arbitrary mech-builder slot limits; constraints emerge from Wit, heat, weight, and component rules. |
 
@@ -103,7 +103,7 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 6. **Buffered commands** take effect, starting new actions in the next beat.
 7. **Cooldowns** count down.
 
-### Damage allocation (defender chooses)
+### Damage allocation (defender chooses) [Implemented]
 - **Attackers cannot target components.** The defender decides where damage is applied.
 - Each Crest has a **Damage Order**, set in the Workshop, listing its components in the order they absorb penetrating damage.
 - Each penetrating point goes to the first operational component in the Damage Order. When a component is destroyed it can no longer take damage, and remaining points flow to the next component in order.
@@ -131,7 +131,7 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 ### Command buffering [Implemented]
 - Commands issued mid-beat are buffered and take effect at the next beat boundary.
 
-### Damage Order guidance
+### Damage Order guidance [Implemented]
 - The Core may be placed anywhere in the Damage Order, but the Workshop warns when it is not last.
 
 ### Trait checks

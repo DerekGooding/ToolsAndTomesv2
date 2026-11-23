@@ -91,7 +91,7 @@ internal sealed class ActorStateProcessor
             CancelCurrentAction(actor);
 
         var provider = actor.Loadout.FindOperationalProviderForAction(def.Id);
-        var act = new ActiveAction(def, provider?.InstanceId, cmd.TargetActorId, cmd.TargetPoint, cmd.TargetComponentInstanceId);
+        var act = new ActiveAction(def, provider?.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
 
         if (!TryCommitCosts(actor, act))
         {
@@ -299,7 +299,7 @@ internal sealed class ActorStateProcessor
         }
 
         var provider = actor.Loadout.FindOperationalProviderForAction(def.Id);
-        var active = new ActiveAction(def, provider?.InstanceId, cmd.TargetActorId, cmd.TargetPoint, cmd.TargetComponentInstanceId);
+        var active = new ActiveAction(def, provider?.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
         actor.CurrentAction = active;
 
         if (ActionValidationRules.IsInRange(actor, def, target, cmd.TargetPoint))

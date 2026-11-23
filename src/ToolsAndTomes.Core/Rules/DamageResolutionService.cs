@@ -38,34 +38,13 @@ public sealed class DamageResolutionService
         return new ProtectionRollResult(saved, rolls);
     }
 
-    public EquipmentInstance? SelectHitComponent(
-        Combatant target,
-        string? preferredComponentInstanceId,
-        ISeededRandom rng)
-    {
-        if (!string.IsNullOrEmpty(preferredComponentInstanceId))
-        {
-            var preferred = target.Loadout.FindById(preferredComponentInstanceId);
-            if (preferred is not null && preferred.IsOperational)
-                return preferred;
-        }
-
-        var outerPool = new List<EquipmentInstance>();
-        foreach (var item in target.Loadout.Installed)
-        {
-            if (!item.IsOperational || item.Definition.IsCore)
-                continue;
-
-            outerPool.Add(item);
-            if (item.Definition.IsArmor)
-                outerPool.Add(item); // Armor absorbs more hits to protect subsystems
-        }
-
-        if (outerPool.Count > 0)
-            return outerPool[rng.NextInt(0, outerPool.Count)];
-
-        return target.Loadout.Installed.FirstOrDefault(e => e.IsOperational && e.Definition.IsCore);
-    }
+    /// <summary>
+    /// The defender chooses where damage lands: each penetrating point goes to the first operational
+    /// component in the Crest's Damage Order. Destroyed components no longer absorb damage,
+    /// so remaining points flow to the next component in order.
+    /// </summary>
+    public static EquipmentInstance? SelectHitComponent(Combatant target) =>
+        target.Loadout.DamageOrder.FirstOrDefault(e => e.IsOperational);
 
     public void ResolveActorBatch(
         Combatant target,
@@ -131,7 +110,7 @@ public sealed class DamageResolutionService
                     continue;
                 }
 
-                var component = SelectHitComponent(target, hit.TargetComponentInstanceId, rng);
+                var component = SelectHitComponent(target);
                 if (component is null)
                     break;
 
