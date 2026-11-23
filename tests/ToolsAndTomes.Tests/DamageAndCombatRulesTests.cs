@@ -142,7 +142,8 @@ public sealed class DamageAndCombatRulesTests
         Assert.AreEqual(ActionState.Interrupted, enemy.State);
 
         var entry = sim.GetTimelineEntries().Single(e => e.ActorId == enemy.Id);
-        Assert.AreEqual(enemy.InterruptedTotalBeats, entry.PhaseTotalBeats);
+        var mortar = enemy.Loadout.Installed.First(e => e.Definition.Id == "eq_artillery_mortar");
+        Assert.AreEqual(2, enemy.ComponentLockouts[mortar.InstanceId].Total, "The mortar component is locked out.");
         Assert.AreEqual(2, entry.PhaseTotalBeats, "Cancellation penalty = max(2, recovery 2).");
     }
 

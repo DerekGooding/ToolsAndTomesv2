@@ -44,7 +44,8 @@ public static class EquipmentCatalog
                 Category = ComponentCategory.Mobility,
                 MaxDurability = 2,
                 Weight = 16,
-                MoveSpeedBonus = 5
+                MoveSpeedBonus = 5,
+                IsLocomotion = true
             },
             new()
             {
@@ -55,6 +56,7 @@ public static class EquipmentCatalog
                 MaxDurability = 3,
                 Weight = 32,
                 MoveSpeedBonus = 3,
+                IsLocomotion = true,
                 DisplacementResistance = 1
             },
             new()
@@ -198,12 +200,13 @@ public static class EquipmentCatalog
             {
                 Id = "eq_jump_jets",
                 Name = "Jump Jets",
-                Description = "Boosts Crest movement speed (+2 units per beat) while operational.",
+                Description = "Boosts movement (+1 unit per beat) and grants Jet Dash.",
                 Category = ComponentCategory.Mobility,
                 MaxDurability = 2,
                 WitTax = 1,
                 Weight = 6,
-                MoveSpeedBonus = 2
+                MoveSpeedBonus = 1,
+                GrantedActionIds = ["mobility_dash"]
             },
             new()
             {

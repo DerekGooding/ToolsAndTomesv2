@@ -63,12 +63,16 @@ public static class ActionValidationRules
 
         if (action.IsReactive)
         {
-            if (actor.State is not (ActionState.Idle or ActionState.Moving or ActionState.Windup))
-                return ActionValidationResult.Fail($"{action.Name} cannot be used while {actor.State}.");
+            if (actor.FindFreeProvider(action.Id) is null)
+                return ActionValidationResult.Fail($"{action.Name}'s component is busy.");
 
             // Reactions resolve in the beat they are declared, so they cannot walk into range.
             if (action.Targeting == TargetingType.EnemyUnit && !IsInRange(actor, action, target, targetPoint))
                 return ActionValidationResult.Fail($"Target is out of range for {action.Name}.");
+        }
+        else if (!IsInRange(actor, action, target, targetPoint) && actor.FindLocomotionProvider() is null)
+        {
+            return ActionValidationResult.Fail($"Target is out of range and the Crest cannot move.");
         }
 
         return ActionValidationResult.Valid;

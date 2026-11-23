@@ -5,6 +5,7 @@ namespace ToolsAndTomes.Core.Simulation;
 
 public static class TimelineProjector
 {
+    /// <summary>One entry per running action, movement order, and locked-out component.</summary>
     public static IReadOnlyList<TimelineEntry> BuildEntries(IEnumerable<Combatant> combatants)
     {
         var entries = new List<TimelineEntry>();
@@ -13,20 +14,22 @@ public static class TimelineProjector
             if (actor.IsDefeated)
                 continue;
 
-            if (actor.State == ActionState.Interrupted)
+            foreach (var act in actor.ActionsInMotion)
             {
-                entries.Add(new TimelineEntry(
-                    actor.Id, actor.Name, actor.Faction, ActionState.Interrupted,
-                    "Interrupted", null, null, null, 0,
-                    actor.InterruptedBeatsRemaining, Math.Max(1, actor.InterruptedTotalBeats), -1, false));
-            }
-            else if (actor.CurrentAction is { } act && actor.State != ActionState.Moving)
-            {
+                if (act.Phase == ActionState.Moving)
+                {
+                    entries.Add(new TimelineEntry(
+                        actor.Id, actor.Name, actor.Faction, ActionState.Moving,
+                        $"Approaching → {act.Definition.Name}", act.Definition.Telegraph, act.TargetActorId,
+                        act.TargetPoint, act.Definition.AreaRadius, 1, 1, -1, false));
+                    continue;
+                }
+
                 entries.Add(new TimelineEntry(
                     actor.Id,
                     actor.Name,
                     actor.Faction,
-                    actor.State,
+                    act.Phase,
                     act.Definition.Name,
                     act.Definition.Telegraph,
                     act.TargetActorId,
@@ -35,17 +38,24 @@ public static class TimelineProjector
                     act.PhaseBeatsRemaining,
                     Math.Max(1, act.PhaseTotalBeats),
                     act.BeatsUntilImpact(),
-                    actor.State is ActionState.Windup or ActionState.Executing));
+                    act.IsInterruptiblePhase && !act.Definition.IsUninterruptible));
             }
-            else if (actor.State == ActionState.Moving)
+
+            if (actor.Movement is { ForActionId: null } move && move.Destination is { } dest)
             {
-                Vec2? dest = actor.MoveDestination;
-                string label = actor.CurrentAction is { } pending ? $"Moving → {pending.Definition.Name}" : "Moving";
-                double dist = dest is { } d ? actor.Position.DistanceTo(d) : 0;
+                double dist = actor.Position.DistanceTo(dest);
                 int estBeats = Math.Max(1, (int)Math.Ceiling(dist / Math.Max(1, actor.Stats.MoveSpeed)));
                 entries.Add(new TimelineEntry(
                     actor.Id, actor.Name, actor.Faction, ActionState.Moving,
-                    label, null, null, dest, 0, estBeats, estBeats, -1, false));
+                    "Moving", null, null, dest, 0, estBeats, estBeats, -1, false));
+            }
+
+            foreach (var (componentId, (remaining, total)) in actor.ComponentLockouts)
+            {
+                string name = actor.Loadout.FindById(componentId)?.Definition.Name ?? componentId;
+                entries.Add(new TimelineEntry(
+                    actor.Id, actor.Name, actor.Faction, ActionState.Interrupted,
+                    $"Interrupted: {name}", null, null, null, 0, remaining, Math.Max(1, total), -1, false));
             }
         }
 

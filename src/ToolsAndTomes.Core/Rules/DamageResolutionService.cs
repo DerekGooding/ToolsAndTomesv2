@@ -168,11 +168,7 @@ public sealed class DamageResolutionService
 
         if (target.IsDefeated)
         {
-            target.CurrentAction = null;
-            target.MoveDestination = null;
-            target.State = ActionState.Idle;
-            target.ClearAegis();
-            target.Resources.ReleaseAllWit();
+            target.ClearAllActivity();
 
             events.Add(new CombatEvent(
                 beat,
@@ -191,6 +187,11 @@ public sealed class DamageResolutionService
             ? Math.Max(0, pushDistance - resistance)
             : Math.Min(0, pushDistance + resistance);
 
+    /// <summary>
+    /// A batch's strongest interruption is applied to <b>every</b> interruptible action the target has in
+    /// windup or impact, each judged against its own resistance. Uninterruptible actions are unaffected.
+    /// Interrupted or canceled actions are removed and their component is locked out for the penalty.
+    /// </summary>
     private void ApplyBatchInterruption(
         Combatant target,
         int maxInterruptionPower,
@@ -198,52 +199,43 @@ public sealed class DamageResolutionService
         int beat,
         List<CombatEvent> events)
     {
-        if (target.CurrentAction is null)
-            return;
-
-        if (target.State != ActionState.Windup && target.State != ActionState.Executing)
-            return;
-
-        var tier = InterruptionRules.Evaluate(
-            maxInterruptionPower,
-            target.CurrentAction.Definition.InterruptionResistance,
-            anyDisplaced,
-            _thresholds);
-
-        if (tier == InterruptionTier.None)
-            return;
-
-        string actionName = target.CurrentAction.Definition.Name;
-
-        if (tier == InterruptionTier.Disruption)
+        foreach (var act in target.ActionsInMotion.Where(a => a.IsInterruptiblePhase).ToList())
         {
-            target.CurrentAction.PhaseBeatsRemaining += _thresholds.DisruptionDelayBeats;
-            target.CurrentAction.PhaseTotalBeats += _thresholds.DisruptionDelayBeats;
+            var def = act.Definition;
+            if (def.IsUninterruptible)
+                continue;
+
+            var tier = InterruptionRules.Evaluate(maxInterruptionPower, def.InterruptionResistance, anyDisplaced, _thresholds);
+            if (tier == InterruptionTier.None)
+                continue;
+
+            if (tier == InterruptionTier.Disruption)
+            {
+                act.PhaseBeatsRemaining += _thresholds.DisruptionDelayBeats;
+                act.PhaseTotalBeats += _thresholds.DisruptionDelayBeats;
+                events.Add(new CombatEvent(
+                    beat,
+                    CombatEventType.ActionInterrupted,
+                    target.Id,
+                    $"{target.Name}'s {def.Name} DISRUPTED (+{_thresholds.DisruptionDelayBeats} beat delay).",
+                    Interruption: tier));
+                continue;
+            }
+
+            int penaltyBeats = tier == InterruptionTier.Cancellation
+                ? Math.Max(_thresholds.CancellationMinPenaltyBeats, def.RecoveryBeats)
+                : _thresholds.InterruptedStunBeats;
+
+            target.RemoveAction(act);
+            target.LockOutComponent(act.SourceEquipmentInstanceId, penaltyBeats);
+
+            string label = tier == InterruptionTier.Cancellation ? "CANCELED" : "INTERRUPTED";
             events.Add(new CombatEvent(
                 beat,
                 CombatEventType.ActionInterrupted,
                 target.Id,
-                $"{target.Name}'s {actionName} DISRUPTED (+{_thresholds.DisruptionDelayBeats} beat delay).",
+                $"{target.Name}'s {def.Name} {label}! (component locked {penaltyBeats} beat(s))",
                 Interruption: tier));
-            return;
         }
-
-        int penaltyBeats = tier == InterruptionTier.Cancellation
-            ? Math.Max(_thresholds.CancellationMinPenaltyBeats, target.CurrentAction.Definition.RecoveryBeats)
-            : _thresholds.InterruptedStunBeats;
-
-        target.CurrentAction = null;
-        target.Resources.ReleaseWit(Combatant.ActionWitReservationKey);
-        target.State = ActionState.Interrupted;
-        target.InterruptedBeatsRemaining = penaltyBeats;
-        target.InterruptedTotalBeats = penaltyBeats;
-
-        string label = tier == InterruptionTier.Cancellation ? "CANCELED" : "INTERRUPTED";
-        events.Add(new CombatEvent(
-            beat,
-            CombatEventType.ActionInterrupted,
-            target.Id,
-            $"{target.Name}'s {actionName} {label}!",
-            Interruption: tier));
     }
 }

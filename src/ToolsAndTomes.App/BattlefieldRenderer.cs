@@ -81,7 +81,14 @@ public static class BattlefieldRenderer
 
             var start = WorldToCanvas(DisplayPosition(sim, actor, beatFraction), canvas, sim);
 
-            if (actor.State == ActionState.Moving && actor.MoveDestination is { } dest)
+            var moveDest = actor.Movement switch
+            {
+                null => (Vec2?)null,
+                { FollowActorId: { } followId } => sim.FindCombatant(followId)?.Position,
+                { Destination: var d } => d
+            };
+
+            if (moveDest is { } dest)
             {
                 var end = WorldToCanvas(dest, canvas, sim);
                 canvas.Children.Add(new Line
@@ -94,56 +101,72 @@ public static class BattlefieldRenderer
                 });
             }
 
-            if (actor.CurrentAction is not { } act || actor.State is not (ActionState.Windup or ActionState.Executing))
-                continue;
-
             var color = actor.Faction == Faction.Player
                 ? Color.FromRgb(56, 189, 248)
                 : Color.FromRgb(249, 115, 22);
 
-            Vec2? targetPos = act.TargetPoint;
-            if (targetPos is null && act.TargetActorId is not null)
-                targetPos = sim.FindCombatant(act.TargetActorId) is { } tgt ? DisplayPosition(sim, tgt, beatFraction) : null;
-
-            if (targetPos is not null)
+            foreach (var act in actor.ActionsInMotion)
             {
-                var end = WorldToCanvas(targetPos.Value, canvas, sim);
-                canvas.Children.Add(new Line
+                if (act.Phase is not (ActionState.Windup or ActionState.Executing))
+                    continue;
+
+                DrawActionTelegraph(canvas, sim, act, start, color, beatFraction, scaleX, scaleY);
+            }
+        }
+    }
+
+    private static void DrawActionTelegraph(
+        Canvas canvas,
+        CombatSimulation sim,
+        ActiveAction act,
+        Point start,
+        Color color,
+        double beatFraction,
+        double scaleX,
+        double scaleY)
+    {
+        Vec2? targetPos = act.TargetPoint;
+        if (targetPos is null && act.TargetActorId is not null)
+            targetPos = sim.FindCombatant(act.TargetActorId) is { } tgt ? DisplayPosition(sim, tgt, beatFraction) : null;
+
+        if (targetPos is not null)
+        {
+            var end = WorldToCanvas(targetPos.Value, canvas, sim);
+            canvas.Children.Add(new Line
+            {
+                X1 = start.X, Y1 = start.Y, X2 = end.X, Y2 = end.Y,
+                Stroke = new SolidColorBrush(color),
+                StrokeThickness = act.Phase == ActionState.Executing ? 3.5 : 2.0,
+                Opacity = 0.85
+            });
+
+            if (act.Definition.AreaRadius > 0)
+            {
+                double rx = act.Definition.AreaRadius * scaleX;
+                double ry = act.Definition.AreaRadius * scaleY;
+                var aoe = new Ellipse
                 {
-                    X1 = start.X, Y1 = start.Y, X2 = end.X, Y2 = end.Y,
+                    Width = rx * 2,
+                    Height = ry * 2,
                     Stroke = new SolidColorBrush(color),
-                    StrokeThickness = actor.State == ActionState.Executing ? 3.5 : 2.0,
-                    Opacity = 0.85
-                });
+                    StrokeThickness = 2,
+                    Fill = new SolidColorBrush(Color.FromArgb(55, color.R, color.G, color.B))
+                };
+                Canvas.SetLeft(aoe, end.X - rx);
+                Canvas.SetTop(aoe, end.Y - ry);
+                canvas.Children.Add(aoe);
 
-                if (act.Definition.AreaRadius > 0)
+                double sec = Math.Max(0, act.BeatsUntilImpact() - beatFraction);
+                var label = new TextBlock
                 {
-                    double rx = act.Definition.AreaRadius * scaleX;
-                    double ry = act.Definition.AreaRadius * scaleY;
-                    var aoe = new Ellipse
-                    {
-                        Width = rx * 2,
-                        Height = ry * 2,
-                        Stroke = new SolidColorBrush(color),
-                        StrokeThickness = 2,
-                        Fill = new SolidColorBrush(Color.FromArgb(55, color.R, color.G, color.B))
-                    };
-                    Canvas.SetLeft(aoe, end.X - rx);
-                    Canvas.SetTop(aoe, end.Y - ry);
-                    canvas.Children.Add(aoe);
-
-                    double sec = Math.Max(0, act.BeatsUntilImpact() - beatFraction);
-                    var label = new TextBlock
-                    {
-                        Text = $"{act.Definition.Name} ({sec:F1}s)",
-                        Foreground = Brushes.White,
-                        FontSize = 11,
-                        FontWeight = FontWeights.SemiBold
-                    };
-                    Canvas.SetLeft(label, end.X - 42);
-                    Canvas.SetTop(label, end.Y - 8);
-                    canvas.Children.Add(label);
-                }
+                    Text = $"{act.Definition.Name} ({sec:F1}s)",
+                    Foreground = Brushes.White,
+                    FontSize = 11,
+                    FontWeight = FontWeights.SemiBold
+                };
+                Canvas.SetLeft(label, end.X - 42);
+                Canvas.SetTop(label, end.Y - 8);
+                canvas.Children.Add(label);
             }
         }
     }

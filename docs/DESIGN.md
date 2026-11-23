@@ -119,14 +119,15 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 - Reactive actions (Blink, Repulsor, Aegis, etc.) are valid only **during the impact of an incoming attack** against the reacting Crest.
 - Digital play supports reactions two ways, combined: **pre-set reaction rules** configured on the Crest (condition → reaction, e.g. "incoming impact ≥ 2 damage → Blink"), and a **slow-motion window** during incoming impacts for manual reactions. Slow motion is presentation-only and does not affect simulation determinism.
 
-### Concurrent actions (Wit-gated)
+### Concurrent actions (Wit-gated) [Implemented]
 - Each component can run **one action at a time**.
 - Multiple components can run actions simultaneously as long as the Crest has enough available Wit for every committed action. Every action reserves Wit while active.
 - Carrying more equipment raises passive Wit Tax, which reduces how many actions can run at once — the core cost of over-equipping.
 
-### Interruption with concurrent actions
+### Interruption with concurrent actions [Implemented]
 - Interruptibility is a property of each action's stats. Some actions cannot be interrupted; others can (with their own resistance).
 - A successful interruption stops **all interruptible actions currently in motion** on the Crest. Uninterruptible actions continue.
+- Each interrupted action's component is locked out for the penalty (Interruption: 1 beat; Cancellation: max(2, recovery)). Other components keep working.
 
 ### Command buffering [Implemented]
 - Commands issued mid-beat are buffered and take effect at the next beat boundary.
@@ -137,8 +138,10 @@ Each beat resolves in this order (simultaneous within each step; ties ordered by
 ### Trait checks
 - Trait-scaled bonuses check the target's **current state**, not the allocation: e.g., Acid's bonus applies if the target has any currently operational armor, regardless of which component its Damage Order sends the damage to.
 
-### Movement from mobility components
+### Movement from mobility components [Implemented]
 - Movement is provided by mobility components, each with its own movement statistics and costs. Some legs move freely; others require Wit commitments. Mobility components may grant extra movement options (e.g., Dash).
+- Walking requires an operational locomotion component (`IsLocomotion`), reserves its `MovementWitCost` while walking, and runs alongside other actions. Actions out of range approach automatically using the legs.
+- Jump Jets grant **Jet Dash** (0/1/1, 4 units, 1 Wit, uninterruptible).
 
 ### Weight & trait-scaled damage
 - Heaviness is punishable but never unplayable: weight reduces mobility on a gentle curve with no hard floor doing the balancing.

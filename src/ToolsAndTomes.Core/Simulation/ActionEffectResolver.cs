@@ -50,6 +50,24 @@ internal static class ActionEffectResolver
             return;
         }
 
+        // Jet Dash: self-propelled relocation toward the target point
+        if (def.DashDistance > 0)
+        {
+            var dest = active.TargetPoint ?? actor.Position;
+            var delta = dest - actor.Position;
+            double dist = Math.Min(def.DashDistance, delta.Length);
+            if (dist > 0.01)
+                actor.Position = (actor.Position + delta.Normalized() * dist).Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5);
+
+            events.Add(new CombatEvent(
+                beat,
+                CombatEventType.CombatantDisplaced,
+                actor.Id,
+                $"{actor.Name} dashed to ({actor.Position.X:F1}, {actor.Position.Y:F1}).",
+                Position: actor.Position));
+            return;
+        }
+
         // Blink Drive: reactive teleport + evade window
         if (def.BlinkDistance > 0 || def.EvadeBeats > 0)
         {

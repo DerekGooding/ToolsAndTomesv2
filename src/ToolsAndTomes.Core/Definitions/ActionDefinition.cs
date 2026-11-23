@@ -50,6 +50,12 @@ public sealed record ActionDefinition
     public int InterruptionPower { get; init; }
     public int InterruptionResistance { get; init; }
 
+    /// <summary>Self-propelled relocation (e.g. a jet dash) of up to this many units toward the target point at impact.</summary>
+    public int DashDistance { get; init; }
+
+    /// <summary>Uninterruptible actions ignore disruption, interruption, and cancellation.</summary>
+    public bool IsUninterruptible { get; init; }
+
     public bool RequiresSpellAmplifier { get; init; }
     public bool RequiresSpellbook { get; init; }
 

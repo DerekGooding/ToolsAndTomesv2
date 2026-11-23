@@ -33,7 +33,7 @@ public sealed class EnemyAIController
             if (enemy.Faction != Faction.Enemy || enemy.IsDefeated)
                 continue;
 
-            if (enemy.State != ActionState.Idle || enemy.QueuedCommand is not null)
+            if (enemy.State != ActionState.Idle || enemy.HasQueuedCommands)
                 continue;
 
             var command = ChooseCommand(enemy, playerTarget, simulation);

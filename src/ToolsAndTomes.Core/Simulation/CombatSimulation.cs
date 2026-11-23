@@ -101,7 +101,7 @@ public sealed class CombatSimulation
         {
             case CancelActionCommand:
                 actor.PendingCancel = true;
-                actor.QueuedCommand = null;
+                actor.ClearQueuedCommands();
                 return ActionValidationResult.Valid;
 
             case UseActionCommand use:
@@ -115,15 +115,15 @@ public sealed class CombatSimulation
                     return validation;
 
                 if (def.IsReactive)
-                    actor.PendingReaction = use;
+                    actor.AddPendingReaction(use);
                 else
-                    actor.QueuedCommand = use;
+                    actor.QueueCommand(use);
 
                 return ActionValidationResult.Valid;
             }
 
             default:
-                actor.QueuedCommand = command;
+                actor.QueueCommand(command);
                 return ActionValidationResult.Valid;
         }
     }
@@ -143,13 +143,13 @@ public sealed class CombatSimulation
         // 2. Reactions declared this beat resolve before any impact
         var reactionHits = new List<IncomingHit>();
         foreach (var actor in Living())
-            _stateProcessor.ResolvePendingReaction(actor, _combatants, beat, reactionHits, _events);
+            _stateProcessor.ResolvePendingReactions(actor, _combatants, beat, reactionHits, _events);
         ResolveHits(reactionHits, beat);
 
         // 3. Actions in motion consume this beat; finished impact windows produce hits
         var impactHits = new List<IncomingHit>();
         foreach (var actor in Living())
-            _stateProcessor.AdvanceAction(actor, _combatants, beat, impactHits, _events);
+            _stateProcessor.AdvanceActions(actor, _combatants, beat, impactHits, _events);
 
         // 4. Impacts resolve simultaneously, batched per target
         ResolveHits(impactHits, beat);
@@ -175,7 +175,7 @@ public sealed class CombatSimulation
     /// Presentation layers interpolate toward this.
     /// </summary>
     public Vec2 ProjectEndOfBeatPosition(Combatant actor) =>
-        actor.State == ActionState.Moving
+        actor.Movement is not null
             ? _stateProcessor.ComputeMovement(actor, _combatants).Next
             : actor.Position;
 

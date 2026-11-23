@@ -31,6 +31,12 @@ public sealed record EquipmentDefinition
     /// <summary>Beats removed from the Mote generation interval.</summary>
     public int MoteIntervalReductionBeats { get; init; }
 
+    /// <summary>Legs or other locomotion: required to walk. Walking occupies this component.</summary>
+    public bool IsLocomotion { get; init; }
+
+    /// <summary>Wit committed while this locomotion component is walking (0 = free movement).</summary>
+    public int MovementWitCost { get; init; }
+
     public bool IsCore { get; init; }
     public bool IsArmor { get; init; }
     public bool IsSpellbook { get; init; }

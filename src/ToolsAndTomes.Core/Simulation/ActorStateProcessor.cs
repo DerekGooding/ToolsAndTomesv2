@@ -4,6 +4,10 @@ using ToolsAndTomes.Core.Rules;
 
 namespace ToolsAndTomes.Core.Simulation;
 
+/// <summary>
+/// Per-combatant beat processing. A Crest may run several actions at once (one per component),
+/// each holding its own Wit reservation, plus one movement order carried out by a locomotion component.
+/// </summary>
 internal sealed class ActorStateProcessor
 {
     /// <summary>Extra beats of recovery while overheated.</summary>
@@ -48,103 +52,90 @@ internal sealed class ActorStateProcessor
                 actor.ClearAegis();
         }
 
-        if (actor.State == ActionState.Interrupted)
-        {
-            actor.InterruptedBeatsRemaining--;
-            if (actor.InterruptedBeatsRemaining <= 0)
-            {
-                actor.InterruptedBeatsRemaining = 0;
-                actor.State = ActionState.Idle;
-            }
-        }
+        actor.TickLockouts();
     }
 
     // ---- Step 2: reactions ------------------------------------------------------------------
 
-    public void ResolvePendingReaction(
+    public void ResolvePendingReactions(
         Combatant actor,
         IReadOnlyList<Combatant> allCombatants,
         int beat,
         List<IncomingHit> hits,
         List<CombatEvent> events)
     {
-        var cmd = actor.PendingReaction;
-        if (cmd is null)
-            return;
-
-        actor.PendingReaction = null;
-
-        if (!_catalog.Actions.TryGetValue(cmd.ActionId, out var def))
-            return;
-
-        var target = FindTarget(allCombatants, cmd.TargetActorId);
-        var validation = ActionValidationRules.ValidateUseAction(actor, def, target, cmd.TargetPoint, allCombatants);
-        if (!validation.IsValid)
+        foreach (var cmd in actor.TakePendingReactions())
         {
-            events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
-                $"{actor.Name}'s {def.Name} failed: {validation.FailureReason}"));
-            return;
+            if (!_catalog.Actions.TryGetValue(cmd.ActionId, out var def))
+                continue;
+
+            var target = FindTarget(allCombatants, cmd.TargetActorId);
+            var validation = ActionValidationRules.ValidateUseAction(actor, def, target, cmd.TargetPoint, allCombatants);
+            var provider = actor.FindFreeProvider(def.Id);
+            if (!validation.IsValid || provider is null)
+            {
+                Reject(actor, def, validation.FailureReason ?? "its component is busy", beat, events);
+                continue;
+            }
+
+            var act = actor.AddAction(def, provider.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
+            if (!TryCommitCosts(actor, act))
+            {
+                actor.RemoveAction(act);
+                Reject(actor, def, "costs could not be paid", beat, events);
+                continue;
+            }
+
+            events.Add(new CombatEvent(beat, CombatEventType.ActionStarted, actor.Id,
+                $"{actor.Name} reacts with {def.Name}!", cmd.TargetActorId));
+
+            ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events);
+            act.EffectApplied = true;
+
+            // The declaring beat was the reaction's impact; recovery starts next beat.
+            EnterRecovery(actor, act, enteredThisBeat: beat);
         }
-
-        // A reaction abandons any windup or movement in progress.
-        if (actor.State is ActionState.Windup or ActionState.Moving)
-            CancelCurrentAction(actor);
-
-        var provider = actor.Loadout.FindOperationalProviderForAction(def.Id);
-        var act = new ActiveAction(def, provider?.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
-
-        if (!TryCommitCosts(actor, act))
-        {
-            events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
-                $"{actor.Name}'s {def.Name} failed: costs could not be paid."));
-            return;
-        }
-
-        actor.CurrentAction = act;
-        events.Add(new CombatEvent(beat, CombatEventType.ActionStarted, actor.Id,
-            $"{actor.Name} reacts with {def.Name}!", cmd.TargetActorId));
-
-        ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events);
-        act.EffectApplied = true;
-
-        // The declaring beat was the reaction's impact; recovery starts next beat.
-        EnterRecovery(actor, act, beat);
     }
 
     // ---- Step 3: actions in motion ----------------------------------------------------------
 
-    public void AdvanceAction(
+    public void AdvanceActions(
         Combatant actor,
         IReadOnlyList<Combatant> allCombatants,
         int beat,
         List<IncomingHit> hits,
         List<CombatEvent> events)
     {
-        var act = actor.CurrentAction;
-        if (act is null || actor.State is not (ActionState.Windup or ActionState.Executing or ActionState.Recovery))
-            return;
-
-        // Phases entered during this beat's reaction step start counting next beat.
-        if (act.PhaseEnteredBeat == beat)
-            return;
-
-        act.PhaseBeatsRemaining--;
-        if (act.PhaseBeatsRemaining > 0)
-            return;
-
-        switch (act.Phase)
+        foreach (var act in actor.ActionsInMotion.ToList())
         {
-            case ActionState.Windup:
-                EnterImpact(actor, act, beat, events);
-                break;
+            if (act.Phase is not (ActionState.Windup or ActionState.Executing or ActionState.Recovery))
+                continue;
 
-            case ActionState.Executing:
-                ResolveImpact(actor, act, allCombatants, beat, hits, events);
-                break;
+            // Phases entered during this beat's reaction step start counting next beat.
+            if (act.PhaseEnteredBeat == beat)
+                continue;
 
-            case ActionState.Recovery:
-                CompleteAction(actor, act);
-                break;
+            act.PhaseBeatsRemaining--;
+            if (act.PhaseBeatsRemaining > 0)
+                continue;
+
+            switch (act.Phase)
+            {
+                case ActionState.Windup:
+                    EnterImpact(actor, act, beat, events);
+                    break;
+
+                case ActionState.Executing:
+                    ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events);
+                    act.EffectApplied = true;
+                    actor.Resources.ReleaseWit(act.WitReservationKey);
+                    EnterRecovery(actor, act, enteredThisBeat: null);
+                    break;
+
+                case ActionState.Recovery:
+                    CompleteAction(actor, act);
+                    break;
+            }
         }
     }
 
@@ -154,37 +145,26 @@ internal sealed class ActorStateProcessor
 
     public MovementResult ComputeMovement(Combatant actor, IReadOnlyList<Combatant> allCombatants)
     {
-        var act = actor.CurrentAction;
-        Vec2? destination;
-        double stopDistance;
+        var order = actor.Movement;
+        if (order is null)
+            return new MovementResult(actor.Position, true, false);
 
-        if (act is not null && act.TargetActorId is not null)
+        Vec2? destination = order.Destination;
+        if (order.FollowActorId is not null)
         {
-            var target = FindTarget(allCombatants, act.TargetActorId);
+            var target = FindTarget(allCombatants, order.FollowActorId);
             if (target is null || target.IsDefeated)
                 return new MovementResult(actor.Position, false, true);
-
             destination = target.Position;
-            stopDistance = act.Definition.Range;
-        }
-        else if (act is not null && act.TargetPoint is not null)
-        {
-            destination = act.TargetPoint;
-            stopDistance = act.Definition.Range;
-        }
-        else
-        {
-            destination = actor.MoveDestination;
-            stopDistance = 0;
         }
 
         if (destination is null)
-            return new MovementResult(actor.Position, true, act is not null);
+            return new MovementResult(actor.Position, true, false);
 
         var delta = destination.Value - actor.Position;
-        double travelNeeded = Math.Max(0, delta.Length - stopDistance);
+        double travelNeeded = Math.Max(0, delta.Length - order.StopDistance);
         double step = Math.Min(actor.Stats.MoveSpeed, travelNeeded);
-        var next = (actor.Position + delta.Normalized() * step).Clamp(0.5, _arenaWidth - 0.5, 0.5, _arenaHeight - 0.5);
+        var next = ClampToArena(actor.Position + delta.Normalized() * step);
 
         return new MovementResult(next, travelNeeded - step <= Epsilon, false);
     }
@@ -195,28 +175,45 @@ internal sealed class ActorStateProcessor
         int beat,
         List<CombatEvent> events)
     {
-        if (actor.State != ActionState.Moving)
-            return;
-
-        var result = ComputeMovement(actor, allCombatants);
-        if (result.Cancel)
+        if (actor.Movement is { } order)
         {
-            CancelCurrentAction(actor);
-            return;
+            var provider = actor.Loadout.FindById(order.ProviderInstanceId);
+            var result = ComputeMovement(actor, allCombatants);
+
+            if (provider is null || !provider.IsOperational || result.Cancel)
+            {
+                actor.StopMovement();
+            }
+            else
+            {
+                actor.Position = result.Next;
+                if (result.ReachesGoal && order.ForActionId is null)
+                    actor.StopMovement();
+            }
         }
 
-        actor.Position = result.Next;
-        if (!result.ReachesGoal)
-            return;
+        // Approaching actions start their windup once in range.
+        foreach (var act in actor.ActionsInMotion.Where(a => a.Phase == ActionState.Moving).ToList())
+        {
+            var target = FindTarget(allCombatants, act.TargetActorId);
+            if (act.TargetActorId is not null && (target is null || target.IsDefeated))
+            {
+                actor.RemoveAction(act);
+                continue;
+            }
 
-        actor.MoveDestination = null;
-        if (actor.CurrentAction is { } act)
-        {
-            BeginAction(actor, act, beat, events);
-        }
-        else
-        {
-            actor.State = ActionState.Idle;
+            if (ActionValidationRules.IsInRange(actor, act.Definition, target, act.TargetPoint))
+            {
+                if (actor.Movement?.ForActionId == act.Id)
+                    actor.StopMovement();
+                BeginAction(actor, act, beat, events);
+            }
+            else if (actor.Movement is null)
+            {
+                // Movement stopped (legs lost, or never available): the approach is abandoned.
+                actor.RemoveAction(act);
+                Reject(actor, act.Definition, "target out of range", beat, events);
+            }
         }
     }
 
@@ -231,60 +228,85 @@ internal sealed class ActorStateProcessor
         if (actor.PendingCancel)
         {
             actor.PendingCancel = false;
-            if (actor.State is ActionState.Windup or ActionState.Moving)
-                CancelCurrentAction(actor);
+            CancelUncommitted(actor);
         }
 
-        var cmd = actor.QueuedCommand;
-        if (cmd is null)
-            return;
-
-        switch (cmd)
+        foreach (var cmd in actor.QueuedCommands.ToList())
         {
-            case MoveCommand move:
-                if (actor.State == ActionState.Windup)
-                    CancelCurrentAction(actor);
+            switch (cmd)
+            {
+                case MoveCommand move:
+                    actor.RemoveQueuedCommand(cmd);
+                    StartMovement(actor, move, beat, events);
+                    break;
 
-                if (actor.State is not (ActionState.Idle or ActionState.Moving))
-                    return; // stay queued until free
+                case UseActionCommand use when _catalog.Actions.TryGetValue(use.ActionId, out var def):
+                    if (actor.GetCooldown(def.Id) > 0)
+                        continue; // stays queued until the cooldown expires
 
-                actor.QueuedCommand = null;
-                actor.CurrentAction = null;
-                actor.MoveDestination = move.Destination.Clamp(0.5, _arenaWidth - 0.5, 0.5, _arenaHeight - 0.5);
-                actor.State = ActionState.Moving;
-                break;
+                    var provider = actor.FindFreeProvider(def.Id);
+                    if (provider is null)
+                    {
+                        if (actor.Loadout.FindOperationalProviderForAction(def.Id) is null)
+                        {
+                            actor.RemoveQueuedCommand(cmd);
+                            Reject(actor, def, "no operational component provides it", beat, events);
+                        }
+                        continue; // component busy: stays queued
+                    }
 
-            case UseActionCommand use when _catalog.Actions.TryGetValue(use.ActionId, out var def):
-                if (actor.State is not (ActionState.Idle or ActionState.Moving))
-                    return; // stay queued until free
+                    actor.RemoveQueuedCommand(cmd);
+                    StartUseAction(actor, use, def, provider, allCombatants, beat, events);
+                    break;
 
-                if (actor.GetCooldown(def.Id) > 0)
-                    return; // stay queued until the cooldown expires
-
-                actor.QueuedCommand = null;
-                StartUseAction(actor, use, def, allCombatants, beat, events);
-                break;
-
-            default:
-                actor.QueuedCommand = null;
-                break;
+                default:
+                    actor.RemoveQueuedCommand(cmd);
+                    break;
+            }
         }
     }
 
     // ---- Shared transitions -----------------------------------------------------------------
 
-    public void CancelCurrentAction(Combatant actor)
+    /// <summary>Cancels movement and every action that has not yet committed (approaching or winding up).</summary>
+    public static void CancelUncommitted(Combatant actor)
     {
-        actor.CurrentAction = null;
-        actor.MoveDestination = null;
-        actor.Resources.ReleaseWit(Combatant.ActionWitReservationKey);
-        actor.State = ActionState.Idle;
+        foreach (var act in actor.ActionsInMotion.Where(a => a.IsCancelable).ToList())
+            actor.RemoveAction(act);
+
+        actor.StopMovement();
+    }
+
+    private void StartMovement(Combatant actor, MoveCommand move, int beat, List<CombatEvent> events)
+    {
+        var legs = actor.FindLocomotionProvider();
+        if (legs is null)
+        {
+            events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+                $"{actor.Name} cannot move: no operational locomotion."));
+            return;
+        }
+
+        if (!TryReserveMovementWit(actor, legs))
+        {
+            events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+                $"{actor.Name} cannot move: insufficient Wit for {legs.Definition.Name}."));
+            return;
+        }
+
+        // A plain move redirects the legs; any approaching actions are abandoned at the movement step.
+        actor.Movement = new MovementOrder
+        {
+            ProviderInstanceId = legs.InstanceId,
+            Destination = ClampToArena(move.Destination)
+        };
     }
 
     private void StartUseAction(
         Combatant actor,
         UseActionCommand cmd,
         ActionDefinition def,
+        EquipmentInstance provider,
         IReadOnlyList<Combatant> allCombatants,
         int beat,
         List<CombatEvent> events)
@@ -293,34 +315,60 @@ internal sealed class ActorStateProcessor
         var validation = ActionValidationRules.ValidateUseAction(actor, def, target, cmd.TargetPoint);
         if (!validation.IsValid)
         {
-            events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
-                $"{actor.Name}'s {def.Name} failed: {validation.FailureReason}"));
+            Reject(actor, def, validation.FailureReason!, beat, events);
             return;
         }
 
-        var provider = actor.Loadout.FindOperationalProviderForAction(def.Id);
-        var active = new ActiveAction(def, provider?.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
-        actor.CurrentAction = active;
+        bool inRange = ActionValidationRules.IsInRange(actor, def, target, cmd.TargetPoint);
+        var legs = inRange ? null : actor.FindLocomotionProvider();
+        if (!inRange && legs is null)
+        {
+            Reject(actor, def, "target out of range and the Crest cannot move", beat, events);
+            return;
+        }
 
-        if (ActionValidationRules.IsInRange(actor, def, target, cmd.TargetPoint))
+        var act = actor.AddAction(def, provider.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
+
+        if (inRange)
         {
-            BeginAction(actor, active, beat, events);
+            BeginAction(actor, act, beat, events);
+            return;
         }
-        else
+
+        if (!TryReserveMovementWit(actor, legs!))
         {
-            actor.State = ActionState.Moving;
-            actor.MoveDestination = target?.Position ?? cmd.TargetPoint;
+            actor.RemoveAction(act);
+            Reject(actor, def, $"insufficient Wit to walk with {legs!.Definition.Name}", beat, events);
+            return;
         }
+
+        act.Phase = ActionState.Moving;
+        actor.Movement = new MovementOrder
+        {
+            ProviderInstanceId = legs!.InstanceId,
+            FollowActorId = cmd.TargetActorId,
+            Destination = cmd.TargetActorId is null ? cmd.TargetPoint : null,
+            StopDistance = def.Range,
+            ForActionId = act.Id
+        };
     }
 
     /// <summary>Starts an action's windup (or impact, for zero-windup actions) in the next beat.</summary>
-    private void BeginAction(Combatant actor, ActiveAction act, int beat, List<CombatEvent> events)
+    private static void BeginAction(Combatant actor, ActiveAction act, int beat, List<CombatEvent> events)
     {
         var def = act.Definition;
         if (def.WitReserve > 0)
-            actor.Resources.ReserveWit(Combatant.ActionWitReservationKey, def.WitReserve);
+        {
+            if (actor.Stats.AvailableWit(actor.Resources.ReservedWit) < def.WitReserve)
+            {
+                actor.RemoveAction(act);
+                Reject(actor, def, $"insufficient available Wit (needs {def.WitReserve})", beat, events);
+                return;
+            }
 
-        actor.MoveDestination = null;
+            actor.Resources.ReserveWit(act.WitReservationKey, def.WitReserve);
+        }
+
         events.Add(new CombatEvent(
             beat,
             CombatEventType.ActionStarted,
@@ -329,43 +377,25 @@ internal sealed class ActorStateProcessor
             act.TargetActorId));
 
         if (def.WindupBeats > 0)
-        {
-            SetPhase(actor, act, ActionState.Windup, def.WindupBeats);
-        }
+            SetPhase(act, ActionState.Windup, def.WindupBeats);
         else
-        {
             EnterImpact(actor, act, beat, events);
-        }
     }
 
-    private void EnterImpact(Combatant actor, ActiveAction act, int beat, List<CombatEvent> events)
+    private static void EnterImpact(Combatant actor, ActiveAction act, int beat, List<CombatEvent> events)
     {
         if (!TryCommitCosts(actor, act))
         {
+            actor.RemoveAction(act);
             events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
                 $"{actor.Name}'s {act.Definition.Name} fizzled: costs could not be paid."));
-            CancelCurrentAction(actor);
             return;
         }
 
-        SetPhase(actor, act, ActionState.Executing, Math.Max(1, act.Definition.ImpactBeats));
+        SetPhase(act, ActionState.Executing, Math.Max(1, act.Definition.ImpactBeats));
     }
 
-    private void ResolveImpact(
-        Combatant actor,
-        ActiveAction act,
-        IReadOnlyList<Combatant> allCombatants,
-        int beat,
-        List<IncomingHit> hits,
-        List<CombatEvent> events)
-    {
-        ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events);
-        act.EffectApplied = true;
-        actor.Resources.ReleaseWit(Combatant.ActionWitReservationKey);
-        EnterRecovery(actor, act, beat: null);
-    }
-
-    private static void EnterRecovery(Combatant actor, ActiveAction act, int? beat)
+    private static void EnterRecovery(Combatant actor, ActiveAction act, int? enteredThisBeat)
     {
         int recovery = act.Definition.RecoveryBeats + (actor.Resources.IsOverheated ? OverheatRecoveryPenaltyBeats : 0);
         if (recovery <= 0)
@@ -374,47 +404,63 @@ internal sealed class ActorStateProcessor
             return;
         }
 
-        SetPhase(actor, act, ActionState.Recovery, recovery);
-        if (beat is not null)
-            act.PhaseEnteredBeat = beat.Value;
+        SetPhase(act, ActionState.Recovery, recovery);
+        if (enteredThisBeat is not null)
+            act.PhaseEnteredBeat = enteredThisBeat.Value;
     }
 
     private static void CompleteAction(Combatant actor, ActiveAction act)
     {
-        actor.CurrentAction = null;
-        actor.State = ActionState.Idle;
+        actor.RemoveAction(act);
         actor.SetCooldown(act.Definition.Id, act.Definition.CooldownBeats);
     }
 
-    private static void SetPhase(Combatant actor, ActiveAction act, ActionState phase, int beats)
+    private static void SetPhase(ActiveAction act, ActionState phase, int beats)
     {
         act.Phase = phase;
         act.PhaseTotalBeats = beats;
         act.PhaseBeatsRemaining = beats;
-        actor.State = phase;
+    }
+
+    private static bool TryReserveMovementWit(Combatant actor, EquipmentInstance legs)
+    {
+        actor.Resources.ReleaseWit(Combatant.MovementWitReservationKey);
+        int cost = legs.Definition.MovementWitCost;
+        if (cost <= 0)
+            return true;
+
+        if (actor.Stats.AvailableWit(actor.Resources.ReservedWit) < cost)
+            return false;
+
+        actor.Resources.ReserveWit(Combatant.MovementWitReservationKey, cost);
+        return true;
     }
 
     private static bool TryCommitCosts(Combatant actor, ActiveAction act)
     {
         var def = act.Definition;
-        var provider = act.SourceEquipmentInstanceId is not null
-            ? actor.Loadout.FindById(act.SourceEquipmentInstanceId)
-            : null;
+        var provider = actor.Loadout.FindById(act.SourceEquipmentInstanceId);
 
-        if (provider is not null && provider.IsDisabled)
+        if (provider is null || provider.IsDisabled)
             return false;
         if (def.MoteCost > actor.Resources.CurrentMotes)
             return false;
-        if (def.AmmoCost > 0 && (provider is null || provider.CurrentAmmo < def.AmmoCost))
+        if (def.AmmoCost > 0 && provider.CurrentAmmo < def.AmmoCost)
             return false;
 
         actor.Resources.TrySpendMotes(def.MoteCost);
         if (def.AmmoCost > 0)
-            provider!.TryConsumeAmmo(def.AmmoCost);
+            provider.TryConsumeAmmo(def.AmmoCost);
 
         act.CostsCommitted = true;
         return true;
     }
+
+    private Vec2 ClampToArena(Vec2 p) => p.Clamp(0.5, _arenaWidth - 0.5, 0.5, _arenaHeight - 0.5);
+
+    private static void Reject(Combatant actor, ActionDefinition def, string reason, int beat, List<CombatEvent> events) =>
+        events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+            $"{actor.Name}'s {def.Name} failed: {reason}"));
 
     private static Combatant? FindTarget(IReadOnlyList<Combatant> all, string? id) =>
         id is null ? null : all.FirstOrDefault(c => c.Id == id);
