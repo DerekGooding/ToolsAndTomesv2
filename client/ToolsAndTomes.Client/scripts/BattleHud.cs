@@ -9,6 +9,7 @@ namespace ToolsAndTomes.Client;
 public partial class BattleHud : CanvasLayer
 {
     private Label _status = null!;
+    private Label _allies = null!;
     private Label _outcome = null!;
     private Label _prompt = null!;
     private HBoxContainer _actionBar = null!;
@@ -28,9 +29,11 @@ public partial class BattleHud : CanvasLayer
         var topBox = new VBoxContainer();
         top.AddChild(topBox);
         _status = new Label();
+        _allies = new Label { Modulate = new Color(0.55f, 0.95f, 0.8f) };
         _outcome = new Label { Modulate = new Color(1f, 0.85f, 0.3f) };
         _prompt = new Label { Modulate = new Color(1f, 0.55f, 0.3f) };
         topBox.AddChild(_status);
+        topBox.AddChild(_allies);
         topBox.AddChild(_outcome);
         topBox.AddChild(_prompt);
 
@@ -78,6 +81,8 @@ public partial class BattleHud : CanvasLayer
             (player.HasActiveAegis ? $"   AEGIS {player.AegisBlocksRemaining}" : "") +
             $"   |   Target: {target?.Name ?? "none"}";
 
+        _allies.Text = AlliesLine(sim, player);
+
         _outcome.Text = sim.Outcome switch
         {
             EncounterOutcome.PlayerVictory => "VICTORY! Press R to fight again.",
@@ -92,6 +97,25 @@ public partial class BattleHud : CanvasLayer
 
         RefreshActionBar(sim, player, target);
         RefreshLog(sim);
+    }
+
+    /// <summary>One entry per allied Crest: Core durability, parts still working, and what it is doing.</summary>
+    private static string AlliesLine(CombatSimulation sim, Combatant player)
+    {
+        var allies = sim.Combatants.Where(c => c.Faction == Faction.Player && c.Id != player.Id).ToList();
+        if (allies.Count == 0)
+            return "";
+
+        return "Lance: " + string.Join("   ", allies.Select(a =>
+        {
+            if (a.IsDefeated)
+                return $"{a.Name} DOWN";
+            var core = a.Loadout.Installed.Where(e => e.Definition.IsCore).ToList();
+            int coreHp = core.Sum(e => e.CurrentDurability), coreMax = core.Sum(e => e.Definition.MaxDurability);
+            int working = a.Loadout.Installed.Count(e => e.IsOperational);
+            string doing = a.ActionsInMotion.FirstOrDefault() is { } act ? act.Definition.Name : a.Movement is not null ? "moving" : "ready";
+            return $"{a.Name} Core {coreHp}/{coreMax} · parts {working}/{a.Loadout.Installed.Count} · {doing}";
+        }));
     }
 
     private void RefreshActionBar(CombatSimulation sim, Combatant player, Combatant? target)

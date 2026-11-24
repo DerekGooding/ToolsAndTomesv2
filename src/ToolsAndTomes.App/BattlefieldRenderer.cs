@@ -1,3 +1,4 @@
+using ToolsAndTomes.Core.AI;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -94,16 +95,18 @@ public static class BattlefieldRenderer
                 canvas.Children.Add(new Line
                 {
                     X1 = start.X, Y1 = start.Y, X2 = end.X, Y2 = end.Y,
-                    Stroke = actor.Faction == Faction.Player ? Brushes.DeepSkyBlue : Brushes.IndianRed,
+                    Stroke = AllyAIController.IsAlly(actor) ? Brushes.MediumAquamarine : actor.Faction == Faction.Player ? Brushes.DeepSkyBlue : Brushes.IndianRed,
                     StrokeThickness = 1.5,
                     StrokeDashArray = [4, 4],
                     Opacity = 0.65
                 });
             }
 
-            var color = actor.Faction == Faction.Player
-                ? Color.FromRgb(56, 189, 248)
-                : Color.FromRgb(249, 115, 22);
+            var color = AllyAIController.IsAlly(actor)
+                ? Color.FromRgb(52, 211, 153)
+                : actor.Faction == Faction.Player
+                    ? Color.FromRgb(56, 189, 248)
+                    : Color.FromRgb(249, 115, 22);
 
             foreach (var act in actor.ActionsInMotion)
             {
@@ -230,6 +233,8 @@ public static class BattlefieldRenderer
 
             Brush fill = c.IsDefeated
                 ? Brushes.DimGray
+                : AllyAIController.IsAlly(c)
+                    ? new SolidColorBrush(Color.FromRgb(16, 185, 129))
                 : c.Faction == Faction.Player
                     ? new SolidColorBrush(Color.FromRgb(14, 165, 233))
                     : c.Archetype switch

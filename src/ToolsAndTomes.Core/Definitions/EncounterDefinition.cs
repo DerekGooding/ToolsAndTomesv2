@@ -15,6 +15,22 @@ public sealed record EncounterDefinition
     public Vec2 PlayerStart { get; init; } = new(4, 7);
     public int PlayerStartingMotes { get; init; }
 
+    /// <summary>Where allied Crests start, in lance order. Missing entries flank <see cref="PlayerStart"/>.</summary>
+    public IReadOnlyList<Vec2> AllyStarts { get; init; } = [];
+
+    /// <summary>The start position for the ally at <paramref name="index"/> (0-based).</summary>
+    public Vec2 AllyStart(int index)
+    {
+        if (index < AllyStarts.Count)
+            return AllyStarts[index];
+
+        // Flank the player: alternate above and below, a step behind, widening for each further ally.
+        double side = index % 2 == 0 ? -1 : 1;
+        double offset = 2.5 * (index / 2 + 1);
+        return new Vec2(PlayerStart.X - 1.5, PlayerStart.Y + side * offset)
+            .Clamp(1.0, ArenaWidth - 1.0, 1.0, ArenaHeight - 1.0);
+    }
+
     public IReadOnlyList<EnemyPlacement> Enemies { get; init; } = [];
     public RewardTable Rewards { get; init; } = new();
 }

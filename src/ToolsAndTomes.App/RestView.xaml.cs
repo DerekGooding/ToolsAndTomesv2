@@ -19,7 +19,16 @@ public partial class RestView : UserControl
         }
     }
 
+    private sealed record CrestOption(string? Id, string Label)
+    {
+        public override string ToString() => Label;
+    }
+
     private readonly AppSessionState _session;
+
+    /// <summary>The lance member the rest actions apply to (null: the player's Crest).</summary>
+    private string? _crestId;
+    private bool _refreshing;
 
     public event Action? ContinueRequested;
     public event Action? WithdrawRequested;
@@ -37,7 +46,15 @@ public partial class RestView : UserControl
         if (Run is not { } run)
             return;
 
-        var crest = run.Crest;
+        _refreshing = true;
+        var crest = run.FindCrest(_crestId) ?? run.Crest;
+        var options = run.Lance
+            .Select(c => new CrestOption(c == run.Crest ? null : c.Id,
+                (c == run.Crest ? $"{c.Name} (you)" : c.Name) + (c.IsDefeated ? " — DOWN" : "")))
+            .ToList();
+        CmbCrest.ItemsSource = options;
+        CmbCrest.SelectedItem = options.FirstOrDefault(o => o.Id == (crest == run.Crest ? null : crest.Id));
+        CmbCrest.Visibility = options.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
         var stats = crest.Stats;
         int total = run.Mission.EncounterIds.Count;
         var next = run.Catalog.Encounters[run.Mission.EncounterIds[run.StageIndex + 1]];
@@ -45,6 +62,7 @@ public partial class RestView : UserControl
 
         TxtTitle.Text = $"REST IN THE FIELD — {run.Mission.Name} (after encounter {run.StageIndex + 1} of {total})";
         TxtStatus.Text =
+            (crest == run.Crest ? "" : $"{crest.Name}{(crest.IsDefeated ? " (DOWN: repair its Core)" : "")}  |  ") +
             $"Time left: {run.RestBeatsRemaining} beats  |  Motes: {crest.Resources.CurrentMotes}/{stats.MaxMotes} (+1 per {run.MoteIntervalBeats} beats)  |  " +
             $"Fast-iron: {crest.TotalFastIron} ({crest.Resources.FastIron} loose, {crest.Loadout.CarriedFastIron} in cargo)  |  Cargo: {stats.CargoUsed}/{stats.CargoCapacity}";
         TxtNext.Text = $"Next: {next.Name} — {next.Description}  |  Samples banked this mission: {run.RewardsEarned.Sum(r => r.Count)}";
@@ -53,7 +71,7 @@ public partial class RestView : UserControl
         BtnWait.IsEnabled = run.RestBeatsRemaining >= run.MoteIntervalBeats;
         BtnWaitAll.IsEnabled = BtnWait.IsEnabled;
         BtnSummon.Content = summon is null ? "No Square Summon" : $"{summon.Name} ({summon.MoteCost} Motes → fast-iron)";
-        BtnSummon.IsEnabled = summon is not null && crest.Resources.CurrentMotes >= summon.MoteCost;
+        BtnSummon.IsEnabled = summon is not null && !crest.IsDefeated && crest.Resources.CurrentMotes >= summon.MoteCost;
         BtnRepair.Content = $"Repair selected (1 fast-iron → +{Math.Max(1, crest.Rules.RepairPointsPerFastIron)} durability)";
 
         string? selected = (LstComponents.SelectedItem as ComponentRow)?.Instance.InstanceId;
@@ -62,6 +80,16 @@ public partial class RestView : UserControl
         LstComponents.SelectedItem = rows.FirstOrDefault(r => r.Instance.InstanceId == selected);
 
         LstLog.ItemsSource = run.RestLog.Select(e => e.Message).Reverse().ToList();
+        _refreshing = false;
+    }
+
+    private void CmbCrest_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_refreshing || CmbCrest.SelectedItem is not CrestOption option)
+            return;
+        _crestId = option.Id;
+        CmbField.SelectedItem = null;
+        RefreshUI();
     }
 
     private void Show(RestResult result)
@@ -96,7 +124,7 @@ public partial class RestView : UserControl
     private void BtnSummon_Click(object sender, RoutedEventArgs e)
     {
         if (Run is { } run)
-            Show(run.SquareSummon());
+            Show(run.SquareSummon(_crestId));
     }
 
     private void BtnRepair_Click(object sender, RoutedEventArgs e)
@@ -110,12 +138,12 @@ public partial class RestView : UserControl
             return;
         }
 
-        Show(run.Repair(row.Instance.InstanceId));
+        Show(run.Repair(row.Instance.InstanceId, _crestId));
     }
 
     private void CmbField_DropDownOpened(object? sender, EventArgs e)
     {
-        CmbField.ItemsSource = Run is { } run ? FieldOption.Build(run.Catalog, run.Crest) : null;
+        CmbField.ItemsSource = Run is { } run ? FieldOption.Build(run.Catalog, run.FindCrest(_crestId) ?? run.Crest) : null;
     }
 
     private void BtnField_Click(object sender, RoutedEventArgs e)
@@ -128,8 +156,8 @@ public partial class RestView : UserControl
 
         var cmd = option.Command;
         var result = cmd.Shaping is { } order
-            ? run.Shape(order, cmd.OwnComponentInstanceId)
-            : run.UseCargoItem(cmd.ActionId, cmd.OwnComponentInstanceId ?? "");
+            ? run.Shape(order, cmd.OwnComponentInstanceId, _crestId)
+            : run.UseCargoItem(cmd.ActionId, cmd.OwnComponentInstanceId ?? "", _crestId);
         CmbField.SelectedItem = null;
         Show(result);
     }
@@ -140,6 +168,7 @@ public partial class RestView : UserControl
             return;
 
         run.ContinueToNextEncounter();
+        _crestId = null;
         TxtMessage.Text = "";
         ContinueRequested?.Invoke();
     }
@@ -152,6 +181,7 @@ public partial class RestView : UserControl
             return;
 
         _session.WithdrawFromMission();
+        _crestId = null;
         TxtMessage.Text = "";
         WithdrawRequested?.Invoke();
     }

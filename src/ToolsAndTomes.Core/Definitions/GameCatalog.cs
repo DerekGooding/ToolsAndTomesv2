@@ -17,6 +17,8 @@ public sealed class GameCatalog
         new Dictionary<string, ConsumableDefinition>();
     private static readonly IReadOnlyDictionary<string, MissionDefinition> NoMissions =
         new Dictionary<string, MissionDefinition>();
+    private static readonly IReadOnlyDictionary<string, PilotDefinition> NoPilots =
+        new Dictionary<string, PilotDefinition>();
 
     public IReadOnlyDictionary<string, ActionDefinition> Actions { get; }
     public IReadOnlyDictionary<string, EquipmentDefinition> Equipment { get; }
@@ -26,6 +28,9 @@ public sealed class GameCatalog
     public IReadOnlyDictionary<string, EncounterDefinition> Encounters { get; }
     public IReadOnlyDictionary<string, ConsumableDefinition> Consumables { get; }
     public IReadOnlyDictionary<string, MissionDefinition> Missions { get; }
+
+    /// <summary>Named allied pilots (and their starting Crests) who can join the player's lance.</summary>
+    public IReadOnlyDictionary<string, PilotDefinition> Pilots { get; }
     public RulesConfig Rules { get; }
 
     /// <summary>
@@ -43,7 +48,8 @@ public sealed class GameCatalog
         IReadOnlyDictionary<string, ExoticMaterialDefinition>? materials = null,
         IReadOnlyDictionary<string, EncounterDefinition>? encounters = null,
         IReadOnlyDictionary<string, ConsumableDefinition>? consumables = null,
-        IReadOnlyDictionary<string, MissionDefinition>? missions = null)
+        IReadOnlyDictionary<string, MissionDefinition>? missions = null,
+        IReadOnlyDictionary<string, PilotDefinition>? pilots = null)
     {
         Rules = rules ?? RulesConfig.Default;
         Actions = actions;
@@ -54,12 +60,13 @@ public sealed class GameCatalog
         Encounters = encounters ?? NoEncounters;
         Consumables = consumables ?? NoConsumables;
         Missions = missions ?? NoMissions;
+        Pilots = pilots ?? NoPilots;
         BaselineComponentIds = starterConfigurations.Values.SelectMany(c => c.ComponentIds).ToHashSet();
     }
 
     /// <summary>A copy of this catalog with different global rules.</summary>
     public GameCatalog WithRules(RulesConfig rules) =>
-        new(Actions, Equipment, StarterConfigurations, Enemies, rules, Materials, Encounters, Consumables, Missions);
+        new(Actions, Equipment, StarterConfigurations, Enemies, rules, Materials, Encounters, Consumables, Missions, Pilots);
 
     public ActionDefinition GetAction(string id) => Actions[id];
     public EquipmentDefinition GetEquipment(string id) => Equipment[id];

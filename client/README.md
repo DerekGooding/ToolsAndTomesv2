@@ -32,6 +32,8 @@ Runs the fight headless at full speed with the player on autopilot, prints the r
 godot --headless --path client/ToolsAndTomes.Client -- --autoplay
 ```
 
+The fight includes the two allied pilots (teal Crests, AI-controlled, status on the HUD's "Lance" line). Add `--solo` (e.g. `-- --autoplay --solo`) to fight alone.
+
 ## What's placeholder
 
 Crests are assembled from primitives — one per installed component, shaped by category (sphere Core, leg

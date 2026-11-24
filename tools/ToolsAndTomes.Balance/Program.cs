@@ -7,6 +7,7 @@ using ToolsAndTomes.Core.Definitions;
 //   dotnet run --project tools/ToolsAndTomes.Balance -- [--seeds 200] [--beats 300] [--content <dir>] [--build <id>] [--details]
 //   ... --missions            play every campaign mission end to end (auto-rest between encounters)
 //   ... --mission <id>        play one mission
+//   ... --allies <ids|all>    pilots who join the player's lance, comma-separated (e.g. pilot_marrow,pilot_vell)
 //
 // --content loads an alternative content directory (e.g. an edited copy of src/ToolsAndTomes.Core/Content),
 // so balance changes can be compared before they are committed.
@@ -17,6 +18,7 @@ bool details = false;
 bool missions = false;
 bool encounters = false;
 string? missionFilter = null;
+string? alliesArg = null;
 
 for (int i = 0; i < args.Length; i++)
 {
@@ -30,6 +32,7 @@ for (int i = 0; i < args.Length; i++)
         case "--missions": missions = true; break;
         case "--mission": missions = true; missionFilter = args[++i]; break;
         case "--encounters": encounters = true; break;
+        case "--allies": alliesArg = args[++i]; break;
         default:
             Console.Error.WriteLine($"Unknown argument '{args[i]}'.");
             return 1;
@@ -56,7 +59,26 @@ if (builds.Count == 0)
     return 1;
 }
 
-var runner = new BalanceRunner(catalog);
+var allyIds = alliesArg switch
+{
+    null or "" or "none" => [],
+    "all" => catalog.Pilots.Keys.Take(ToolsAndTomes.Core.Campaign.MissionRun.MaxAllies).ToList(),
+    _ => alliesArg.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList()
+};
+if (allyIds.FirstOrDefault(id => !catalog.Pilots.ContainsKey(id)) is { } unknownPilot)
+{
+    Console.Error.WriteLine($"Unknown pilot '{unknownPilot}'. Pilots: {string.Join(", ", catalog.Pilots.Keys)}.");
+    return 1;
+}
+if (allyIds.Count > ToolsAndTomes.Core.Campaign.MissionRun.MaxAllies)
+{
+    Console.Error.WriteLine($"A lance holds at most {ToolsAndTomes.Core.Campaign.MissionRun.MaxAllies} allies.");
+    return 1;
+}
+if (allyIds.Count > 0)
+    Console.WriteLine($"Allies: {string.Join(", ", allyIds.Select(id => catalog.Pilots[id].DisplayName))}");
+
+var runner = new BalanceRunner(catalog, allyIds);
 
 if (encounters)
 {

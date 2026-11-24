@@ -14,6 +14,12 @@ public static class Coords
     public static Color FactionColor(Faction faction) =>
         faction == Faction.Player ? new Color(0.25f, 0.65f, 1.0f) : new Color(1.0f, 0.45f, 0.2f);
 
+    /// <summary>The player's Crest is blue, allied pilots teal, enemies orange.</summary>
+    public static Color CrestColor(Combatant crest) =>
+        crest.Faction == Faction.Player && crest.Id != ToolsAndTomes.Core.Simulation.EncounterFactory.PlayerCombatantId
+            ? new Color(0.2f, 0.85f, 0.65f)
+            : FactionColor(crest.Faction);
+
     public static StandardMaterial3D Flat(Color color, bool unshaded = false, float alpha = 1f)
     {
         var material = new StandardMaterial3D

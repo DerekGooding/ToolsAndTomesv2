@@ -152,6 +152,7 @@ public partial class CombatView : UserControl
     private void AdvanceOneBeat(CombatSimulation sim)
     {
         _session.ActiveAI.Update(sim);
+        _session.AllyAI.Update(sim);
         sim.StepBeat();
         UpdateSlowMotion(sim);
     }

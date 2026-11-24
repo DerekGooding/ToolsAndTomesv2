@@ -230,12 +230,17 @@ public sealed class CombatSimulation
         }
     }
 
+    /// <summary>
+    /// The fight is lost when the player's own Crest falls (allies fighting on don't save it), or, in a fight
+    /// without one, when every Player-faction Crest is down. It is won when every enemy is down.
+    /// </summary>
     private void UpdateOutcome()
     {
-        bool anyPlayerAlive = _combatants.Any(c => c.Faction == Faction.Player && !c.IsDefeated);
+        var lead = FindCombatant(EncounterFactory.PlayerCombatantId);
+        bool playerDown = lead?.IsDefeated ?? !_combatants.Any(c => c.Faction == Faction.Player && !c.IsDefeated);
         bool anyEnemyAlive = _combatants.Any(c => c.Faction == Faction.Enemy && !c.IsDefeated);
 
-        if (!anyPlayerAlive)
+        if (playerDown)
             Outcome = EncounterOutcome.PlayerDefeat;
         else if (!anyEnemyAlive)
             Outcome = EncounterOutcome.PlayerVictory;

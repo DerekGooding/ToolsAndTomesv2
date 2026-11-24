@@ -13,16 +13,18 @@ namespace ToolsAndTomes.Core.AI;
 /// </summary>
 public sealed class AutoPilot
 {
-    public void Update(CombatSimulation sim, Combatant crest)
+    /// <param name="target">The enemy to fight; the nearest living enemy when omitted.</param>
+    public void Update(CombatSimulation sim, Combatant crest, Combatant? target = null)
     {
         if (sim.IsPaused || sim.Outcome != EncounterOutcome.InProgress || crest.IsDefeated)
             return;
 
-        var target = sim.Combatants
-            .Where(c => c.Faction != crest.Faction && !c.IsDefeated)
-            .OrderBy(c => c.Position.DistanceTo(crest.Position))
-            .ThenBy(c => c.Id, StringComparer.Ordinal)
-            .FirstOrDefault();
+        if (target is null || target.IsDefeated || target.Faction == crest.Faction)
+            target = sim.Combatants
+                .Where(c => c.Faction != crest.Faction && !c.IsDefeated)
+                .OrderBy(c => c.Position.DistanceTo(crest.Position))
+                .ThenBy(c => c.Id, StringComparer.Ordinal)
+                .FirstOrDefault();
         if (target is null)
             return;
 

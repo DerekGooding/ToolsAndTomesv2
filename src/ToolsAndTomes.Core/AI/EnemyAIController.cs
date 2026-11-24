@@ -5,9 +5,17 @@ using ToolsAndTomes.Core.Simulation;
 
 namespace ToolsAndTomes.Core.AI;
 
+/// <summary>
+/// Drives every enemy Crest. Each enemy picks a target among the player's lance (the player and allies): the
+/// nearest one, but it keeps its current target unless another is clearly closer, so it doesn't flip-flop.
+/// </summary>
 public sealed class EnemyAIController
 {
+    /// <summary>How much closer (tiles) another Crest must be before an enemy switches targets.</summary>
+    public const double TargetSwitchMargin = 3.0;
+
     private readonly int _decisionIntervalBeats;
+    private readonly Dictionary<string, string> _targets = new(StringComparer.Ordinal);
 
     public EnemyAIController(int decisionIntervalBeats = 1)
     {
@@ -22,10 +30,11 @@ public sealed class EnemyAIController
         if (simulation.CurrentBeat % _decisionIntervalBeats != 0)
             return;
 
-        var playerTarget = simulation.Combatants
-            .FirstOrDefault(c => c.Faction == Faction.Player && !c.IsDefeated);
+        var lance = simulation.Combatants
+            .Where(c => c.Faction == Faction.Player && !c.IsDefeated)
+            .ToList();
 
-        if (playerTarget is null)
+        if (lance.Count == 0)
             return;
 
         foreach (var enemy in simulation.Combatants)
@@ -36,12 +45,30 @@ public sealed class EnemyAIController
             if (enemy.State != ActionState.Idle || enemy.HasQueuedCommands)
                 continue;
 
-            var command = ChooseCommand(enemy, playerTarget, simulation);
+            var target = ChooseTarget(enemy, lance);
+            var command = ChooseCommand(enemy, target, simulation);
             if (command is not null)
             {
                 simulation.IssueCommand(command);
             }
         }
+    }
+
+    /// <summary>The nearest living Crest of the lance, unless the current target is still within <see cref="TargetSwitchMargin"/> of it.</summary>
+    public Combatant ChooseTarget(Combatant enemy, IReadOnlyList<Combatant> lance)
+    {
+        var nearest = lance
+            .OrderBy(c => c.Position.DistanceTo(enemy.Position))
+            .ThenBy(c => c.Id, StringComparer.Ordinal)
+            .First();
+
+        if (_targets.TryGetValue(enemy.Id, out var currentId) &&
+            lance.FirstOrDefault(c => c.Id == currentId) is { } current &&
+            current.Position.DistanceTo(enemy.Position) <= nearest.Position.DistanceTo(enemy.Position) + TargetSwitchMargin)
+            return current;
+
+        _targets[enemy.Id] = nearest.Id;
+        return nearest;
     }
 
     public CombatCommand? ChooseCommand(Combatant enemy, Combatant target, CombatSimulation sim)

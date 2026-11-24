@@ -112,7 +112,7 @@ public partial class CrestView : Node3D
         foreach (var child in _body.GetChildren())
             child.QueueFree();
 
-        var faction = Coords.FactionColor(Crest.Faction);
+        var faction = Coords.CrestColor(Crest);
         int weaponSide = 0, armorIndex = 0, utilityIndex = 0;
 
         foreach (var part in Crest.Loadout.DamageOrder)

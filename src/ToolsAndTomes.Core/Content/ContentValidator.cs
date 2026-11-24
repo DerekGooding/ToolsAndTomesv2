@@ -52,6 +52,8 @@ public static class ContentValidator
             ValidateConfiguration(catalog, c, $"configuration '{c.Id}'", errors);
         foreach (var en in catalog.Enemies.Values)
             ValidateConfiguration(catalog, en.Assembly, $"enemy '{en.Id}'", errors);
+        foreach (var p in catalog.Pilots.Values)
+            ValidateConfiguration(catalog, p.Assembly, $"pilot '{p.Id}'", errors);
 
         // Exotic materials & research
         foreach (var m in catalog.Materials.Values)
@@ -127,6 +129,8 @@ public static class ContentValidator
             string at = $"encounter '{enc.Id}'";
             if (enc.ArenaWidth < 4 || enc.ArenaHeight < 4) errors.Add($"{at}: arena must be at least 4x4.");
             if (enc.Enemies.Count == 0) errors.Add($"{at}: has no enemies.");
+            foreach (var s in enc.AllyStarts.Where(s => s.X < 0 || s.Y < 0 || s.X > enc.ArenaWidth || s.Y > enc.ArenaHeight))
+                errors.Add($"{at}: ally start ({s.X}, {s.Y}) is outside the arena.");
             foreach (var p in enc.Enemies.Where(p => !catalog.Enemies.ContainsKey(p.EnemyId)))
                 errors.Add($"{at}: unknown enemy '{p.EnemyId}'.");
 
@@ -150,7 +154,8 @@ public static class ContentValidator
         IEnumerable<ExoticMaterialDefinition>? materials = null,
         IEnumerable<EncounterDefinition>? encounters = null,
         IEnumerable<ConsumableDefinition>? consumables = null,
-        IEnumerable<MissionDefinition>? missions = null)
+        IEnumerable<MissionDefinition>? missions = null,
+        IEnumerable<PilotDefinition>? pilots = null)
     {
         var errors = new List<string>();
         void Check(string kind, IEnumerable<string> ids) =>
@@ -164,6 +169,7 @@ public static class ContentValidator
         Check("encounter", (encounters ?? []).Select(e => e.Id));
         Check("consumable", (consumables ?? []).Select(c => c.Id));
         Check("mission", (missions ?? []).Select(m => m.Id));
+        Check("pilot", (pilots ?? []).Select(p => p.Id));
         return errors;
     }
 

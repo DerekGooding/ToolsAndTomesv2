@@ -35,7 +35,7 @@ public partial class TelegraphView : MeshInstance3D
         foreach (var crest in sim.Combatants.Where(c => !c.IsDefeated))
         {
             var from = views[crest.Id].Position + Vector3.Up * 1.2f;
-            var baseColor = Coords.FactionColor(crest.Faction);
+            var baseColor = Coords.CrestColor(crest);
 
             if (crest.Movement is { } move)
             {

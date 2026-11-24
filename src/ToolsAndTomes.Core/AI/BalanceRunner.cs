@@ -13,7 +13,8 @@ public sealed record EncounterResult(
     int Beats,
     int ComponentsLost,
     int EnemiesDefeated,
-    string SurvivingEnemies);
+    string SurvivingEnemies,
+    int AlliesDown = 0);
 
 public sealed record MissionResult(
     string BuildId,
@@ -24,7 +25,8 @@ public sealed record MissionResult(
     int EncountersWon,
     int TotalBeats,
     int ComponentsDisabledAtEnd,
-    int SamplesEarned);
+    int SamplesEarned,
+    int AlliesDownAtEnd = 0);
 
 public sealed record MissionSummary(
     string BuildName,
@@ -55,11 +57,14 @@ public sealed record BuildSummary(
 
 /// <summary>
 /// Plays the test encounter headlessly for each build across many seeds (player on <see cref="AutoPilot"/>,
-/// enemies on <see cref="EnemyAIController"/>) and summarizes the results. Deterministic for a given catalog,
-/// build list, and seed range.
+/// allies on <see cref="AllyAIController"/>, enemies on <see cref="EnemyAIController"/>) and summarizes the
+/// results. Deterministic for a given catalog, build list, ally list, and seed range.
 /// </summary>
-public sealed class BalanceRunner(GameCatalog catalog)
+/// <param name="allyPilotIds">Pilots who join every run, in lance order, with their starting assemblies.</param>
+public sealed class BalanceRunner(GameCatalog catalog, IReadOnlyList<string>? allyPilotIds = null)
 {
+    private readonly IReadOnlyList<string> _allyPilotIds = allyPilotIds ?? [];
+
     public IReadOnlyList<EncounterResult> Run(IEnumerable<CrestConfiguration> builds, int seeds, int maxBeats = 300, int firstSeed = 1, string? encounterId = null)
     {
         var results = new List<EncounterResult>();
@@ -77,14 +82,17 @@ public sealed class BalanceRunner(GameCatalog catalog)
     {
         var loadout = CrestLoadout.CreateFromConfiguration(build, catalog, "bal");
         var encounter = catalog.Encounters[encounterId ?? EncounterFactory.TestEncounterId];
-        var sim = EncounterFactory.CreateEncounter(encounter, loadout, seed, catalog);
-        var player = sim.Combatants.First(c => c.Faction == Faction.Player);
+        var allies = EncounterFactory.CreateAllies(_allyPilotIds, catalog, encounter.PlayerStartingMotes);
+        var sim = EncounterFactory.CreateEncounter(encounter, loadout, seed, catalog, allies);
+        var player = sim.FindCombatant(EncounterFactory.PlayerCombatantId)!;
         var enemyAI = new EnemyAIController();
+        var allyAI = new AllyAIController();
         var pilot = new AutoPilot();
 
         while (sim.Outcome == EncounterOutcome.InProgress && sim.CurrentBeat < maxBeats)
         {
             enemyAI.Update(sim);
+            allyAI.Update(sim);
             pilot.Update(sim, player);
             sim.StepBeat();
         }
@@ -96,7 +104,8 @@ public sealed class BalanceRunner(GameCatalog catalog)
             sim.CurrentBeat,
             loadout.Installed.Count(e => e.IsDisabled),
             sim.Combatants.Count(c => c.Faction == Faction.Enemy && c.IsDefeated),
-            string.Join(",", sim.Combatants.Where(c => c.Faction == Faction.Enemy && !c.IsDefeated).Select(c => c.Id)));
+            string.Join(",", sim.Combatants.Where(c => c.Faction == Faction.Enemy && !c.IsDefeated).Select(c => c.Id)),
+            allies.Count(a => a.IsDefeated));
     }
 
     public static IReadOnlyList<BuildSummary> Summarize(IEnumerable<EncounterResult> results, GameCatalog catalog) =>
@@ -150,8 +159,11 @@ public sealed class BalanceRunner(GameCatalog catalog)
     public MissionResult RunMission(CrestConfiguration build, MissionDefinition mission, int seed, int maxBeatsPerEncounter)
     {
         var loadout = CrestLoadout.CreateFromConfiguration(build, catalog, "bal");
-        var run = MissionRun.Start(mission, loadout, catalog, seed);
+        var first = catalog.Encounters[mission.EncounterIds[0]];
+        var run = MissionRun.Start(mission, loadout, catalog, seed,
+            allies: EncounterFactory.CreateAllies(_allyPilotIds, catalog, first.PlayerStartingMotes));
         var enemyAI = new EnemyAIController();
+        var allyAI = new AllyAIController();
         var pilot = new AutoPilot();
         int wins = 0, beats = 0;
         bool timedOut = false;
@@ -169,6 +181,7 @@ public sealed class BalanceRunner(GameCatalog catalog)
             while (sim.Outcome == EncounterOutcome.InProgress && sim.CurrentBeat < maxBeatsPerEncounter)
             {
                 enemyAI.Update(sim);
+                allyAI.Update(sim);
                 pilot.Update(sim, run.Crest);
                 sim.StepBeat();
             }
@@ -187,31 +200,38 @@ public sealed class BalanceRunner(GameCatalog catalog)
         }
 
         return new MissionResult(build.Id, mission.Id, seed, run.Phase, timedOut, wins, beats,
-            loadout.Installed.Count(e => e.IsDisabled), run.RewardsEarned.Sum(r => r.Count));
+            loadout.Installed.Count(e => e.IsDisabled), run.RewardsEarned.Sum(r => r.Count),
+            run.Allies.Count(a => a.IsDefeated));
     }
 
     /// <summary>
-    /// A simple rest policy: wait out the rest (summoning fast-iron whenever Motes allow), then repair the most
-    /// damaged components, Core first, while fast-iron lasts.
+    /// A simple rest policy for every Crest in the lance: wait out the rest (summoning fast-iron whenever Motes
+    /// allow), then repair the most damaged components, Core first, while each Crest's fast-iron lasts.
     /// </summary>
     public static void AutoRest(MissionRun run)
     {
-        do
+        void SummonAll()
         {
-            while (run.SquareSummon().Succeeded) { }
-        } while (run.Wait().Succeeded);
-        while (run.SquareSummon().Succeeded) { }
+            foreach (var crest in run.Lance)
+                while (run.SquareSummon(crest.Id).Succeeded) { }
+        }
 
-        while (true)
+        do SummonAll(); while (run.Wait().Succeeded);
+        SummonAll();
+
+        foreach (var crest in run.Lance)
         {
-            var part = run.Crest.Loadout.Installed
-                .Where(e => e.CurrentDurability < e.Definition.MaxDurability)
-                .OrderByDescending(e => e.Definition.IsCore)
-                .ThenByDescending(e => e.Definition.MaxDurability - e.CurrentDurability)
-                .ThenBy(e => e.InstanceId, StringComparer.Ordinal)
-                .FirstOrDefault();
-            if (part is null || !run.Repair(part.InstanceId).Succeeded)
-                break;
+            while (true)
+            {
+                var part = crest.Loadout.Installed
+                    .Where(e => e.CurrentDurability < e.Definition.MaxDurability)
+                    .OrderByDescending(e => e.Definition.IsCore)
+                    .ThenByDescending(e => e.Definition.MaxDurability - e.CurrentDurability)
+                    .ThenBy(e => e.InstanceId, StringComparer.Ordinal)
+                    .FirstOrDefault();
+                if (part is null || !run.Repair(part.InstanceId, crest.Id).Succeeded)
+                    break;
+            }
         }
     }
 

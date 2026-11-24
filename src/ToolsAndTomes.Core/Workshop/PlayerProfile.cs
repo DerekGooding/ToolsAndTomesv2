@@ -6,7 +6,8 @@ namespace ToolsAndTomes.Core.Workshop;
 
 /// <summary>
 /// Saved player progress: Crest assemblies (component order = Damage Order, plus reaction rules), spare
-/// components, and Workshop research. Component damage is not saved: the Workshop repairs everything.
+/// components, Workshop research, and the allied pilots' Crests and lance. Component damage is not saved: the
+/// Workshop repairs everything.
 /// </summary>
 public sealed record PlayerProfile
 {
@@ -19,6 +20,18 @@ public sealed record PlayerProfile
     public IReadOnlyDictionary<string, int> Samples { get; init; } = new Dictionary<string, int>();
     public IReadOnlyList<string> ResearchedMaterials { get; init; } = [];
     public int EncountersWon { get; init; }
+
+    /// <summary>Each allied pilot's current Crest (refit in the Workshop). Pilots missing here use their starting assembly.</summary>
+    public IReadOnlyList<PilotRecord> Pilots { get; init; } = [];
+
+    /// <summary>Pilot ids who join the player on missions, in lance order.</summary>
+    public IReadOnlyList<string> Lance { get; init; } = [];
+}
+
+public sealed record PilotRecord
+{
+    public required string PilotId { get; init; }
+    public required CrestConfiguration Assembly { get; init; }
 }
 
 public sealed record ProfileLoadResult(PlayerProfile Profile, IReadOnlyList<string> Warnings);
@@ -46,8 +59,7 @@ public static class ProfileSerializer
             return false;
         }
 
-        var assemblies = raw.Assemblies
-            .Select(a => a with
+        CrestConfiguration Sanitize(CrestConfiguration a) => a with
             {
                 ComponentIds = a.ComponentIds.Where(id => KnownComponent(id, a.Name)).ToList(),
                 ReactionRules = a.ReactionRules.Where(r =>
@@ -62,8 +74,24 @@ public static class ProfileSerializer
                     if (!ok) warnings.Add($"Dropped unknown cargo item '{c.ItemId}' from {a.Name}.");
                     return ok;
                 }).ToList()
-            })
-            .ToList();
+            };
+
+        var assemblies = raw.Assemblies.Select(Sanitize).ToList();
+
+        var pilots = new List<PilotRecord>();
+        foreach (var p in raw.Pilots)
+        {
+            if (!catalog.Pilots.ContainsKey(p.PilotId))
+                warnings.Add($"Dropped unknown pilot '{p.PilotId}'.");
+            else if (pilots.Any(q => q.PilotId == p.PilotId))
+                warnings.Add($"Dropped a duplicate record for pilot '{p.PilotId}'.");
+            else
+                pilots.Add(p with { Assembly = Sanitize(p.Assembly) });
+        }
+
+        var lance = raw.Lance.Where(catalog.Pilots.ContainsKey).Distinct().ToList();
+        if (lance.Count != raw.Lance.Count)
+            warnings.Add("Dropped unknown or repeated pilots from the lance.");
 
         var spares = raw.SpareComponentIds.Where(id => KnownComponent(id, "spares")).ToList();
 
@@ -79,7 +107,11 @@ public static class ProfileSerializer
         var researched = raw.ResearchedMaterials.Where(catalog.Materials.ContainsKey).ToList();
 
         return new ProfileLoadResult(
-            raw with { Assemblies = assemblies, SpareComponentIds = spares, Samples = samples, ResearchedMaterials = researched },
+            raw with
+            {
+                Assemblies = assemblies, SpareComponentIds = spares, Samples = samples, ResearchedMaterials = researched,
+                Pilots = pilots, Lance = lance
+            },
             warnings);
     }
 }

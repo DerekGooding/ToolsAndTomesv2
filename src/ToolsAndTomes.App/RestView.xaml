@@ -33,7 +33,11 @@
 
             <Border Grid.Column="0" Background="#1E293B" CornerRadius="6" Padding="12" Margin="0,0,10,0">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Components (Damage Order)" FontSize="15" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,6"/>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                        <ComboBox x:Name="CmbCrest" DockPanel.Dock="Right" MinWidth="170" Foreground="Black" SelectionChanged="CmbCrest_SelectionChanged"
+                                  ToolTip="Which Crest in the lance to repair, summon, or shape for (each uses its own Motes and fast-iron)"/>
+                        <TextBlock Text="Components (Damage Order)" FontSize="15" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                    </DockPanel>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
                         <Button x:Name="BtnRepair" Content="Repair selected (1 fast-iron)" Padding="10,5" Background="#0F766E" Foreground="White" Click="BtnRepair_Click"/>
                     </StackPanel>

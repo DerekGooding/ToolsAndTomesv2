@@ -196,8 +196,27 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - Balance (autopilot, starter builds, 100 seeds, after the code-review rule fixes): Border Patrol 3% / 8% completion (Agile / Heavy), Quarry Siege 25% / 7%, Storm Reach 0% / 0%. **Needs retuning**: interrupted committed actions now keep their cooldown, which cut Agile's single-fight win rate from 42% to 19%. Run `tools/ToolsAndTomes.Balance -- --missions` or `--encounters` to re-measure.
 - In-progress missions are not saved across app restarts (banked samples and assemblies are).
 
+### Allied pilots [Implemented]
+- **The player pilots one Crest; up to two allied Crests (a lance of three) fight alongside under AI control.** Allies take no orders.
+- **Named pilots** (`pilots.json`): each has a name, a callsign, a bio, and a starting assembly. The roster persists in the profile: each pilot's Crest can be refit, and the lance (who comes along, in order) is saved. Today the demo has two pilots: **Anvil** (Hollis Marrow, a heavy Repulsor guard) and **Kestrel** (Sera Vell, a fast Falconet/Talon scout).
+- **In a fight:**
+  - Allies are Player-faction Crests with ids `ally_<pilotId>`. They start at the encounter's `allyStarts`, or flanking the player's start when none are given.
+  - **The fight is lost when the player's own Crest falls**, even with allies standing. Losing allies doesn't lose it.
+  - Ally AI (`AllyAIController`) fights like the build-agnostic `AutoPilot`, but targets the enemy closest to both itself and the player (distance to self + ½ × distance to the player's Crest), so the lance converges.
+  - Enemy AI targets the nearest lance member, and keeps its current target unless another Crest is more than 3 tiles closer.
+- **Across a mission:** ally damage, Motes, and fast-iron carry through like the player's.
+  - An ally whose Core falls sits out later fights until its Core is repaired at a rest.
+  - At a rest, waiting gives every standing Crest a Mote. Each Crest summons, repairs, shapes, and uses cargo with its own Motes and fast-iron (`crestId` on the `MissionRun` rest methods; a Crest picker on the rest screen).
+  - The Workshop repairs every Crest before each mission.
+- **At the table:** the ally policy is simple enough to run by hand: a weighted-nearest target, then the strongest affordable attacks first. Writing it up as table rules, alongside the enemy AI's rules, is still to do.
+- **Balance with the full lance** (autopilot, starter builds, 100 seeds): every mission completes 92–100% of runs, and fights last 21–84 beats. Allies make the current content far too easy. The Phase 0 retune targets the *lance* (see below). `tools/ToolsAndTomes.Balance -- --missions --allies all` measures it.
+
 ### Next: make the campaign playable [Planned]
-- **Difficulty targets** (starter builds, autopilot, which plays worse than a human with pause): Border Patrol ~60–70% completion, Quarry Siege ~30–40%, Storm Reach ~10–20%.
+- **Direction (decided Nov 2026):**
+  - Make it fun before generating real assets.
+  - Ship a **free Steam demo** (the first region, 3 missions, about 1 hour, one biome), then Early Access.
+  - Use a **mid-distance third-person camera**, so Crests must read as detailed machines up close.
+- **Difficulty targets, measured with the full lance** (starter builds, autopilot, which plays worse than a human with pause): Border Patrol ~60–70% completion, Quarry Siege ~30–40%, Storm Reach ~10–20%. Solo play (no allies) is far harder: Border Patrol completes only 3–8% today.
 - **Fight length target:** about 1–2 minutes real time (roughly 60–120 beats) per encounter.
 - **Mid-mission saves:** save the mission at each rest; quitting mid-fight resumes at the start of that fight with the post-rest Crest.
 - Then a hands-on polish pass of the hangar, combat, rest, mission select, and research screens.
@@ -219,9 +238,9 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 
 ## 5. Known Limitations (Vertical Slice)
 
-- Single player-controlled Crest per encounter (architecture supports multiple friendly combatants).
+- One player-controlled Crest per encounter; up to two AI-controlled allied pilots (no orders yet).
 - Three campaign missions (nine encounters) with five enemy types; the Proving Grounds encounter remains the single-fight test case for the balance runner.
-- Player progress (assemblies, spares, research, samples) is saved to `%LOCALAPPDATA%ToolsAndTomesprofile.json`; component damage is not saved (the Workshop repairs everything).
+- Player progress (assemblies, spares, research, samples) is saved to `%LOCALAPPDATA%\ToolsAndTomes\profile.json`; component damage is not saved (the Workshop repairs everything).
 - Functional vector/shape graphics in WPF rather than final art assets.
 
 ---
@@ -232,7 +251,7 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 
 | Phase | Goal | Key work |
 |---|---|---|
-| 0. Finish the current loop | Campaign playable in the WPF tool | Shorter fights, difficulty retune, mid-mission saves, ship the branch. |
+| 0. Finish the current loop | A fun, playable 3-mission demo region | Allied pilots ✅; difficulty retune with the lance; fights of 60–120 beats; mid-mission saves; a feel pass for the close camera. |
 | 1. Godot vertical slice | One encounter at target quality | Confirm Godot's .NET version can reference Core (multi-target Core if needed); Core↔Godot bridge (beat events + snapshots, presentation interpolates); tactical camera; one modular 3D Crest assembled from component models; telegraph VFX; audio hooks; controller-ready input. |
 | 2. Core hardening | Production-ready rules engine | Full save/load (including mid-fight); a stable presentation API; asset ids on content (model, VFX, sound per component/action); localization keys; performance budgets. |
 | 3. Content & tools pipeline | Designers add content without code | Editors for components, actions, encounters, missions over the JSON + validator; balance runner in CI. |

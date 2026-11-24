@@ -29,7 +29,14 @@ public sealed class AppSessionState
     public IReadOnlyList<string> ProfileWarnings { get; private set; } = [];
 
     public CombatSimulation? ActiveSimulation { get; private set; }
-    public EnemyAIController ActiveAI { get; } = new(decisionIntervalBeats: 1);
+    public EnemyAIController ActiveAI { get; private set; } = new(decisionIntervalBeats: 1);
+    public AllyAIController AllyAI { get; } = new();
+
+    /// <summary>Each allied pilot's Crest, kept across missions (refit in the Workshop; repaired before each mission).</summary>
+    public Dictionary<string, CrestLoadout> PilotCrests { get; } = [];
+
+    /// <summary>Pilot ids who join the player on missions, in lance order (at most <see cref="MissionRun.MaxAllies"/>).</summary>
+    public List<string> Lance { get; } = [];
     public int EncounterSeed { get; set; } = 1337;
 
     /// <summary>Samples granted by the most recent victory (shown on the combat screen).</summary>
@@ -143,7 +150,12 @@ public sealed class AppSessionState
 
         LastRewards = [];
         LastMissionReport = null;
-        ActiveMission = MissionRun.Start(mission, SelectedLoadout, Catalog, EncounterSeed, Workshop.KnownComponentIds(Catalog));
+        var first = Catalog.Encounters[mission.EncounterIds[0]];
+        var allies = Lance
+            .Take(MissionRun.MaxAllies)
+            .Select(id => EncounterFactory.CreateAlly(Catalog.Pilots[id], Catalog, PilotCrests[id], first.PlayerStartingMotes))
+            .ToList();
+        ActiveMission = MissionRun.Start(mission, SelectedLoadout, Catalog, EncounterSeed, Workshop.KnownComponentIds(Catalog), allies);
         EncounterSeed++; // the next mission rolls differently
         return ActiveMission;
     }
@@ -155,6 +167,7 @@ public sealed class AppSessionState
         LastRewards = [];
         ActiveSimulation = run.BeginEncounter();
         ActiveSimulation.Pause();
+        ActiveAI = new EnemyAIController(decisionIntervalBeats: 1); // fresh target memory per fight
         return ActiveSimulation;
     }
 
@@ -220,7 +233,12 @@ public sealed class AppSessionState
             SpareComponentIds = SpareInventory.Select(e => e.Definition.Id).ToList(),
             Samples = Workshop.Samples.ToDictionary(),
             ResearchedMaterials = Workshop.ResearchedMaterials.Order(StringComparer.Ordinal).ToList(),
-            EncountersWon = EncountersWon
+            EncountersWon = EncountersWon,
+            Pilots = PilotCrests
+                .OrderBy(kv => kv.Key, StringComparer.Ordinal)
+                .Select(kv => new PilotRecord { PilotId = kv.Key, Assembly = kv.Value.ExportConfiguration() })
+                .ToList(),
+            Lance = Lance.ToList()
         };
 
         try
@@ -242,6 +260,8 @@ public sealed class AppSessionState
     {
         CrestAssemblies.Clear();
         SpareInventory.Clear();
+        PilotCrests.Clear();
+        Lance.Clear();
         Workshop.Restore(new Dictionary<string, int>(), []);
         EncountersWon = 0;
         EncounterSeed = 1337;
@@ -279,6 +299,12 @@ public sealed class AppSessionState
                 ? profile.SelectedAssemblyId!
                 : CrestAssemblies[0].Id;
             _nextAssemblyCounter = CrestAssemblies.Count + 1;
+
+            foreach (var record in profile.Pilots)
+                PilotCrests[record.PilotId] = CrestLoadout.CreateFromConfiguration(record.Assembly, Catalog, record.PilotId);
+            Lance.AddRange(profile.Lance.Take(MissionRun.MaxAllies));
+            EnsureRoster(fillLance: profile.Pilots.Count == 0 && profile.Lance.Count == 0);
+
             ProfileWarnings = loaded.Warnings;
             return true;
         }
@@ -287,8 +313,24 @@ public sealed class AppSessionState
             ProfileWarnings = [$"Saved profile could not be read ({ex.Message}); starting fresh."];
             CrestAssemblies.Clear();
             SpareInventory.Clear();
+            PilotCrests.Clear();
+            Lance.Clear();
             return false;
         }
+    }
+
+    /// <summary>
+    /// Gives every pilot in the content a Crest (their starting assembly) if the profile has none for them, and,
+    /// for a new or pre-pilot profile, fills the lance in content order.
+    /// </summary>
+    private void EnsureRoster(bool fillLance)
+    {
+        foreach (var pilot in Catalog.Pilots.Values)
+            if (!PilotCrests.ContainsKey(pilot.Id))
+                PilotCrests[pilot.Id] = CrestLoadout.CreateFromConfiguration(pilot.Assembly, Catalog, pilot.Id);
+
+        if (fillLance && Lance.Count == 0)
+            Lance.AddRange(Catalog.Pilots.Keys.Take(MissionRun.MaxAllies));
     }
 
     private void CreateNewProfile()
@@ -298,6 +340,7 @@ public sealed class AppSessionState
         CrestAssemblies.Add(agile);
         CrestAssemblies.Add(heavy);
         SelectedCrestId = agile.Id;
+        EnsureRoster(fillLance: true);
 
         // A few spare starter-build parts to experiment with; everything else comes from research.
         foreach (var id in new[]
