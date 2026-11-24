@@ -21,7 +21,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
                 <TextBlock x:Name="TxtOutcome" Text="" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="#FACC15" Margin="0,0,14,0"/>
-                <Button Content="Return to Hangar" Padding="12,5" Background="#475569" Foreground="White" Click="BtnReturnHangar_Click"/>
+                <Button x:Name="BtnLeave" Content="Abandon Mission" Padding="12,5" Background="#475569" Foreground="White" Click="BtnReturnHangar_Click"/>
             </StackPanel>
         </DockPanel>
 

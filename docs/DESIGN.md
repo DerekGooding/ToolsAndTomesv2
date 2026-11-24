@@ -162,7 +162,7 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - Live-action tactical combat with optional pause (in the spirit of real-time-with-pause party RPGs).
 
 ### Persistence (scope) [Implemented]
-- Repairs and restocking can be done in the field, so in the full game, damage persisting between fights costs time. **For the vertical slice**, Crests are fully repaired and restocked between encounters.
+- Damage persists within a campaign mission; the Workshop repairs and restocks only before a mission starts. Between encounters, repairs happen in the field (see Campaign missions).
 
 ### Workshop & Research slice [Implemented]
 - Exotic materials are discovered and researched. Once researched, they unlock new items that can be produced from **fast-iron**.
@@ -183,7 +183,18 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - **Shape Fast-iron** (Spellbook spell, 1/1/1, 1 Wit, interruptible) turns fast-iron into **anything**: a component (any known blueprint), a consumable into cargo, or a weapon's ammunition. Fast-iron is spent from loose stock (Square Summon) first, then cargo, when the impact window opens, so an interrupted windup spends nothing.
 - **Costs are per recipe in content:** components use `fastIronCost`, else ceil(weight / 10); consumables use `fastIronCost`; ammo refills use the weapon's `ammoRefillFastIronCost`.
 - **Anything shaped in the field joins the very end of the Damage Order** (after the Core).
-- A Crest without Square Summon can still shape by carrying fast-iron in. Deferred: carrying ready-made spare components and installing them mid-fight, and between-encounter field repairs (the slice repairs automatically).
+- A Crest without Square Summon can still shape by carrying fast-iron in. Deferred: carrying ready-made spare components and installing them mid-fight.
+
+
+### Campaign missions [Implemented]
+- The loop is: **Workshop → Mission Select → encounter → rest in the field → encounter → rest → encounter → Workshop.**
+- A mission (`missions.json`) is an ordered list of encounters with a rest budget (beats) between them. The same Crest carries through: damage, ammo, cargo, shaped parts, Motes, and loose fast-iron persist; heat, cooldowns, and activity reset each fight.
+- **Rest in the field:** the time budget passes one Mote interval at a time (+1 Mote each). Square Summon, repairs, shaping, and cargo use happen between Mote generations and cost no time. Field repair: 1 fast-iron restores `repairPointsPerFastIron` (2) durability and revives disabled parts. Unused rest time is lost.
+- **Rewards** bank as each encounter is won (granted to the Workshop immediately); finishing grants the mission's completion bonus. **Defeat fails the mission but keeps banked samples.** The player can withdraw during a rest (or abandon a fight) keeping banked samples.
+- **Missions unlock by research:** Border Patrol (always), Quarry Siege (Oathsteel), Storm Reach (Bastion Ore + Corrodite).
+- Enemies with reaction rules: Oathbound Warden (repulses melee), Skyblade Raider (blinks from heavy impacts).
+- Balance (autopilot, starter builds, 100 seeds): Border Patrol 46% / 13% completion (Agile / Heavy), Quarry Siege 15% / 6%, Storm Reach ~0% (endgame, expects researched parts). Run `tools/ToolsAndTomes.Balance -- --missions` or `--encounters` to re-measure.
+- In-progress missions are not saved across app restarts (banked samples and assemblies are).
 
 ---
 
@@ -203,6 +214,6 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 ## 5. Known Limitations (Vertical Slice)
 
 - Single player-controlled Crest per encounter (architecture supports multiple friendly combatants).
-- Single test encounter with 3 enemy archetypes (Skirmisher, Bruiser, Artillery); repeatable with any custom Crest assembly.
+- Three campaign missions (nine encounters) with five enemy types; the Proving Grounds encounter remains the single-fight test case for the balance runner.
 - Player progress (assemblies, spares, research, samples) is saved to `%LOCALAPPDATA%ToolsAndTomesprofile.json`; component damage is not saved (the Workshop repairs everything).
 - Functional vector/shape graphics in WPF rather than final art assets.

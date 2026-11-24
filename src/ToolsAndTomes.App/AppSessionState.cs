@@ -1,5 +1,6 @@
 using System.IO;
 using ToolsAndTomes.Core.AI;
+using ToolsAndTomes.Core.Campaign;
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
 using ToolsAndTomes.Core.Simulation;
@@ -120,32 +121,90 @@ public sealed class AppSessionState
         return result;
     }
 
-    // ---- Encounters -------------------------------------------------------------------------
+    // ---- Missions ---------------------------------------------------------------------------
 
+    /// <summary>The mission in progress, if any.</summary>
+    public MissionRun? ActiveMission { get; private set; }
+
+    /// <summary>A one-line summary of the last finished mission (shown in the Crest Bay).</summary>
+    public string? LastMissionReport { get; private set; }
+
+    public IEnumerable<MissionDefinition> AvailableMissions =>
+        Catalog.Missions.Values.Where(m => MissionRun.IsUnlocked(m, Workshop));
+
+    /// <summary>Starts a mission with the selected assembly (the Workshop repairs and restocks it first).</summary>
+    public MissionRun StartMission(string missionId)
+    {
+        var mission = Catalog.Missions[missionId];
+        if (!MissionRun.IsUnlocked(mission, Workshop))
+            throw new InvalidOperationException($"{mission.Name} is locked.");
+
+        LastRewards = [];
+        LastMissionReport = null;
+        ActiveMission = MissionRun.Start(mission, SelectedLoadout, Catalog, EncounterSeed, Workshop.KnownComponentIds(Catalog));
+        EncounterSeed++; // the next mission rolls differently
+        return ActiveMission;
+    }
+
+    /// <summary>Starts the mission's current encounter, paused.</summary>
     public CombatSimulation StartEncounter()
     {
-        // Vertical slice: Crests are fully repaired and restocked between encounters.
-        SelectedLoadout.RepairAll();
+        var run = ActiveMission ?? throw new InvalidOperationException("No mission in progress.");
         LastRewards = [];
-        ActiveSimulation = EncounterFactory.CreateTestEncounter(SelectedLoadout, EncounterSeed, Catalog);
-        ActiveSimulation.FindCombatant(EncounterFactory.PlayerCombatantId)!.KnownBlueprints = Workshop.KnownComponentIds(Catalog);
+        ActiveSimulation = run.BeginEncounter();
         ActiveSimulation.Pause();
         return ActiveSimulation;
     }
 
-    /// <summary>Grants victory rewards once per encounter. Returns the samples granted (empty if none).</summary>
+    /// <summary>
+    /// Settles a finished encounter once: banks its rewards into the Workshop immediately (so they survive a later
+    /// defeat), and records the mission's result if it ended. Returns the samples granted by this encounter.
+    /// </summary>
     public IReadOnlyList<MaterialCount> CompleteEncounter(CombatSimulation sim)
     {
-        if (ReferenceEquals(sim, _rewardedSimulation) || sim.Outcome != EncounterOutcome.PlayerVictory)
+        if (ReferenceEquals(sim, _rewardedSimulation) || sim.Outcome == EncounterOutcome.InProgress)
             return LastRewards;
 
         _rewardedSimulation = sim;
-        LastRewards = RewardRoller.Roll(Catalog.Encounters[EncounterFactory.TestEncounterId], EncounterSeed);
+        var run = ActiveMission;
+        if (run is null || !ReferenceEquals(run.ActiveSimulation, sim))
+            return LastRewards;
+
+        LastRewards = run.FinishEncounter();
         Workshop.AddSamples(LastRewards);
-        EncountersWon++;
-        EncounterSeed++; // the next fight (and its rewards) differ
+        if (sim.Outcome == EncounterOutcome.PlayerVictory)
+            EncountersWon++;
+
+        if (run.IsOver)
+            EndMission(run);
+
         Save();
         return LastRewards;
+    }
+
+    /// <summary>Leaves the mission (mid-fight or during a rest); samples already banked are kept.</summary>
+    public void WithdrawFromMission()
+    {
+        if (ActiveMission is not { } run || run.IsOver)
+            return;
+
+        run.Withdraw();
+        EndMission(run);
+        Save();
+    }
+
+    private void EndMission(MissionRun run)
+    {
+        int samples = run.RewardsEarned.Sum(r => r.Count);
+        string outcome = run.Phase switch
+        {
+            MissionPhase.Completed => "completed",
+            MissionPhase.Failed => $"failed at encounter {run.StageIndex + 1}",
+            _ => $"withdrawn after {run.StageIndex} encounter(s)"
+        };
+        LastMissionReport = $"{run.Mission.Name} {outcome}: {samples} sample(s) recovered.";
+        ActiveMission = null;
+        ActiveSimulation = null;
     }
 
     // ---- Profile ----------------------------------------------------------------------------
@@ -183,6 +242,11 @@ public sealed class AppSessionState
         SpareInventory.Clear();
         Workshop.Restore(new Dictionary<string, int>(), []);
         EncountersWon = 0;
+        EncounterSeed = 1337;
+        ActiveMission = null;
+        ActiveSimulation = null;
+        LastMissionReport = null;
+        ProfileWarnings = [];
         CreateNewProfile();
         Save();
     }

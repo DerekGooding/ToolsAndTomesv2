@@ -91,7 +91,10 @@ public partial class HangarView : UserControl
         RefreshCargo(loadout, stats);
 
         var warnings = LoadoutRules.GetWarnings(loadout);
-        var allWarnings = _session.ProfileWarnings.Concat(warnings).ToList();
+        var allWarnings = (_session.LastMissionReport is { } report ? new[] { report } : [])
+            .Concat(_session.ProfileWarnings)
+            .Concat(warnings)
+            .ToList();
         TxtWarnings.Text = string.Join("\n", allWarnings.Select(w => "⚠ " + w));
         TxtWarnings.Visibility = allWarnings.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         LstSpares.ItemsSource = _session.SpareInventory.Select(e => new EquipmentListItem(e)).ToList();
@@ -342,6 +345,18 @@ public partial class HangarView : UserControl
     }
 
     private void BtnResearch_Click(object sender, RoutedEventArgs e) => ResearchRequested?.Invoke();
+
+    private void BtnResetProgress_Click(object sender, RoutedEventArgs e)
+    {
+        var answer = MessageBox.Show(
+            "Erase all progress (assemblies, spares, cargo, samples, and research) and start over with the starter builds?",
+            "Reset Progress", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (answer != MessageBoxResult.Yes)
+            return;
+
+        _session.ResetProfile();
+        RefreshUI();
+    }
 
     private void BtnLaunch_Click(object sender, RoutedEventArgs e)
     {

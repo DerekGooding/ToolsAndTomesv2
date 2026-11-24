@@ -119,55 +119,8 @@ public partial class CombatView : UserControl
         RefreshAll();
     }
 
-    private sealed record FieldOption(string Label, UseActionCommand Command)
-    {
-        public override string ToString() => Label;
-    }
-
-    /// <summary>Everything the player can shape from fast-iron or use from cargo right now.</summary>
-    private static List<FieldOption> BuildFieldOptions(CombatSimulation sim, Combatant player)
-    {
-        var options = new List<FieldOption>();
-        var catalog = sim.Catalog;
-        var available = player.Loadout.GetOperationalActionIds().ToHashSet();
-        var ammoWeapons = player.Loadout.Installed
-            .Where(e => e.IsOperational && e.Definition.MaxAmmo > 0 && e.CurrentAmmo < e.Definition.MaxAmmo)
-            .ToList();
-
-        var shapeSpell = available.Select(catalog.GetAction).FirstOrDefault(a => a.IsShaping);
-        if (shapeSpell is not null)
-        {
-            foreach (var w in ammoWeapons)
-                options.Add(new FieldOption(
-                    $"Shape ammo → {w.Definition.Name} ({w.Definition.AmmoRefillFastIronCost} fast-iron)",
-                    new UseActionCommand(player.Id, shapeSpell.Id, OwnComponentInstanceId: w.InstanceId,
-                        Shaping: new ShapingOrder(ShapingKind.AmmoRefill))));
-
-            foreach (var c in catalog.Consumables.Values.OrderBy(c => c.Name))
-                options.Add(new FieldOption(
-                    $"Shape {c.Name} into cargo ({c.FastIronCost} fast-iron)",
-                    new UseActionCommand(player.Id, shapeSpell.Id, Shaping: new ShapingOrder(ShapingKind.Consumable, c.Id))));
-
-            var known = player.KnownBlueprints ?? catalog.Equipment.Keys.ToHashSet();
-            foreach (var e in catalog.Equipment.Values.Where(e => known.Contains(e.Id)).OrderBy(e => e.Category).ThenBy(e => e.Name))
-                options.Add(new FieldOption(
-                    $"Shape {e.Name} ({ShapingRules.ComponentCost(e, player.Rules)} fast-iron) — joins end of Damage Order",
-                    new UseActionCommand(player.Id, shapeSpell.Id, Shaping: new ShapingOrder(ShapingKind.Component, e.Id))));
-        }
-
-        foreach (var refill in available.Select(catalog.GetAction).Where(a => a.RefillsAmmo && a.ConsumableItemId is not null))
-        {
-            int count = player.Loadout.GetConsumableCount(refill.ConsumableItemId!);
-            if (count == 0)
-                continue;
-            foreach (var w in ammoWeapons)
-                options.Add(new FieldOption(
-                    $"{refill.Name} → {w.Definition.Name} ({count} carried)",
-                    new UseActionCommand(player.Id, refill.Id, OwnComponentInstanceId: w.InstanceId)));
-        }
-
-        return options;
-    }
+    private static List<FieldOption> BuildFieldOptions(CombatSimulation sim, Combatant player) =>
+        FieldOption.Build(sim.Catalog, player);
 
     private void CmbField_DropDownOpened(object? sender, EventArgs e)
     {
@@ -223,11 +176,20 @@ public partial class CombatView : UserControl
         BtnStepTick.IsEnabled = sim.IsPaused && sim.Outcome == EncounterOutcome.InProgress;
         TxtClock.Text = $"Beat {sim.CurrentBeat} ({sim.CurrentBeat + BeatFraction:F1}s) | {(sim.IsPaused ? "PAUSED" : _currentBeatDuration > BeatDuration ? "SLOW-MO" : "RUNNING")}";
 
+        IReadOnlyList<MaterialCount> rewards = sim.Outcome == EncounterOutcome.InProgress ? [] : _session.CompleteEncounter(sim);
+        var mission = _session.ActiveMission;
         TxtOutcome.Text = sim.Outcome switch
         {
-            EncounterOutcome.PlayerVictory => $"★ VICTORY! Samples recovered: {DescribeRewards(_session.CompleteEncounter(sim))}",
-            EncounterOutcome.PlayerDefeat => "✖ DEFEAT! Core failed. Return to Hangar to repair.",
-            _ => ""
+            EncounterOutcome.PlayerVictory => $"★ VICTORY! Samples: {DescribeRewards(rewards)}",
+            EncounterOutcome.PlayerDefeat => "✖ DEFEAT! Core failed — mission failed (banked samples kept).",
+            _ => mission is null ? "" : $"{mission.Mission.Name}: encounter {mission.StageIndex + 1} of {mission.Mission.EncounterIds.Count}"
+        };
+        BtnLeave.Content = sim.Outcome switch
+        {
+            EncounterOutcome.InProgress => "Abandon Mission",
+            EncounterOutcome.PlayerVictory when mission is { Phase: Core.Campaign.MissionPhase.Rest } => "Rest in the field ▶",
+            EncounterOutcome.PlayerVictory => "Mission complete — return to the Workshop ▶",
+            _ => "Return to the Workshop ▶"
         };
 
         var player = sim.FindCombatant("player_crest");
@@ -389,6 +351,16 @@ public partial class CombatView : UserControl
 
     private void BtnReturnHangar_Click(object sender, RoutedEventArgs e)
     {
+        var sim = _session.ActiveSimulation;
+        if (sim is not null && sim.Outcome == EncounterOutcome.InProgress)
+        {
+            var answer = MessageBox.Show("Abandon the mission? Samples already recovered are kept.",
+                "Abandon Mission", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (answer != MessageBoxResult.Yes)
+                return;
+            _session.WithdrawFromMission();
+        }
+
         StopLoop();
         ReturnToHangarRequested?.Invoke();
     }

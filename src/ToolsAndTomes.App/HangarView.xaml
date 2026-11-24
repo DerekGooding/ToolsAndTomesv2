@@ -24,9 +24,10 @@
                 <TextBlock Text="Seed:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#94A3B8"/>
                 <TextBox x:Name="TxtSeed" Width="64" Text="1337" VerticalContentAlignment="Center" Margin="0,0,10,0"
                          Background="#1E293B" Foreground="White" BorderBrush="#475569"/>
+                <Button Content="Reset Progress" Padding="9,6" Margin="0,0,8,0" Background="#7F1D1D" Foreground="White" Click="BtnResetProgress_Click"/>
                 <Button Content="Research Desk" Padding="11,6" Margin="0,0,8,0" Background="#BE185D" Foreground="White" Click="BtnResearch_Click"/>
                 <Button Content="Repair &amp; Refill All" Padding="11,6" Margin="0,0,8,0" Background="#0F766E" Foreground="White" Click="BtnRepairAll_Click"/>
-                <Button x:Name="BtnLaunch" Content="LAUNCH ENCOUNTER ▶" Padding="14,6" FontWeight="Bold" Background="#0284C7" Foreground="White" Click="BtnLaunch_Click"/>
+                <Button x:Name="BtnLaunch" Content="MISSION SELECT ▶" Padding="14,6" FontWeight="Bold" Background="#0284C7" Foreground="White" Click="BtnLaunch_Click"/>
             </StackPanel>
         </DockPanel>
 
