@@ -37,4 +37,5 @@ public sealed record CombatEvent(
     string? TargetId = null,
     int? Value = null,
     InterruptionTier Interruption = InterruptionTier.None,
-    Vec2? Position = null);
+    Vec2? Position = null,
+    string? ActionId = null);

@@ -219,7 +219,8 @@ public sealed class DamageResolutionService
                     CombatEventType.ActionInterrupted,
                     target.Id,
                     $"{target.Name}'s {def.Name} DISRUPTED (+{_thresholds.DisruptionDelayBeats} beat delay).",
-                    Interruption: tier));
+                    Interruption: tier,
+                    ActionId: def.Id));
                 continue;
             }
 
@@ -236,7 +237,8 @@ public sealed class DamageResolutionService
                 CombatEventType.ActionInterrupted,
                 target.Id,
                 $"{target.Name}'s {def.Name} {label}! (component locked {penaltyBeats} beat(s))",
-                Interruption: tier));
+                Interruption: tier,
+                    ActionId: def.Id));
         }
     }
 }

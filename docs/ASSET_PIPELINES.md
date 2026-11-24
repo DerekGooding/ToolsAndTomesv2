@@ -2,7 +2,44 @@
 
 Design for generating 3D models, materials, VFX, UI art, and audio with **self-hosted AI models**, feeding the Godot 4 (C#) client described in [DESIGN.md §6](DESIGN.md).
 
-> **Status:** design (Nov 2026). Nothing here is built yet. Model licenses, VRAM figures, and prices change often — re-verify each model's license on its official model card before adding it to the approved list (§5).
+> **Status (Nov 2026):** the **image (icons) and audio (SFX) pipelines are built** and running end to end. Procedural placeholder backends fill every slot today. SDXL, FLUX.1 schnell, and Stable Audio Open plug in as real backends. The 3D, VFX, and music pipelines are still design only. Model licenses, VRAM figures, and prices change often: re-verify each license on its official page before changing its status in `assets/models.json` (§5).
+
+## 0. Using it (built pipelines)
+
+```powershell
+# 1. Start the generator services (tools/asset-services/README.md)
+cd tools/asset-services; uv sync
+uv run python -m asset_services.server --kind image    # :8411
+uv run python -m asset_services.server --kind audio    # :8412
+
+# 2. From the repo root
+dotnet run --project tools/ToolsAndTomes.Assets -- validate         # specs vs. content, palettes, licenses, coverage
+dotnet run --project tools/ToolsAndTomes.Assets -- status           # approved / stale / missing / waiting
+dotnet run --project tools/ToolsAndTomes.Assets -- generate         # candidates for everything missing or stale + review page
+dotnet run --project tools/ToolsAndTomes.Assets -- approve icon/eq_titan 3
+dotnet run --project tools/ToolsAndTomes.Assets -- approve sfx/weapon_titan/impact 2,5,1   # up to 3 variants, in play order
+dotnet run --project tools/ToolsAndTomes.Assets -- reject icon/eq_titan                    # discard; `generate` makes new ones
+```
+
+- `generate --auto-approve` approves the first candidates that pass the checks. Use it for placeholders, never for production art.
+- `--filter <text>` limits any command to matching asset ids. `--image-backend sdxl` / `--audio-backend stable-audio-open` override `assets/pipeline.json` for one run.
+- **Switching to a real model:** set `imageBackend` / `audioBackend` in `assets/pipeline.json`. Every placeholder becomes *stale*, because the backend is part of each asset's hash. The next `generate` remakes them for review.
+
+| File | Role |
+|---|---|
+| `assets/specs.json` | What to make: one icon per content id; sound slots per action (`windup`, `impact`) and per engine event (`play`) |
+| `assets/style.json` | Style bible v0: named palettes, the palette for each category, prompt templates, negative prompts, and a `version` that marks every asset stale when bumped |
+| `assets/models.json` | Model registry: license, link, date checked, status (`approved` / `capped` / `rejected`) |
+| `assets/pipeline.json` | Service URLs, active backends, sizes, candidate counts, loudness targets |
+| `assets/manifest.json` | Provenance of every approved asset: hash, backend, model, license, prompt, seeds, parameters, metrics, approval time. Written by the tool. |
+| `client/ToolsAndTomes.Client/assets/` | Approved files, inside the Godot project: `icons/<id>.png`, `sfx/<key>/<slot>_<n>.ogg` |
+| `%LOCALAPPDATA%\ToolsAndTomes\asset-candidates\` | Candidates waiting for review, and `review.html` (outside the repo) |
+
+**In game:**
+- The action bar shows `icons/<actionId>.png`.
+- `SoundBank` plays `sfx/<actionId>/windup_*` when an action starts and `impact_*` when it resolves. It plays `sfx/event_<CombatEventType>/play_*` for engine events (damage, disable, defeat, Aegis block, interruption, Motes, overheat, and so on).
+- It picks a random variant with ±5% pitch, plays at the Crest's position, and plays each sound at most once per beat.
+- To make this possible, Core's `CombatEvent` now carries the `ActionId` of the action that produced it.
 
 ---
 
@@ -21,28 +58,40 @@ Design for generating 3D models, materials, VFX, UI art, and audio with **self-h
 Content JSON (+ assetSpec)          Style bible (palettes, style LoRA, reference sheets)
             │                                   │
             ▼                                   ▼
-   tools/ToolsAndTomes.Assets  (orchestrator CLI, like the balance runner)
+   tools/ToolsAndTomes.Assets  (orchestrator CLI, like the balance runner)   [built]
             │  diff content vs. manifest → work list
             ▼
    ┌──────────────┬───────────────┬──────────────┬─────────────┐
-   │ Image (ComfyUI API)  3D (TRELLIS service)   Audio (Stable Audio service)
+   │ Image service [built]   3D (TRELLIS service)   Audio service [built]
    └──────────────┴───────────────┴──────────────┴─────────────┘
             │  N candidates per asset
             ▼
-   Post-process: Blender headless (mesh) · Pillow/ImageMagick (2D) · ffmpeg (audio)
+   Post-process: Blender headless (mesh) · Pillow/NumPy (2D) [built] · NumPy/pyloudnorm (audio) [built]
             ▼
    Validate (budgets, sockets, naming, loudness)  →  Review UI (approve / regenerate / reject)
             ▼
-   Approved → assets/ (Git LFS) + manifest.json  →  Godot import (.glb / .png / .ogg)
+   Approved → client/ToolsAndTomes.Client/assets/ + assets/manifest.json  →  Godot import (.glb / .png / .ogg)
 ```
 
-- **Orchestrator:** a .NET CLI in `tools/`, reusing Core's content loader. Generators run as local HTTP services (ComfyUI's API, small Python wrappers for 3D and audio models), so the orchestrator doesn't care whether a GPU is local or rented.
-- **Work list:** an asset is generated when it has no approved entry, or when the hash of its `assetSpec` + workflow + model version changed.
-- **Storage:** approved assets in `assets/` under Git LFS; candidates and intermediates in a scratch store outside the repo.
+- **Orchestrator:** a .NET CLI in `tools/`, reusing Core's content loader.
+- **Generators:** small Python HTTP services (`tools/asset-services`) that call Hugging Face diffusers directly, so the orchestrator doesn't care whether a GPU is local or rented.
+  - Finished files travel in the response body.
+  - We chose plain diffusers over ComfyUI: one dependency set, nodes-as-code we can test, and no workflow JSON to version. ComfyUI remains an option for style-bible exploration by hand.
+- **Work list:** an asset is generated when it has no approved entry, or when its hash changed.
+  - The hash covers the resolved prompt, negative prompt, palette, seed, parameters, backend, model source, and style version.
+- **Storage:**
+  - Approved files live inside the Godot project, so Godot imports and exports them. The `.import` sidecars are committed.
+  - Candidates live in a scratch store outside the repo.
+  - Git LFS is not enabled yet: today's placeholders total about 4 MB. Turn on LFS for `*.png`, `*.ogg`, and `*.glb` under the client's `assets/` before production art lands.
 
 ## 3. Asset spec (content schema)
 
-Added alongside a definition's rules data. Example on a component in `equipment.json`:
+> **As built:** specs live in `assets/specs.json`, keyed by content id, not inside Core's rules JSON.
+> - This keeps the rules content tabletop-pure, and art iteration never touches files the rules tests depend on.
+> - The orchestrator's `validate` does the checks proposed below. Every spec must name real content and a known palette. Every component, action, consumable, and material needs an icon, and every action needs an impact sound.
+> - The shape below remains the target for 3D components (sockets, triangle budgets).
+
+Original proposal, inline on a component in `equipment.json`:
 
 ```json
 {
@@ -104,7 +153,11 @@ Added alongside a definition's rules data. Example on a component in `equipment.
 ### 4.6 Sound effects
 - **Tool:** a commercially-usable text-to-audio model (§5), prompted from each action's `sfx` spec per phase.
 - **Post:** ffmpeg trim/fade, loudness normalize (e.g. −16 LUFS for SFX), generate 3–5 variants per event for variety, export `.ogg`.
-- **Hookup:** sound banks keyed by `CombatEventType` + action id, so the Godot client plays the right sound from the engine's event stream.
+- **Hookup [built]:** sound banks keyed by `CombatEventType` + action id, so the Godot client plays the right sound from the engine's event stream (see §0).
+- **As built:**
+  - Post-processing uses NumPy and pyloudnorm instead of ffmpeg: no extra install, and the same code runs locally and on a rented GPU.
+  - Loudness target: −16 LUFS, −1 dBFS soft-limited peak.
+  - Each slot ships 3 variants, picked from 6 candidates.
 
 ### 4.7 Music
 - Same audio pipeline with longer generations for ambient and combat loops; loop-point detection and crossfade in post.
@@ -118,18 +171,27 @@ Added alongside a definition's rules data. Example on a component in `equipment.
 
 | Use | Candidate | License (as reported, Nov 2026) | Commercial-clean? | VRAM (approx.) |
 |---|---|---|---|---|
-| Image | **FLUX.1 schnell** | Apache 2.0 | ✅ | ~12 GB quantized, ~24 GB full |
-| Image | **SDXL 1.0 base/refiner** | CreativeML Open RAIL++-M (use-based restrictions only) | ✅ (respect use restrictions) | 8–12 GB |
+| Image | **FLUX.1 schnell** | Apache 2.0 (checked 2026-11-24) | ✅; gated download (accept terms, sign in) | ~24 GB, bf16; ~34 GB download |
+| Image | **SDXL 1.0 base** + SDXL-VAE-FP16-Fix | CreativeML Open RAIL++-M; VAE MIT (checked 2026-11-24) | ✅ (respect use restrictions); not gated | 8 GB with offload; ~7 GB download |
 | Image | FLUX.1 dev | Non-commercial | ❌ | — |
 | Image | SDXL Turbo | Non-commercial community license | ❌ | — |
 | 3D | **TRELLIS.2** (Microsoft) | MIT | ✅ (confirm current repo license) | ~24 GB |
 | 3D | **TripoSR** | MIT | ✅ | ~6 GB |
 | 3D | Hunyuan3D 2.x | Tencent community license; excludes EU/UK/South Korea | ❌ (territorial restriction) | ~10–29 GB |
-| SFX / music | **Stable Audio Open** | Stability Community License: commercial use free under $1M annual revenue | ⚠️ while under the cap; track revenue | consumer GPU |
+| SFX / music | **Stable Audio Open 1.0** | Stability AI Community License (checked 2026-11-24) | ⚠️ while under $1M annual revenue | 8 GB with offload; ~5 GB download |
 | Music | MusicGen / AudioGen | Code MIT, **weights CC BY-NC 4.0** | ❌ | — |
 
+License notes from the 2026-11-24 check:
+- **SDXL:** the model card says "intended for research purposes", but the license grants commercial rights and the license text governs.
+- **Stable Audio Open:**
+  - Commercial use requires registering with Stability AI.
+  - Shipping requires the license copy, a Notice file, and a prominent "Powered by Stability AI".
+  - Outputs may not be used to train foundational generative models.
+  - Above $1M revenue the license terminates unless Stability grants an enterprise license.
+- **Stable Audio Open Small:** same license, but not diffusers-ready (stable-audio-tools only). Not wired up.
+
 Rules:
-- A model joins this table only after someone reads its official license and records the date and link in the manifest's model registry.
+- A model joins this table only after someone reads its official license and records the date and link in the model registry (`assets/models.json`). The orchestrator refuses any backend whose status there isn't `approved` or `capped`.
 - Fine-tuned derivatives (our style LoRA) inherit the base model's license.
 - ⚠️ models need a review trigger: if revenue approaches a cap, switch models or buy an enterprise license before release.
 
@@ -160,9 +222,14 @@ Rules:
 
 ## 9. Build order
 
-1. **Model registry + license review** (§5) and the containerized generator services.
-2. **Style bible** (§4.1): exploration, selection, style LoRA.
-3. **Asset spec schema** in Core content + validator checks + manifest format.
+1. ✅ **Model registry + license review** (§5) and the generator services. Containers still to do; the services run under uv today.
+2. ◐ **Style bible** (§4.1): v0 palettes and prompt templates are in `assets/style.json`. Still to do: exploration sheets, art-lead selection, and the style LoRA.
+3. ✅ **Asset spec schema**, validation, and manifest format (in `assets/`, see §3).
 4. **3D component pipeline** end to end for one category (Weapon), including Blender cleanup, sockets, and toon materials; assemble a Crest in a Godot test scene.
-5. **SFX pipeline** for one action set; wire to the engine's event stream.
-6. Review tool; then VFX, icons, remaining categories, music.
+5. ✅ **SFX pipeline** for every action and the key engine events, wired to the engine's event stream.
+6. ◐ Review tool (static HTML review page plus CLI approve/reject) and icons are done. Still to do: VFX, the remaining categories, music.
+
+**Next for image/audio:**
+1. Run SDXL over the icon set on a rented GPU and review it. The local T1000 can't: it produces NaN (black images) in fp16, see `tools/asset-services/README.md`. Budget about 52 icons × 4 candidates at a few seconds each on an RTX 4090 or L4-class GPU.
+2. Build the style bible from the best results and train the LoRA.
+3. Accept the Stable Audio Open terms, register with Stability, and run it over the SFX set.

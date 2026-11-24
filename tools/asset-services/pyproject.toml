@@ -1,0 +1,36 @@
+[project]
+name = "toolsandtomes-asset-services"
+version = "0.1.0"
+description = "Self-hosted generator services (image, audio) for the Tools and Tomes asset pipeline."
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0",
+    "pillow>=11.0",
+    "scipy>=1.14",
+    "soundfile>=0.13",
+    "pyloudnorm>=0.1.1",
+]
+
+[project.optional-dependencies]
+# AI backends (sdxl, flux-schnell, stable-audio-open). Several GB of downloads; see README.md.
+ai = [
+    "torch>=2.7",
+    "diffusers>=0.33",
+    "transformers>=4.50",
+    "accelerate>=1.5",
+    "safetensors>=0.5",
+    "sentencepiece>=0.2",
+    "protobuf>=5.0",
+    "torchsde>=0.2.6",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu128", extra = "ai" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

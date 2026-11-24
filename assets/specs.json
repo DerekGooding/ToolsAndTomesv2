@@ -1,0 +1,98 @@
+{
+  // Asset specs (docs/ASSET_PIPELINES.md §3). Each entry names a content id from src/ToolsAndTomes.Core/Content
+  // ("source"), or "event:<CombatEventType>" for sounds driven by an engine event.
+  //   icon: one image per source -> assets/icons/<source>.png
+  //   sfx:  one sound set per slot -> assets/sfx/<source>/<slot>_<n>.ogg  (slots: windup, impact, play)
+  // Optional: "palette" (style.json), "seed" (default: derived from the asset id), "durationSeconds".
+  // Editing a prompt, palette, seed, or duration makes that asset stale; `generate` remakes it.
+  "icons": [
+    { "source": "core_aether_dynamo", "prompt": "a compact spherical aether engine core with a glowing rune heart and brass cooling fins" },
+    { "source": "core_aether_furnace", "prompt": "a heavy furnace engine core, thick iron casing, roaring glowing grate" },
+    { "source": "mob_stride_legs", "prompt": "a pair of slender articulated mechanical walker legs with digitigrade knees" },
+    { "source": "mob_anchor_legs", "prompt": "a pair of massive stubby reinforced mechanical legs with wide anchoring feet" },
+    { "source": "armor_heavy_plate", "prompt": "a thick riveted iron armor plate with bolted edges", "palette": "bastion" },
+    { "source": "spellbook_grimoire", "prompt": "an inventor's spellbook bound in brass with gears on the cover and glowing pages" },
+    { "source": "eq_righteous", "prompt": "a straight broad mechanical longsword with a glowing holy edge", "palette": "oathsteel" },
+    { "source": "eq_vorpal", "prompt": "a curved wicked mechanical blade with a shimmering razor edge" },
+    { "source": "eq_titan", "prompt": "a massive two-handed war hammer head, riveted iron, glowing rune band" },
+    { "source": "eq_talon", "prompt": "a compact brass machine pistol with a drum magazine" },
+    { "source": "eq_falconet", "prompt": "a box missile launcher pod with six round tubes and small rockets" },
+    { "source": "eq_dragons_breath", "prompt": "a flamethrower projector nozzle shaped like a dragon head breathing fire", "palette": "ember" },
+    { "source": "eq_artillery_mortar", "prompt": "a squat heavy siege mortar barrel on a gimbal", "palette": "bastion" },
+    { "source": "eq_acid_sprayer", "prompt": "a sprayer nozzle with a glass tank of bubbling green acid", "palette": "corrodite" },
+    { "source": "eq_shield_generator", "prompt": "a shield generator emitter dish projecting a glowing hexagon barrier" },
+    { "source": "eq_repulsor", "prompt": "a ring-shaped repulsor emitter pulsing with concentric force waves" },
+    { "source": "eq_blink_drive", "prompt": "a small teleportation drive device with a swirling portal crystal", "palette": "arcane" },
+    { "source": "eq_jump_jets", "prompt": "a pair of back-mounted rocket jump jets with flame nozzles" },
+    { "source": "eq_thermal_regulator", "prompt": "a radiator heat sink module with coolant pipes and vents", "palette": "stormglass" },
+    { "source": "eq_spell_amplifier", "prompt": "an arcane amplifier crystal held in a brass tuning fork frame" },
+    { "source": "armor_oathsteel_plating", "prompt": "a white steel armor plate with gold trim and an engraved oath sigil", "palette": "oathsteel" },
+    { "source": "util_stormglass_capacitor", "prompt": "a glass capacitor cylinder crackling with trapped lightning", "palette": "stormglass" },
+    { "source": "mob_skystrider_legs", "prompt": "a pair of light mechanical legs with cloth sail fins on the calves", "palette": "skyweave" },
+    { "source": "util_cargo_rack", "prompt": "a back-mounted cargo rack with strapped crates and iron ingots" },
+
+    { "source": "weapon_righteous", "prompt": "a glowing sword mid-swing leaving a bright arc", "palette": "oathsteel" },
+    { "source": "weapon_vorpal", "prompt": "a fast slash streak cutting through the air" },
+    { "source": "weapon_titan", "prompt": "a giant hammer smashing down with a shockwave crack" },
+    { "source": "weapon_talon", "prompt": "a burst of three glowing bullets in flight" },
+    { "source": "weapon_falconet", "prompt": "a salvo of small rockets arcing with smoke trails" },
+    { "source": "weapon_dragons_breath", "prompt": "a cone of roaring dragon fire", "palette": "ember" },
+    { "source": "weapon_artillery_mortar", "prompt": "a mortar shell falling onto a target marker", "palette": "bastion" },
+    { "source": "defense_repulsor", "prompt": "a circular force wave pushing outward", "palette": "aegis" },
+    { "source": "defense_blink", "prompt": "a figure dissolving into a swirling portal", "palette": "arcane" },
+    { "source": "weapon_acid_spray", "prompt": "a splash of bubbling green acid", "palette": "corrodite" },
+    { "source": "mobility_dash", "prompt": "a rocket boost with speed lines" },
+    { "source": "spell_push", "prompt": "an open glowing hand pushing a force wave away" },
+    { "source": "spell_pull", "prompt": "a glowing hand pulling a chain of force inward" },
+    { "source": "spell_gravity_crush", "prompt": "a dark gravity sphere crushing downward" },
+    { "source": "spell_aegis", "prompt": "a glowing hexagonal ward barrier", "palette": "aegis" },
+    { "source": "spell_square_summon", "prompt": "four glowing motes forming a square that condenses into an iron cube" },
+    { "source": "spell_shape_fast_iron", "prompt": "glowing hands shaping molten iron into a gear" },
+    { "source": "use_ammo_pack", "prompt": "an ammo box with bullets spilling out", "palette": "iron-brass-rune" },
+    { "source": "throw_shaped_charge", "prompt": "a thrown bomb with a lit fuse" },
+    { "source": "use_iron_ward", "prompt": "an iron disc talisman deflecting a strike", "palette": "aegis" },
+
+    { "source": "con_ammo_pack", "prompt": "a sturdy ammo crate with brass shells", "palette": "iron-brass-rune" },
+    { "source": "con_shaped_charge", "prompt": "a round shaped-charge bomb with a fuse cap" },
+    { "source": "con_iron_ward", "prompt": "a round iron ward talisman with a glowing rune", "palette": "aegis" },
+
+    { "source": "mat_oathsteel", "prompt": "a raw ingot of white oathsteel with gold veins", "palette": "oathsteel" },
+    { "source": "mat_corrodite", "prompt": "a jagged green corrodite crystal dripping acid", "palette": "corrodite" },
+    { "source": "mat_bastion_ore", "prompt": "a heavy chunk of dense bastion ore with rusty streaks", "palette": "bastion" },
+    { "source": "mat_stormglass", "prompt": "a shard of blue stormglass with lightning inside", "palette": "stormglass" },
+    { "source": "mat_skyweave", "prompt": "a folded bolt of shimmering skyweave cloth", "palette": "skyweave" }
+  ],
+
+  "sfx": [
+    { "source": "weapon_righteous", "slots": { "windup": "metal sword drawn with a rising holy chime", "impact": "heavy sword slash hitting metal armor with a bright ring" } },
+    { "source": "weapon_vorpal", "slots": { "windup": "quick blade whoosh build-up", "impact": "razor sharp slicing hit on metal" } },
+    { "source": "weapon_titan", "slots": { "windup": "heavy servo whine rising slowly", "impact": "crushing metal hammer slam, deep boom" }, "durationSeconds": 2.0 },
+    { "source": "weapon_talon", "slots": { "impact": "rapid three-round machine pistol burst" }, "durationSeconds": 1.0 },
+    { "source": "weapon_falconet", "slots": { "windup": "missile pod spinning up, mechanical clicks", "impact": "salvo of small rocket explosions" }, "durationSeconds": 2.0 },
+    { "source": "weapon_dragons_breath", "slots": { "windup": "gas hiss and igniter clicks", "impact": "roaring flamethrower burst" }, "durationSeconds": 2.0 },
+    { "source": "weapon_artillery_mortar", "slots": { "windup": "mortar shell launch thump and falling whistle", "impact": "big artillery explosion" }, "durationSeconds": 2.5 },
+    { "source": "defense_repulsor", "slots": { "impact": "deep electric force pulse whoomp" }, "durationSeconds": 1.0 },
+    { "source": "defense_blink", "slots": { "impact": "magical teleport zap with a reversed whoosh" }, "durationSeconds": 1.0 },
+    { "source": "weapon_acid_spray", "slots": { "impact": "acid spray hiss and sizzle" } },
+    { "source": "mobility_dash", "slots": { "impact": "rocket thruster boost whoosh" }, "durationSeconds": 1.0 },
+    { "source": "spell_push", "slots": { "windup": "magical energy hum building", "impact": "magical force blast whoomp" } },
+    { "source": "spell_pull", "slots": { "windup": "magical energy hum building", "impact": "reversed magical suction whoosh" } },
+    { "source": "spell_gravity_crush", "slots": { "windup": "low ominous rumble rising", "impact": "deep gravity crunch, heavy metal compressing" }, "durationSeconds": 2.0 },
+    { "source": "spell_aegis", "slots": { "impact": "shimmering magic shield raising with a crystal chime" } },
+    { "source": "spell_square_summon", "slots": { "windup": "four magical tones gathering", "impact": "magical materialization with a solid metal clunk" }, "durationSeconds": 2.0 },
+    { "source": "spell_shape_fast_iron", "slots": { "windup": "molten metal bubbling with a magical hum", "impact": "metal forging clank and steam hiss" }, "durationSeconds": 2.0 },
+    { "source": "use_ammo_pack", "slots": { "impact": "ammo magazine reload clack" }, "durationSeconds": 1.0 },
+    { "source": "throw_shaped_charge", "slots": { "windup": "fuse sizzle", "impact": "sharp bomb explosion" }, "durationSeconds": 2.0 },
+    { "source": "use_iron_ward", "slots": { "impact": "metal talisman ringing like a struck bell" } },
+
+    { "source": "event:ComponentDamaged", "slots": { "play": "metal armor impact clank" }, "durationSeconds": 0.8 },
+    { "source": "event:ComponentDisabled", "slots": { "play": "machinery breaking with sparks and a power-down whine" }, "durationSeconds": 1.5 },
+    { "source": "event:CombatantDefeated", "slots": { "play": "large mech collapsing, metal crash and explosion" }, "durationSeconds": 3.0 },
+    { "source": "event:AegisBlocked", "slots": { "play": "energy shield deflecting a hit, glassy ping" }, "durationSeconds": 0.8 },
+    { "source": "event:DamageBlocked", "slots": { "play": "hit glancing off thick armor, dull clang" }, "durationSeconds": 0.8 },
+    { "source": "event:ActionInterrupted", "slots": { "play": "machine stalling, sharp power cut" }, "durationSeconds": 1.0 },
+    { "source": "event:MoteGenerated", "slots": { "play": "soft magical sparkle chime" }, "durationSeconds": 0.8 },
+    { "source": "event:Overheated", "slots": { "play": "steam venting with an alarm beep" }, "durationSeconds": 1.5 },
+    { "source": "event:FastIronProduced", "slots": { "play": "metal ingot dropping with a magical ring" }, "durationSeconds": 1.0 }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  // Style bible v0 (docs/ASSET_PIPELINES.md §4.1). Bump "version" whenever a change here should regenerate assets:
+  // the version is part of every asset's hash, so everything generated under an older style shows as stale.
+  "version": 1,
+  "name": "arcane-industrial toon",
+
+  "palettes": {
+    "iron-brass-rune": { "words": "dark iron, polished brass, glowing cyan runes", "colors": ["#2B2F36", "#B8873B", "#E2C27A", "#3FE0D0"] },
+    "oathsteel": { "words": "white steel, gold trim, pale blue glow", "colors": ["#D9DEE6", "#C9A23A", "#7FB8FF", "#3A4A66"] },
+    "ember": { "words": "soot black, ember orange, molten yellow", "colors": ["#1E1A1A", "#E2552B", "#FFC247", "#7A2E1C"] },
+    "corrodite": { "words": "toxic green, tarnished copper, dark slate", "colors": ["#7CD23A", "#B5652E", "#2E3A33", "#D9F27A"] },
+    "arcane": { "words": "deep violet, starlight white, magenta glow", "colors": ["#3B2363", "#A06BFF", "#F2E9FF", "#FF5FC8"] },
+    "aegis": { "words": "teal energy, white light, soft blue", "colors": ["#1E6F73", "#5FF2D6", "#F0FFFC", "#6FA8FF"] },
+    "stormglass": { "words": "storm blue glass, lightning white, slate", "colors": ["#2A4A7A", "#9FD7FF", "#FFFFFF", "#3B4250"] },
+    "skyweave": { "words": "sky blue cloth, cream, silver", "colors": ["#7EC4F0", "#F4EEDC", "#B9C2CC", "#3D6E99"] },
+    "bastion": { "words": "granite grey, rust red, iron", "colors": ["#6B6E73", "#9C3B2A", "#3A3D42", "#C9B79C"] }
+  },
+
+  // Palette used when a spec names none, by the source content's category.
+  "categoryPalettes": {
+    "Core": "iron-brass-rune",
+    "Mobility": "iron-brass-rune",
+    "Armor": "bastion",
+    "Weapon": "iron-brass-rune",
+    "Defense": "aegis",
+    "Arcane": "arcane",
+    "Utility": "iron-brass-rune",
+    "Spell": "arcane",
+    "Consumable": "ember",
+    "Material": "stormglass"
+  },
+
+  "icon": {
+    "prompt": "game inventory icon of {subject}, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, {palette}, plain flat light grey background",
+    "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+    "background": "#D0D0D0"
+  },
+
+  "sfx": {
+    "prompt": "{subject}, single isolated game sound effect, clean recording, no music, no voice",
+    "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted"
+  }
+}

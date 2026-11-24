@@ -6,7 +6,28 @@ namespace ToolsAndTomes.Core.Simulation;
 
 internal static class ActionEffectResolver
 {
+    /// <summary>
+    /// Applies an action's effect at the end of its impact window. Every event the effect produces is tagged
+    /// with the action's id, so presentation (sound, VFX) can key off it.
+    /// </summary>
     public static void ApplyExecutionEffect(
+        Combatant actor,
+        ActiveAction active,
+        IReadOnlyList<Combatant> allCombatants,
+        int beat,
+        double arenaWidth,
+        double arenaHeight,
+        List<IncomingHit> incomingHits,
+        List<CombatEvent> events)
+    {
+        int first = events.Count;
+        ApplyEffect(actor, active, allCombatants, beat, arenaWidth, arenaHeight, incomingHits, events);
+        for (int i = first; i < events.Count; i++)
+            if (events[i].ActionId is null)
+                events[i] = events[i] with { ActionId = active.Definition.Id };
+    }
+
+    private static void ApplyEffect(
         Combatant actor,
         ActiveAction active,
         IReadOnlyList<Combatant> allCombatants,

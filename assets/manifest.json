@@ -1,0 +1,4433 @@
+{
+  "assets": {
+    "icon/armor_heavy_plate": {
+      "kind": "Icon",
+      "hash": "a2c7590f175bc9bc",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a thick riveted iron armor plate with bolted edges, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, granite grey, rust red, iron, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        614381575
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/armor_heavy_plate.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.217,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:39.4595482+00:00",
+      "note": "auto-approved"
+    },
+    "icon/armor_oathsteel_plating": {
+      "kind": "Icon",
+      "hash": "492164a6f0610de7",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a white steel armor plate with gold trim and an engraved oath sigil, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, white steel, gold trim, pale blue glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        635393216
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/armor_oathsteel_plating.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.589,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:43.1339248+00:00",
+      "note": "auto-approved"
+    },
+    "icon/con_ammo_pack": {
+      "kind": "Icon",
+      "hash": "4c19499f9ac2ce15",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a sturdy ammo crate with brass shells, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        609850618
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/con_ammo_pack.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.471,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "blob"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:48.3659876+00:00",
+      "note": "auto-approved"
+    },
+    "icon/con_iron_ward": {
+      "kind": "Icon",
+      "hash": "720dc3498dbcea5b",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a round iron ward talisman with a glowing rune, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, teal energy, white light, soft blue, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        37009965
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/con_iron_ward.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.578,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:48.7763481+00:00",
+      "note": "auto-approved"
+    },
+    "icon/con_shaped_charge": {
+      "kind": "Icon",
+      "hash": "2f5135f45febf6fd",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a round shaped-charge bomb with a fuse cap, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, soot black, ember orange, molten yellow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        876617652
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/con_shaped_charge.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.426,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "burst"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:48.5861643+00:00",
+      "note": "auto-approved"
+    },
+    "icon/core_aether_dynamo": {
+      "kind": "Icon",
+      "hash": "6229eb685c3354b7",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a compact spherical aether engine core with a glowing rune heart and brass cooling fins, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        550499605
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/core_aether_dynamo.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.31,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:38.5533152+00:00",
+      "note": "auto-approved"
+    },
+    "icon/core_aether_furnace": {
+      "kind": "Icon",
+      "hash": "af4018187e7d1dd3",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a heavy furnace engine core, thick iron casing, roaring glowing grate, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        824036357
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/core_aether_furnace.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.327,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:38.7758683+00:00",
+      "note": "auto-approved"
+    },
+    "icon/defense_blink": {
+      "kind": "Icon",
+      "hash": "e373ebd1d28951e2",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a figure dissolving into a swirling portal, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        460260226
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/defense_blink.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.548,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "blob"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:45.8112954+00:00",
+      "note": "auto-approved"
+    },
+    "icon/defense_repulsor": {
+      "kind": "Icon",
+      "hash": "266a08ab9e32c19a",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a circular force wave pushing outward, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, teal energy, white light, soft blue, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        121908702
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/defense_repulsor.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.567,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:45.6048218+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_acid_sprayer": {
+      "kind": "Icon",
+      "hash": "843612a730d551d5",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a sprayer nozzle with a glass tank of bubbling green acid, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, toxic green, tarnished copper, dark slate, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        345673008
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_acid_sprayer.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.224,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:41.5439663+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_artillery_mortar": {
+      "kind": "Icon",
+      "hash": "c9b9ca818c55894a",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a squat heavy siege mortar barrel on a gimbal, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, granite grey, rust red, iron, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        947623778
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_artillery_mortar.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.206,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:41.3165412+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_blink_drive": {
+      "kind": "Icon",
+      "hash": "c192ca1cc3c804a1",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a small teleportation drive device with a swirling portal crystal, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        883091901
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_blink_drive.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.353,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:42.2048901+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_dragons_breath": {
+      "kind": "Icon",
+      "hash": "3dc0b4e0fe6ec721",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a flamethrower projector nozzle shaped like a dragon head breathing fire, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, soot black, ember orange, molten yellow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        51724571
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_dragons_breath.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.265,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:41.0526170+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_falconet": {
+      "kind": "Icon",
+      "hash": "5deff82f367ae791",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a box missile launcher pod with six round tubes and small rockets, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        719993936
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_falconet.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.544,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "blob"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:40.8181686+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_jump_jets": {
+      "kind": "Icon",
+      "hash": "e13a638c0173f9bf",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a pair of back-mounted rocket jump jets with flame nozzles, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        990162741
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_jump_jets.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.223,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:42.4325017+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_repulsor": {
+      "kind": "Icon",
+      "hash": "01afc8d689d352c1",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a ring-shaped repulsor emitter pulsing with concentric force waves, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, teal energy, white light, soft blue, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        204405358
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_repulsor.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.506,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "gear"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:41.9780163+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_righteous": {
+      "kind": "Icon",
+      "hash": "78d1e6a3908e54e1",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a straight broad mechanical longsword with a glowing holy edge, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, white steel, gold trim, pale blue glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        270769234
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_righteous.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.24,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:39.8909277+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_shield_generator": {
+      "kind": "Icon",
+      "hash": "04d2d2dc2f02e3b6",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a shield generator emitter dish projecting a glowing hexagon barrier, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, teal energy, white light, soft blue, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        172800011
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_shield_generator.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.548,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:41.7575946+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_spell_amplifier": {
+      "kind": "Icon",
+      "hash": "df42bdba7907da0d",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of an arcane amplifier crystal held in a brass tuning fork frame, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        766562414
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_spell_amplifier.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.343,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:42.9257849+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_talon": {
+      "kind": "Icon",
+      "hash": "2219b276f9502ece",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a compact brass machine pistol with a drum magazine, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        474778272
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_talon.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.255,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:40.5744301+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_thermal_regulator": {
+      "kind": "Icon",
+      "hash": "4ea1331c9dbd6045",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a radiator heat sink module with coolant pipes and vents, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, storm blue glass, lightning white, slate, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        435343927
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_thermal_regulator.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.375,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:42.6790595+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_titan": {
+      "kind": "Icon",
+      "hash": "094f4b8ac3e4aee9",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a massive two-handed war hammer head, riveted iron, glowing rune band, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        692516086
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_titan.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.215,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:40.3364894+00:00",
+      "note": "auto-approved"
+    },
+    "icon/eq_vorpal": {
+      "kind": "Icon",
+      "hash": "942ee7de3dfe19ea",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a curved wicked mechanical blade with a shimmering razor edge, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        74422396
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/eq_vorpal.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.211,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:40.1090384+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mat_bastion_ore": {
+      "kind": "Icon",
+      "hash": "27834ee115e5ed91",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a heavy chunk of dense bastion ore with rusty streaks, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, granite grey, rust red, iron, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        490126541
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mat_bastion_ore.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.208,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:49.4058614+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mat_corrodite": {
+      "kind": "Icon",
+      "hash": "6a50944db4efaebc",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a jagged green corrodite crystal dripping acid, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, toxic green, tarnished copper, dark slate, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        874300005
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mat_corrodite.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.333,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:49.1869208+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mat_oathsteel": {
+      "kind": "Icon",
+      "hash": "e3d5a10414fb70fa",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a raw ingot of white oathsteel with gold veins, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, white steel, gold trim, pale blue glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        373678881
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mat_oathsteel.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.39,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:48.9779096+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mat_skyweave": {
+      "kind": "Icon",
+      "hash": "02026d105e33d842",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a folded bolt of shimmering skyweave cloth, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, sky blue cloth, cream, silver, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        292915523
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mat_skyweave.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.508,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "gear"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:49.8800574+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mat_stormglass": {
+      "kind": "Icon",
+      "hash": "5c64463b55684929",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a shard of blue stormglass with lightning inside, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, storm blue glass, lightning white, slate, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        818697701
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mat_stormglass.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.339,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:49.6649765+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mob_anchor_legs": {
+      "kind": "Icon",
+      "hash": "2b511c213c24780d",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a pair of massive stubby reinforced mechanical legs with wide anchoring feet, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        758566757
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mob_anchor_legs.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.522,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "gear"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:39.2006261+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mob_skystrider_legs": {
+      "kind": "Icon",
+      "hash": "ba983f69467fc94d",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a pair of light mechanical legs with cloth sail fins on the calves, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, sky blue cloth, cream, silver, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        721780108
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mob_skystrider_legs.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.352,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "pair"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:43.5771716+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mob_stride_legs": {
+      "kind": "Icon",
+      "hash": "053eaffab0ccde3b",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a pair of slender articulated mechanical walker legs with digitigrade knees, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        270982529
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mob_stride_legs.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.352,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "pair"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:38.9864829+00:00",
+      "note": "auto-approved"
+    },
+    "icon/mobility_dash": {
+      "kind": "Icon",
+      "hash": "1de01d685cd70a90",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a rocket boost with speed lines, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        517885985
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/mobility_dash.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.512,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "blob"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:46.2545639+00:00",
+      "note": "auto-approved"
+    },
+    "icon/spell_aegis": {
+      "kind": "Icon",
+      "hash": "46ac83423e165ac8",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a glowing hexagonal ward barrier, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, teal energy, white light, soft blue, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        159812353
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/spell_aegis.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.553,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:47.0616315+00:00",
+      "note": "auto-approved"
+    },
+    "icon/spell_gravity_crush": {
+      "kind": "Icon",
+      "hash": "252a835308b1a5aa",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a dark gravity sphere crushing downward, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        644438956
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/spell_gravity_crush.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.577,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:46.8749908+00:00",
+      "note": "auto-approved"
+    },
+    "icon/spell_pull": {
+      "kind": "Icon",
+      "hash": "c0305c8c08c4810d",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a glowing hand pulling a chain of force inward, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        177584881
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/spell_pull.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.531,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:46.6917412+00:00",
+      "note": "auto-approved"
+    },
+    "icon/spell_push": {
+      "kind": "Icon",
+      "hash": "95d02969c0e06092",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of an open glowing hand pushing a force wave away, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        206755882
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/spell_push.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.361,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "burst"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:46.4819681+00:00",
+      "note": "auto-approved"
+    },
+    "icon/spell_shape_fast_iron": {
+      "kind": "Icon",
+      "hash": "b9c7be4b0ac3dba4",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of glowing hands shaping molten iron into a gear, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        358070005
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/spell_shape_fast_iron.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.518,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "gear"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:47.5092835+00:00",
+      "note": "auto-approved"
+    },
+    "icon/spell_square_summon": {
+      "kind": "Icon",
+      "hash": "12ee2fd768e74559",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of four glowing motes forming a square that condenses into an iron cube, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        866668313
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/spell_square_summon.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.53,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "blob"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:47.2569724+00:00",
+      "note": "auto-approved"
+    },
+    "icon/spellbook_grimoire": {
+      "kind": "Icon",
+      "hash": "4b2444fd4f803475",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of an inventor's spellbook bound in brass with gears on the cover and glowing pages, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, deep violet, starlight white, magenta glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        191049575
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/spellbook_grimoire.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.498,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "gear"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:39.6733170+00:00",
+      "note": "auto-approved"
+    },
+    "icon/throw_shaped_charge": {
+      "kind": "Icon",
+      "hash": "3386ddf8899fbbdd",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a thrown bomb with a lit fuse, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        102750696
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/throw_shaped_charge.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.403,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "burst"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:47.9739324+00:00",
+      "note": "auto-approved"
+    },
+    "icon/use_ammo_pack": {
+      "kind": "Icon",
+      "hash": "127589062c26cc58",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of an ammo box with bullets spilling out, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        487432589
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/use_ammo_pack.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.52,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "blob"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:47.7490190+00:00",
+      "note": "auto-approved"
+    },
+    "icon/use_iron_ward": {
+      "kind": "Icon",
+      "hash": "2d6b945e2a2ef177",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of an iron disc talisman deflecting a strike, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, teal energy, white light, soft blue, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        488663226
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/use_iron_ward.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.514,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "shield"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:48.1615429+00:00",
+      "note": "auto-approved"
+    },
+    "icon/util_cargo_rack": {
+      "kind": "Icon",
+      "hash": "ac6c61aa604f131f",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a back-mounted cargo rack with strapped crates and iron ingots, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        121885024
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/util_cargo_rack.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.323,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:43.7840817+00:00",
+      "note": "auto-approved"
+    },
+    "icon/util_stormglass_capacitor": {
+      "kind": "Icon",
+      "hash": "857569f67a8455ec",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a glass capacitor cylinder crackling with trapped lightning, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, storm blue glass, lightning white, slate, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        972628834
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/util_stormglass_capacitor.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.382,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 31,
+          "family": "crystal"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:43.3524549+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_acid_spray": {
+      "kind": "Icon",
+      "hash": "10ad6156836dae61",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a splash of bubbling green acid, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, toxic green, tarnished copper, dark slate, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        217851937
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_acid_spray.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.418,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "burst"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:46.0444016+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_artillery_mortar": {
+      "kind": "Icon",
+      "hash": "4775ae07bf78f1a3",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a mortar shell falling onto a target marker, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, granite grey, rust red, iron, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        881722688
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_artillery_mortar.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.52,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "blob"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:45.4055306+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_dragons_breath": {
+      "kind": "Icon",
+      "hash": "120dac18ec821c69",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a cone of roaring dragon fire, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, soot black, ember orange, molten yellow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        811505281
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_dragons_breath.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.497,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "gear"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:45.1858391+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_falconet": {
+      "kind": "Icon",
+      "hash": "eb79a64f579035fb",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a salvo of small rockets arcing with smoke trails, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        96611950
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_falconet.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.418,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "burst"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:44.9416220+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_righteous": {
+      "kind": "Icon",
+      "hash": "21bcaebe76b23663",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a glowing sword mid-swing leaving a bright arc, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, white steel, gold trim, pale blue glow, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        410365828
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_righteous.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.218,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:44.0081850+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_talon": {
+      "kind": "Icon",
+      "hash": "b2fb80e60aaa5c1b",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a burst of three glowing bullets in flight, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        173820650
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_talon.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.423,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "burst"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:44.7117698+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_titan": {
+      "kind": "Icon",
+      "hash": "01935978eca490d1",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a giant hammer smashing down with a shockwave crack, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        537016540
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_titan.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.21,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:44.4710942+00:00",
+      "note": "auto-approved"
+    },
+    "icon/weapon_vorpal": {
+      "kind": "Icon",
+      "hash": "b0d3ce00e4b80d18",
+      "backend": "procedural-image",
+      "model": "procedural-image@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "game inventory icon of a fast slash streak cutting through the air, single object centered, toon cel shading, flat color regions, thick clean black outline, chunky readable silhouette, dark iron, polished brass, glowing cyan runes, plain flat light grey background",
+      "negativePrompt": "photo, realistic, photorealistic, text, letters, watermark, signature, frame, border, multiple objects, cropped, blurry, noisy, gradient background, busy background",
+      "seeds": [
+        270723102
+      ],
+      "params": {
+        "background": "#D0D0D0",
+        "guidance": 6.5,
+        "size": 256,
+        "steps": 30
+      },
+      "files": [
+        "icons/weapon_vorpal.png"
+      ],
+      "metrics": [
+        {
+          "width": 256,
+          "height": 256,
+          "coverage": 0.253,
+          "subjectFound": true,
+          "touchesEdge": false,
+          "colors": 32,
+          "family": "bar"
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:44.2260868+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/defense_blink/impact": {
+      "kind": "Sfx",
+      "hash": "7f11101123032289",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "magical teleport zap with a reversed whoosh, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        674220281,
+        674220282,
+        674220283
+      ],
+      "params": {
+        "durationSeconds": 1,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/defense_blink/impact_1.ogg",
+        "sfx/defense_blink/impact_2.ogg",
+        "sfx/defense_blink/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -5.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -5.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -6.4,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:53.4464031+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/defense_repulsor/impact": {
+      "kind": "Sfx",
+      "hash": "883b43432b55ecae",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "deep electric force pulse whoomp, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        178256013,
+        178256014,
+        178256015
+      ],
+      "params": {
+        "durationSeconds": 1,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/defense_repulsor/impact_1.ogg",
+        "sfx/defense_repulsor/impact_2.ogg",
+        "sfx/defense_repulsor/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -3.4,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -2.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.4,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "rumble"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:53.3125581+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_ActionInterrupted/play": {
+      "kind": "Sfx",
+      "hash": "e045b8bbe069dc89",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "machine stalling, sharp power cut, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        50512843,
+        50512844,
+        50512845
+      ],
+      "params": {
+        "durationSeconds": 1,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_ActionInterrupted/play_1.ogg",
+        "sfx/event_ActionInterrupted/play_2.ogg",
+        "sfx/event_ActionInterrupted/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.993,
+          "lufs": -16.0,
+          "peakDb": -11.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep"
+          ]
+        },
+        {
+          "durationSeconds": 0.994,
+          "lufs": -16.0,
+          "peakDb": -11.7,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep"
+          ]
+        },
+        {
+          "durationSeconds": 0.993,
+          "lufs": -16.0,
+          "peakDb": -11.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:58.4564343+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_AegisBlocked/play": {
+      "kind": "Sfx",
+      "hash": "504dbcdcb0e32560",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "energy shield deflecting a hit, glassy ping, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        286572708,
+        286572709,
+        286572710
+      ],
+      "params": {
+        "durationSeconds": 0.8,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_AegisBlocked/play_1.ogg",
+        "sfx/event_AegisBlocked/play_2.ogg",
+        "sfx/event_AegisBlocked/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -4.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -5.7,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:58.1776332+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_CombatantDefeated/play": {
+      "kind": "Sfx",
+      "hash": "7dd902a06c6f75db",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "large mech collapsing, metal crash and explosion, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        614226650,
+        614226651,
+        614226652
+      ],
+      "params": {
+        "durationSeconds": 3,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_CombatantDefeated/play_1.ogg",
+        "sfx/event_CombatantDefeated/play_2.ogg",
+        "sfx/event_CombatantDefeated/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.357,
+          "lufs": -16.6,
+          "peakDb": -2.7,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 2.958,
+          "lufs": -16.6,
+          "peakDb": -2.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 2.693,
+          "lufs": -16.6,
+          "peakDb": -2.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:58.0598438+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_ComponentDamaged/play": {
+      "kind": "Sfx",
+      "hash": "0f93aee183ada06f",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "metal armor impact clank, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        213434229,
+        213434230,
+        213434231
+      ],
+      "params": {
+        "durationSeconds": 0.8,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_ComponentDamaged/play_1.ogg",
+        "sfx/event_ComponentDamaged/play_2.ogg",
+        "sfx/event_ComponentDamaged/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -7.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -5.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -7.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:57.4827589+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_ComponentDisabled/play": {
+      "kind": "Sfx",
+      "hash": "83a514bd9f2c509b",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "machinery breaking with sparks and a power-down whine, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        87159502,
+        87159503,
+        87159504
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_ComponentDisabled/play_1.ogg",
+        "sfx/event_ComponentDisabled/play_2.ogg",
+        "sfx/event_ComponentDisabled/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.499,
+          "lufs": -16.1,
+          "peakDb": -3.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.499,
+          "lufs": -16.0,
+          "peakDb": -5.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -2.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "hiss"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:57.7057714+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_DamageBlocked/play": {
+      "kind": "Sfx",
+      "hash": "01a5e71e8b5808b3",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "hit glancing off thick armor, dull clang, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        821338238,
+        821338239,
+        821338240
+      ],
+      "params": {
+        "durationSeconds": 0.8,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_DamageBlocked/play_1.ogg",
+        "sfx/event_DamageBlocked/play_2.ogg",
+        "sfx/event_DamageBlocked/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.5,
+          "peakDb": -2.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -1.4,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.4,
+          "peakDb": -2.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:58.2811008+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_FastIronProduced/play": {
+      "kind": "Sfx",
+      "hash": "0d2852cfb8d7b3f1",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "metal ingot dropping with a magical ring, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        468151207,
+        468151208,
+        468151209
+      ],
+      "params": {
+        "durationSeconds": 1,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_FastIronProduced/play_1.ogg",
+        "sfx/event_FastIronProduced/play_2.ogg",
+        "sfx/event_FastIronProduced/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -6.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -4.7,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.0,
+          "peakDb": -7.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:58.9714872+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_MoteGenerated/play": {
+      "kind": "Sfx",
+      "hash": "4e622a29df919d28",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "soft magical sparkle chime, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        95495215,
+        95495216,
+        95495217
+      ],
+      "params": {
+        "durationSeconds": 0.8,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_MoteGenerated/play_1.ogg",
+        "sfx/event_MoteGenerated/play_2.ogg",
+        "sfx/event_MoteGenerated/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -7.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -5.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 0.8,
+          "lufs": -16.0,
+          "peakDb": -7.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:58.5546264+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/event_Overheated/play": {
+      "kind": "Sfx",
+      "hash": "75285590ec543970",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "steam venting with an alarm beep, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        305815476,
+        305815477,
+        305815478
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/event_Overheated/play_1.ogg",
+        "sfx/event_Overheated/play_2.ogg",
+        "sfx/event_Overheated/play_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.498,
+          "lufs": -16.1,
+          "peakDb": -2.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.497,
+          "lufs": -16.0,
+          "peakDb": -4.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.497,
+          "lufs": -16.0,
+          "peakDb": -1.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:58.8196525+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/mobility_dash/impact": {
+      "kind": "Sfx",
+      "hash": "2abf825417a7aa2f",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "rocket thruster boost whoosh, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        773406212,
+        773406213,
+        773406214
+      ],
+      "params": {
+        "durationSeconds": 1,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/mobility_dash/impact_1.ogg",
+        "sfx/mobility_dash/impact_2.ogg",
+        "sfx/mobility_dash/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.556,
+          "lufs": -16.0,
+          "peakDb": -4.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 0.615,
+          "lufs": -16.0,
+          "peakDb": -5.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 0.538,
+          "lufs": -16.0,
+          "peakDb": -6.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:53.8103269+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_aegis/impact": {
+      "kind": "Sfx",
+      "hash": "b9073c4b0a62237b",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "shimmering magic shield raising with a crystal chime, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        512518564,
+        512518565,
+        512518566
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_aegis/impact_1.ogg",
+        "sfx/spell_aegis/impact_2.ogg",
+        "sfx/spell_aegis/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -5.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -5.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -5.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:55.4177170+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_gravity_crush/impact": {
+      "kind": "Sfx",
+      "hash": "c679e7033fd9f3e7",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "deep gravity crunch, heavy metal compressing, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        735507255,
+        735507256,
+        735507257
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_gravity_crush/impact_1.ogg",
+        "sfx/spell_gravity_crush/impact_2.ogg",
+        "sfx/spell_gravity_crush/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.5,
+          "peakDb": -3.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.4,
+          "peakDb": -2.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.4,
+          "peakDb": -2.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "rumble"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:55.2079628+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_gravity_crush/windup": {
+      "kind": "Sfx",
+      "hash": "6f7ca59e1c400515",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "low ominous rumble rising, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        455545618,
+        455545619,
+        455545620
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_gravity_crush/windup_1.ogg",
+        "sfx/spell_gravity_crush/windup_2.ogg",
+        "sfx/spell_gravity_crush/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -3.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 1.999,
+          "lufs": -16.0,
+          "peakDb": -3.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -4.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "rumble"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:54.9330067+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_pull/impact": {
+      "kind": "Sfx",
+      "hash": "54742eac4faff137",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "reversed magical suction whoosh, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        84705060,
+        84705061,
+        84705062
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_pull/impact_1.ogg",
+        "sfx/spell_pull/impact_2.ogg",
+        "sfx/spell_pull/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -7.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -5.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:54.6649304+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_pull/windup": {
+      "kind": "Sfx",
+      "hash": "07b7ee521749ccd6",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "magical energy hum building, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        510699001,
+        510699002,
+        510699003
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_pull/windup_1.ogg",
+        "sfx/spell_pull/windup_2.ogg",
+        "sfx/spell_pull/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -5.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -5.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -4.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:54.4493228+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_push/impact": {
+      "kind": "Sfx",
+      "hash": "850d5fbf9be66ba0",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "magical force blast whoomp, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        312302841,
+        312302842,
+        312302843
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_push/impact_1.ogg",
+        "sfx/spell_push/impact_2.ogg",
+        "sfx/spell_push/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.4,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:54.2353339+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_push/windup": {
+      "kind": "Sfx",
+      "hash": "4ac199a111f3ccfa",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "magical energy hum building, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        794582512,
+        794582513,
+        794582514
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_push/windup_1.ogg",
+        "sfx/spell_push/windup_2.ogg",
+        "sfx/spell_push/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -4.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -6.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -4.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:54.0294208+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_shape_fast_iron/impact": {
+      "kind": "Sfx",
+      "hash": "28aae1237cd45a4e",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "metal forging clank and steam hiss, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        802806864,
+        802806865,
+        802806866
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_shape_fast_iron/impact_1.ogg",
+        "sfx/spell_shape_fast_iron/impact_2.ogg",
+        "sfx/spell_shape_fast_iron/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.998,
+          "lufs": -16.0,
+          "peakDb": -4.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.996,
+          "lufs": -16.0,
+          "peakDb": -4.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.995,
+          "lufs": -16.1,
+          "peakDb": -2.7,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "hiss"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:56.5662942+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_shape_fast_iron/windup": {
+      "kind": "Sfx",
+      "hash": "3fa1807039e1da3e",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "molten metal bubbling with a magical hum, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        167943701,
+        167943702,
+        167943703
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_shape_fast_iron/windup_1.ogg",
+        "sfx/spell_shape_fast_iron/windup_2.ogg",
+        "sfx/spell_shape_fast_iron/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -2.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -1.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -2.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:56.3033270+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_square_summon/impact": {
+      "kind": "Sfx",
+      "hash": "259a6ba430d71cc1",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "magical materialization with a solid metal clunk, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        123763820,
+        123763821,
+        123763822
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_square_summon/impact_1.ogg",
+        "sfx/spell_square_summon/impact_2.ogg",
+        "sfx/spell_square_summon/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -4.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -3.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -4.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:55.9865032+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/spell_square_summon/windup": {
+      "kind": "Sfx",
+      "hash": "d83ae41824233736",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "four magical tones gathering, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        376486881,
+        376486882,
+        376486883
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/spell_square_summon/windup_1.ogg",
+        "sfx/spell_square_summon/windup_2.ogg",
+        "sfx/spell_square_summon/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -1.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -1.7,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.0,
+          "peakDb": -2.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:55.7227486+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/throw_shaped_charge/impact": {
+      "kind": "Sfx",
+      "hash": "07a4a8902bfa41f6",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "sharp bomb explosion, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        73538099,
+        73538100,
+        73538101
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/throw_shaped_charge/impact_1.ogg",
+        "sfx/throw_shaped_charge/impact_2.ogg",
+        "sfx/throw_shaped_charge/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.54,
+          "lufs": -16.8,
+          "peakDb": -2.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact"
+          ]
+        },
+        {
+          "durationSeconds": 1.277,
+          "lufs": -17.5,
+          "peakDb": -2.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact"
+          ]
+        },
+        {
+          "durationSeconds": 1.189,
+          "lufs": -16.8,
+          "peakDb": -2.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:57.2251964+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/throw_shaped_charge/windup": {
+      "kind": "Sfx",
+      "hash": "bab543de750d4f57",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "fuse sizzle, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        593444110,
+        593444111,
+        593444112
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/throw_shaped_charge/windup_1.ogg",
+        "sfx/throw_shaped_charge/windup_2.ogg",
+        "sfx/throw_shaped_charge/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.997,
+          "lufs": -16.0,
+          "peakDb": -4.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.997,
+          "lufs": -16.0,
+          "peakDb": -1.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.997,
+          "lufs": -16.0,
+          "peakDb": -4.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:57.0428762+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/use_ammo_pack/impact": {
+      "kind": "Sfx",
+      "hash": "6a08655c319fac7a",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "ammo magazine reload clack, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        966588456,
+        966588457,
+        966588458
+      ],
+      "params": {
+        "durationSeconds": 1,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/use_ammo_pack/impact_1.ogg",
+        "sfx/use_ammo_pack/impact_2.ogg",
+        "sfx/use_ammo_pack/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.0,
+          "lufs": -17.0,
+          "peakDb": -2.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.5,
+          "peakDb": -1.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 1.0,
+          "lufs": -16.5,
+          "peakDb": -1.7,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "clicks"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:56.7056546+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/use_iron_ward/impact": {
+      "kind": "Sfx",
+      "hash": "9d315b226804cb4e",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "metal talisman ringing like a struck bell, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        622352265,
+        622352266,
+        622352267
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/use_iron_ward/impact_1.ogg",
+        "sfx/use_iron_ward/impact_2.ogg",
+        "sfx/use_iron_ward/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -4.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:57.3723361+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_acid_spray/impact": {
+      "kind": "Sfx",
+      "hash": "bf5d7ff61318ae6a",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "acid spray hiss and sizzle, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        397352252,
+        397352253,
+        397352254
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_acid_spray/impact_1.ogg",
+        "sfx/weapon_acid_spray/impact_2.ogg",
+        "sfx/weapon_acid_spray/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.498,
+          "lufs": -16.0,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.498,
+          "lufs": -16.1,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.498,
+          "lufs": -16.0,
+          "peakDb": -2.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "hiss"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:53.6686828+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_artillery_mortar/impact": {
+      "kind": "Sfx",
+      "hash": "f7ff82261f84ae2a",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "big artillery explosion, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        166718971,
+        166718972,
+        166718973
+      ],
+      "params": {
+        "durationSeconds": 2.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_artillery_mortar/impact_1.ogg",
+        "sfx/weapon_artillery_mortar/impact_2.ogg",
+        "sfx/weapon_artillery_mortar/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.34,
+          "lufs": -16.8,
+          "peakDb": -2.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact"
+          ]
+        },
+        {
+          "durationSeconds": 1.328,
+          "lufs": -16.6,
+          "peakDb": -2.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact"
+          ]
+        },
+        {
+          "durationSeconds": 1.715,
+          "lufs": -16.0,
+          "peakDb": -1.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:53.1597530+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_artillery_mortar/windup": {
+      "kind": "Sfx",
+      "hash": "bde11a20dea54e95",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "mortar shell launch thump and falling whistle, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        185210646,
+        185210647,
+        185210648
+      ],
+      "params": {
+        "durationSeconds": 2.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_artillery_mortar/windup_1.ogg",
+        "sfx/weapon_artillery_mortar/windup_2.ogg",
+        "sfx/weapon_artillery_mortar/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 2.499,
+          "lufs": -16.6,
+          "peakDb": -1.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "sweep"
+          ]
+        },
+        {
+          "durationSeconds": 2.499,
+          "lufs": -16.6,
+          "peakDb": -1.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "sweep"
+          ]
+        },
+        {
+          "durationSeconds": 2.498,
+          "lufs": -16.5,
+          "peakDb": -2.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "sweep"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:52.9608460+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_dragons_breath/impact": {
+      "kind": "Sfx",
+      "hash": "532e60addb181241",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "roaring flamethrower burst, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        233738196,
+        233738197,
+        233738198
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_dragons_breath/impact_1.ogg",
+        "sfx/weapon_dragons_breath/impact_2.ogg",
+        "sfx/weapon_dragons_breath/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.998,
+          "lufs": -16.7,
+          "peakDb": -1.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "clicks",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 1.993,
+          "lufs": -16.8,
+          "peakDb": -1.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "clicks",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.6,
+          "peakDb": -1.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "clicks",
+            "rumble"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:52.5673835+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_dragons_breath/windup": {
+      "kind": "Sfx",
+      "hash": "b3c02b8dc30817d3",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "gas hiss and igniter clicks, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        409964169,
+        409964170,
+        409964171
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_dragons_breath/windup_1.ogg",
+        "sfx/weapon_dragons_breath/windup_2.ogg",
+        "sfx/weapon_dragons_breath/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.997,
+          "lufs": -16.1,
+          "peakDb": -3.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "clicks",
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.996,
+          "lufs": -16.0,
+          "peakDb": -1.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "clicks",
+            "hiss"
+          ]
+        },
+        {
+          "durationSeconds": 1.996,
+          "lufs": -16.1,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "clicks",
+            "hiss"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:52.2854803+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_falconet/impact": {
+      "kind": "Sfx",
+      "hash": "4cf7ef5f8e4327b9",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "salvo of small rocket explosions, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        531613573,
+        531613574,
+        531613575
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_falconet/impact_1.ogg",
+        "sfx/weapon_falconet/impact_2.ogg",
+        "sfx/weapon_falconet/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.363,
+          "lufs": -16.7,
+          "peakDb": -1.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 1.804,
+          "lufs": -16.5,
+          "peakDb": -2.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 1.821,
+          "lufs": -16.8,
+          "peakDb": -1.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "clicks"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:52.0155056+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_falconet/windup": {
+      "kind": "Sfx",
+      "hash": "9c12281a389ca4a6",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "missile pod spinning up, mechanical clicks, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        188061484,
+        188061485,
+        188061486
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_falconet/windup_1.ogg",
+        "sfx/weapon_falconet/windup_2.ogg",
+        "sfx/weapon_falconet/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.999,
+          "lufs": -17.4,
+          "peakDb": -1.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 1.999,
+          "lufs": -17.4,
+          "peakDb": -1.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 1.999,
+          "lufs": -17.3,
+          "peakDb": -1.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep",
+            "clicks"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:51.8046254+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_righteous/impact": {
+      "kind": "Sfx",
+      "hash": "b7515de9b57249e0",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "heavy sword slash hitting metal armor with a bright ring, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        8477583,
+        8477584,
+        8477585
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_righteous/impact_1.ogg",
+        "sfx/weapon_righteous/impact_2.ogg",
+        "sfx/weapon_righteous/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -2.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -2.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "whoosh"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:50.3374714+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_righteous/windup": {
+      "kind": "Sfx",
+      "hash": "29eae98ef65cbc3a",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "metal sword drawn with a rising holy chime, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        965330986,
+        965330987,
+        965330988
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_righteous/windup_1.ogg",
+        "sfx/weapon_righteous/windup_2.ogg",
+        "sfx/weapon_righteous/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -2.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "metal",
+            "sweep",
+            "chime"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:50.1118378+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_talon/impact": {
+      "kind": "Sfx",
+      "hash": "ef329d05f51c4d1d",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "rapid three-round machine pistol burst, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        403153817,
+        403153818,
+        403153819
+      ],
+      "params": {
+        "durationSeconds": 1,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_talon/impact_1.ogg",
+        "sfx/weapon_talon/impact_2.ogg",
+        "sfx/weapon_talon/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.367,
+          "lufs": -16.0,
+          "peakDb": -1.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 0.281,
+          "lufs": -16.6,
+          "peakDb": -2.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "clicks"
+          ]
+        },
+        {
+          "durationSeconds": 0.274,
+          "lufs": -16.7,
+          "peakDb": -1.8,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "clicks"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:51.5021032+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_titan/impact": {
+      "kind": "Sfx",
+      "hash": "be354b96c7dbdbc5",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "crushing metal hammer slam, deep boom, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        269633031,
+        269633032,
+        269633033
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_titan/impact_1.ogg",
+        "sfx/weapon_titan/impact_2.ogg",
+        "sfx/weapon_titan/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.4,
+          "peakDb": -2.2,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 1.998,
+          "lufs": -16.5,
+          "peakDb": -2.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "rumble"
+          ]
+        },
+        {
+          "durationSeconds": 2.0,
+          "lufs": -16.4,
+          "peakDb": -2.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "rumble"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:51.3079382+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_titan/windup": {
+      "kind": "Sfx",
+      "hash": "1a1f95fc7278733c",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "heavy servo whine rising slowly, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        941878914,
+        941878915,
+        941878916
+      ],
+      "params": {
+        "durationSeconds": 2,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_titan/windup_1.ogg",
+        "sfx/weapon_titan/windup_2.ogg",
+        "sfx/weapon_titan/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.979,
+          "lufs": -16.0,
+          "peakDb": -12.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep"
+          ]
+        },
+        {
+          "durationSeconds": 1.978,
+          "lufs": -16.0,
+          "peakDb": -12.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep"
+          ]
+        },
+        {
+          "durationSeconds": 1.978,
+          "lufs": -16.0,
+          "peakDb": -13.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "sweep"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:51.0191866+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_vorpal/impact": {
+      "kind": "Sfx",
+      "hash": "1d3c0f2e77353ebf",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "razor sharp slicing hit on metal, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        298343133,
+        298343134,
+        298343135
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_vorpal/impact_1.ogg",
+        "sfx/weapon_vorpal/impact_2.ogg",
+        "sfx/weapon_vorpal/impact_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.5,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -4.6,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 1.5,
+          "lufs": -16.0,
+          "peakDb": -3.1,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "impact",
+            "metal",
+            "whoosh"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:50.7369553+00:00",
+      "note": "auto-approved"
+    },
+    "sfx/weapon_vorpal/windup": {
+      "kind": "Sfx",
+      "hash": "eff2d7ddc584fd5f",
+      "backend": "procedural-audio",
+      "model": "procedural-audio@1",
+      "license": "Project code",
+      "placeholder": true,
+      "prompt": "quick blade whoosh build-up, single isolated game sound effect, clean recording, no music, no voice",
+      "negativePrompt": "music, melody, speech, voice, singing, background noise, hum, low quality, distorted",
+      "seeds": [
+        762851204,
+        762851205,
+        762851206
+      ],
+      "params": {
+        "durationSeconds": 1.5,
+        "guidance": 7,
+        "maxPeakDb": -1,
+        "steps": 100,
+        "targetLufs": -16
+      },
+      "files": [
+        "sfx/weapon_vorpal/windup_1.ogg",
+        "sfx/weapon_vorpal/windup_2.ogg",
+        "sfx/weapon_vorpal/windup_3.ogg"
+      ],
+      "metrics": [
+        {
+          "durationSeconds": 0.768,
+          "lufs": -16.0,
+          "peakDb": -6.3,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 0.979,
+          "lufs": -16.0,
+          "peakDb": -5.0,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh"
+          ]
+        },
+        {
+          "durationSeconds": 0.99,
+          "lufs": -16.0,
+          "peakDb": -4.9,
+          "channels": 2,
+          "sampleRate": 44100,
+          "layers": [
+            "whoosh"
+          ]
+        }
+      ],
+      "approvedAt": "2026-11-24T18:27:50.5287392+00:00",
+      "note": "auto-approved"
+    }
+  }
+}

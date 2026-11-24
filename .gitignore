@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 .godot/
 *.translation
 export_presets.cfg
+
+# Asset generator services (Python)
+.venv/

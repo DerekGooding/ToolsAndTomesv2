@@ -138,7 +138,7 @@ internal sealed class ActorStateProcessor
             }
 
             events.Add(new CombatEvent(beat, CombatEventType.ActionStarted, actor.Id,
-                $"{actor.Name} reacts with {def.Name}!", cmd.TargetActorId));
+                $"{actor.Name} reacts with {def.Name}!", cmd.TargetActorId, ActionId: def.Id));
 
             ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events);
             act.EffectApplied = true;
@@ -481,7 +481,8 @@ internal sealed class ActorStateProcessor
             CombatEventType.ActionStarted,
             actor.Id,
             $"{actor.Name} winding up {def.Name}.",
-            act.TargetActorId));
+            act.TargetActorId,
+            ActionId: def.Id));
 
         if (def.WindupBeats > 0)
             SetPhase(act, ActionState.Windup, def.WindupBeats);

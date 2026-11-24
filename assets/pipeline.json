@@ -1,0 +1,16 @@
+{
+  // Orchestrator settings. Paths are relative to the repository root. Command-line flags override these.
+  "imageService": "http://127.0.0.1:8411",
+  "audioService": "http://127.0.0.1:8412",
+
+  // Backends used for new generations (see models.json). Changing one makes every asset made with
+  // another backend stale, so the next `generate` replaces placeholders with the real model's output.
+  "imageBackend": "procedural-image",
+  "audioBackend": "procedural-audio",
+
+  // Approved files land inside the Godot project so they're imported and exported with the game.
+  "outputRoot": "client/ToolsAndTomes.Client/assets",
+
+  "icon": { "size": 256, "candidates": 4, "steps": 30, "guidance": 6.5 },
+  "sfx": { "candidates": 6, "variants": 3, "durationSeconds": 1.5, "steps": 100, "guidance": 7.0, "targetLufs": -16.0, "maxPeakDb": -1.0 }
+}

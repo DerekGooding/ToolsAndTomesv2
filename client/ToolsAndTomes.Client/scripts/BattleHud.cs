@@ -15,6 +15,7 @@ public partial class BattleHud : CanvasLayer
     private RichTextLabel _log = null!;
     private int _loggedEvents;
     private string _actionBarSignature = "";
+    private readonly Dictionary<string, Texture2D?> _icons = [];
 
     /// <summary>Raised when an action button is pressed.</summary>
     public event Action<ActionDefinition>? ActionPressed;
@@ -56,6 +57,8 @@ public partial class BattleHud : CanvasLayer
         _log = new RichTextLabel { BbcodeEnabled = true, ScrollFollowing = true, CustomMinimumSize = new Vector2(420, 250) };
         right.AddChild(_log);
     }
+
+    public override void _ExitTree() => _icons.Clear();
 
     public void ResetLog()
     {
@@ -126,6 +129,12 @@ public partial class BattleHud : CanvasLayer
                 TooltipText = $"{action.Description}\nRange {action.Range} | {action.WindupBeats}/{action.ImpactBeats}/{action.RecoveryBeats} beats",
                 FocusMode = Control.FocusModeEnum.None
             };
+            if (Icon(action.Id) is { } icon)
+            {
+                button.Icon = icon;
+                button.IconAlignment = HorizontalAlignment.Left;
+                button.AddThemeConstantOverride("icon_max_width", 32);
+            }
             if (action.IsReactive)
                 button.Modulate = new Color(0.6f, 1f, 0.85f);
             button.Pressed += () => ActionPressed?.Invoke(action);
@@ -152,6 +161,15 @@ public partial class BattleHud : CanvasLayer
             };
             _log.AppendText($"[color={color}][{e.Beat}s] {EscapeBbcode(e.Message)}[/color]\n");
         }
+    }
+
+    /// <summary>The pipeline's icon for a content id (res://assets/icons/&lt;id&gt;.png), if one has been approved.</summary>
+    private Texture2D? Icon(string contentId)
+    {
+        if (_icons.TryGetValue(contentId, out var cached))
+            return cached;
+        string path = $"res://assets/icons/{contentId}.png";
+        return _icons[contentId] = ResourceLoader.Exists(path) ? ResourceLoader.Load<Texture2D>(path) : null;
     }
 
     private static string EscapeBbcode(string text) => text.Replace("[", "[lb]");

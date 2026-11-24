@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ToolsAndTomes.Core\ToolsAndTomes.Core.csproj" />
+    <ProjectReference Include="..\..\tools\ToolsAndTomes.Assets\ToolsAndTomes.Assets.csproj" />
   </ItemGroup>
 
 </Project>

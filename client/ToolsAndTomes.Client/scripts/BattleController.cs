@@ -24,6 +24,8 @@ public partial class BattleController : Node3D
     private TacticalCamera _camera = null!;
     private TelegraphView _telegraphs = null!;
     private BattleHud _hud = null!;
+    private SoundBank _sounds = null!;
+    private int _soundedEvents;
     private Node3D _arena = null!;
     private double _beatElapsed;
     private double _beatLength = BeatSeconds;
@@ -61,6 +63,8 @@ public partial class BattleController : Node3D
         _hud = new BattleHud();
         AddChild(_hud);
         _hud.ActionPressed += OnActionPressed;
+        _sounds = new SoundBank();
+        AddChild(_sounds);
 
         StartEncounter();
     }
@@ -79,6 +83,7 @@ public partial class BattleController : Node3D
         _armedPointAction = null;
         _beatElapsed = 0;
         _beatLength = BeatSeconds;
+        _soundedEvents = 0;
         _sim.Pause();
 
         BuildArena();
@@ -167,6 +172,7 @@ public partial class BattleController : Node3D
     {
         _enemyAi.Update(_sim);
         _sim.StepBeat();
+        PlayNewSounds();
 
         // Slow motion while the player has a reaction window open (presentation only).
         bool reactionWindow = _sim.GetIncomingImpacts(_player).Count > 0;
@@ -174,6 +180,15 @@ public partial class BattleController : Node3D
 
         if (Target() is null)
             _targetId = _sim.Combatants.FirstOrDefault(c => c.Faction == Faction.Enemy && !c.IsDefeated)?.Id;
+    }
+
+    private void PlayNewSounds()
+    {
+        if (_soundedEvents >= _sim.Events.Count)
+            return;
+        var fresh = _sim.Events.Skip(_soundedEvents).ToList();
+        _soundedEvents = _sim.Events.Count;
+        _sounds.PlayEvents(fresh, id => _views.TryGetValue(id, out var view) ? view.Position : null, _player.Id);
     }
 
     private Combatant? Target() =>

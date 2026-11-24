@@ -37,3 +37,12 @@ godot --headless --path client/ToolsAndTomes.Client -- --autoplay
 Crests are assembled from primitives — one per installed component, shaped by category (sphere Core, leg
 cylinders, armor plates, weapon arms, defense rings, arcane/utility blocks). Disabled components turn dark.
 Real models replace the primitives per component via the asset pipelines in `docs/ASSET_PIPELINES.md`.
+
+## Generated assets
+
+`assets/` holds files that the asset pipeline has approved (see `docs/ASSET_PIPELINES.md` §0). Don't edit them by hand: change `assets/specs.json` at the repo root and regenerate.
+
+- `assets/icons/<contentId>.png`: shown on the action bar.
+- `assets/sfx/<actionId>/{windup,impact}_<n>.ogg` and `assets/sfx/event_<CombatEventType>/play_<n>.ogg`: played by `SoundBank` from the combat event stream.
+
+Today every file is a procedural placeholder. Missing files are skipped silently, so the game runs with any subset.

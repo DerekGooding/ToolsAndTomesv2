@@ -1,0 +1,67 @@
+{
+  // Model registry (docs/ASSET_PIPELINES.md §5 and §8). The orchestrator refuses to generate with a backend whose
+  // status is not "approved" or "capped". Re-read each license on its official page before changing a status,
+  // and record the date. "capped" = commercial use allowed only below a revenue cap: review before release.
+  "models": [
+    {
+      "backend": "procedural-image",
+      "name": "Procedural placeholder icons (in-house code)",
+      "kind": "image",
+      "license": "Project code",
+      "status": "approved",
+      "placeholder": true,
+      "notes": "No model. Seeded shapes in the palette, so the pipeline and the game run before any AI model is installed."
+    },
+    {
+      "backend": "procedural-audio",
+      "name": "Procedural placeholder SFX (in-house synth)",
+      "kind": "audio",
+      "license": "Project code",
+      "status": "approved",
+      "placeholder": true,
+      "notes": "No model. Seeded synthesis chosen from keywords in the prompt."
+    },
+    {
+      "backend": "sdxl",
+      "name": "Stable Diffusion XL 1.0 base + SDXL-VAE-FP16-Fix",
+      "kind": "image",
+      "source": "stabilityai/stable-diffusion-xl-base-1.0; madebyollin/sdxl-vae-fp16-fix",
+      "license": "CreativeML Open RAIL++-M (SDXL); MIT (VAE)",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/main/LICENSE.md",
+      "checked": "2026-11-24",
+      "status": "approved",
+      "gated": false,
+      "downloadGb": 7.3,
+      "vramGb": 8,
+      "notes": "Commercial use allowed, no revenue cap. The license's use restrictions (Attachment A) apply and must be passed on if we redistribute the model (we don't). The model card says 'research purposes'; the license text governs. Runs on 8 GB with CPU offload."
+    },
+    {
+      "backend": "flux-schnell",
+      "name": "FLUX.1 [schnell]",
+      "kind": "image",
+      "source": "black-forest-labs/FLUX.1-schnell",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://huggingface.co/black-forest-labs/FLUX.1-schnell",
+      "checked": "2026-11-24",
+      "status": "approved",
+      "gated": true,
+      "downloadGb": 34,
+      "vramGb": 24,
+      "notes": "Gated: accept the terms on Hugging Face and log in (hf auth login). Needs bfloat16 and ~24 GB; use a rented GPU."
+    },
+    {
+      "backend": "stable-audio-open",
+      "name": "Stable Audio Open 1.0",
+      "kind": "audio",
+      "source": "stabilityai/stable-audio-open-1.0",
+      "license": "Stability AI Community License Agreement",
+      "licenseUrl": "https://stability.ai/community-license-agreement",
+      "checked": "2026-11-24",
+      "status": "capped",
+      "gated": true,
+      "downloadGb": 5,
+      "vramGb": 8,
+      "notes": "Commercial use only while annual revenue is under USD 1M, and only after registering with Stability AI. Shipping requires the license copy, a Notice file, and a prominent 'Powered by Stability AI'. Outputs may not be used to train foundational generative models. Gated: accept terms and hf auth login."
+    }
+  ]
+}
