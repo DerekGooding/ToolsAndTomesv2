@@ -191,9 +191,32 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - A mission (`missions.json`) is an ordered list of encounters with a rest budget (beats) between them. The same Crest carries through: damage, ammo, cargo, shaped parts, Motes, and loose fast-iron persist; heat, cooldowns, and activity reset each fight.
 - **Rest in the field:** the time budget passes one Mote interval at a time (+1 Mote each). Square Summon, repairs, shaping, and cargo use happen between Mote generations and cost no time. Field repair: 1 fast-iron restores `repairPointsPerFastIron` (2) durability and revives disabled parts. Unused rest time is lost.
 - **Rewards** bank as each encounter is won (granted to the Workshop immediately); finishing grants the mission's completion bonus. **Defeat fails the mission but keeps banked samples.** The player can withdraw during a rest (or abandon a fight) keeping banked samples.
-- **Missions unlock by research:** Border Patrol (always), Quarry Siege (Oathsteel), Storm Reach (Bastion Ore + Corrodite).
+- **Missions unlock by completing earlier missions** (`requiredMissions`, tracked in the profile) **and by research** (`requiredResearch`). The validator rejects unknown ids and cycles.
 - Enemies with reaction rules: Oathbound Warden (repulses melee), Skyblade Raider (blinks from heavy impacts).
-- Balance (autopilot, starter builds, 100 seeds, after the code-review rule fixes): Border Patrol 3% / 8% completion (Agile / Heavy), Quarry Siege 25% / 7%, Storm Reach 0% / 0%. **Needs retuning**: interrupted committed actions now keep their cooldown, which cut Agile's single-fight win rate from 42% to 19%. Run `tools/ToolsAndTomes.Balance -- --missions` or `--encounters` to re-measure.
+- **Bosses** use the `Warlord` archetype. Ordinary enemies issue one command when idle. A Warlord commits every attack its Wit allows at its target each beat, as the player's autopilot does, so a boss's extra weapons add pressure, not just options. At the table: "each beat, the Warlord starts every attack it can afford."
+
+### Demo region: The Border March [Implemented]
+The free demo's region (`region: "border_march"`), played in order with the lance of three:
+
+| Mission | Encounters | Role |
+|---|---|---|
+| **First Patrol** | Outriders (2 Skirmishers) → Roadblock (Bruiser + 2 Skirmishers) | Tutorial: read windups, answer hits |
+| **Border Patrol** | Scout Screen (2 Skirmishers + Skyblade) → Iron Column (2 Bruisers + Artillery) → Border Fort (Warden, Bruiser, Skirmisher, Artillery) | The attrition mission: damage carries over |
+| **The Warlord's Gate** | Gatehouse (Warden, Bruiser, Artillery) → The Warlord's Gate (**Gatewarden Kastor** + Skyblade + Bruiser) | Finale and boss |
+
+- Gatewarden Kastor: heavy plate, Repulsor (reacts to melee), Grimoire, Falconet, Righteous, Titan, anchor legs, and an Aether Furnace.
+- Quarry Siege and Storm Reach come after the demo: they need the finale completed, plus their research. They are **not yet tuned for the lance**: today the lance completes them 99–100% of the time.
+- The old single-mission encounters (Scout Pair, Bruiser Escort, Lone Bruiser) are retired. The Proving Grounds stays as the balance runner's default single fight.
+- **Balance** (autopilot, starter builds Agile / Heavy, full lance, 200 seeds). Run `tools/ToolsAndTomes.Balance -- --missions --allies all` to re-measure.
+
+  | Mission | Agile | Heavy | Average | Target | Beats per fight |
+  |---|---|---|---|---|---|
+  | First Patrol | 98% | 100% | 99% | ~90%+ | 56–61 |
+  | Border Patrol | 74% | 54% | 64% | 60–70% | 85–119 |
+  | The Warlord's Gate | 54% | 34% | 44% | ~40% | 90 |
+
+  - Heavy Anchor is slow: about 12% of its Border Patrol runs hit the 300-beat limit.
+  - **Solo, the demo is nearly unwinnable** (0–2% completion). The demo is designed around the lance.
 - In-progress missions are not saved across app restarts (banked samples and assemblies are).
 
 ### Allied pilots [Implemented]
@@ -207,17 +230,18 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - **Across a mission:** ally damage, Motes, and fast-iron carry through like the player's.
   - An ally whose Core falls sits out later fights until its Core is repaired at a rest.
   - At a rest, waiting gives every standing Crest a Mote. Each Crest summons, repairs, shapes, and uses cargo with its own Motes and fast-iron (`crestId` on the `MissionRun` rest methods; a Crest picker on the rest screen).
+  - **Fast-iron can be handed between Crests** at a rest (free, and it takes no time). Allies have no Square Summon, so the player's summoned fast-iron is what keeps the lance repaired. Spending it on yourself or your allies is a real choice. This one rule took Border Patrol from 25–43% to 55–80% completion.
   - The Workshop repairs every Crest before each mission.
 - **At the table:** the ally policy is simple enough to run by hand: a weighted-nearest target, then the strongest affordable attacks first. Writing it up as table rules, alongside the enemy AI's rules, is still to do.
-- **Balance with the full lance** (autopilot, starter builds, 100 seeds): every mission completes 92–100% of runs, and fights last 21–84 beats. Allies make the current content far too easy. The Phase 0 retune targets the *lance* (see below). `tools/ToolsAndTomes.Balance -- --missions --allies all` measures it.
+- The balance runner reports allies down at the end of each mission and the average beats per fight (`--allies <ids|all>`).
 
 ### Next: make the campaign playable [Planned]
 - **Direction (decided Nov 2026):**
   - Make it fun before generating real assets.
   - Ship a **free Steam demo** (the first region, 3 missions, about 1 hour, one biome), then Early Access.
   - Use a **mid-distance third-person camera**, so Crests must read as detailed machines up close.
-- **Difficulty targets, measured with the full lance** (starter builds, autopilot, which plays worse than a human with pause): Border Patrol ~60–70% completion, Quarry Siege ~30–40%, Storm Reach ~10–20%. Solo play (no allies) is far harder: Border Patrol completes only 3–8% today.
-- **Fight length target:** about 1–2 minutes real time (roughly 60–120 beats) per encounter.
+- ✅ **Demo region tuned** (see *Demo region* above). Targets, measured with the full lance and the autopilot (which plays worse than a human with pause): First Patrol ~90%+, Border Patrol ~60–70%, The Warlord's Gate ~40%. Fights last about 1–2 minutes of real time (60–120 beats).
+- Still to do: retune Quarry Siege (~30–40%) and Storm Reach (~10–20%) for the lance. These are post-demo, Early Access content.
 - **Mid-mission saves:** save the mission at each rest; quitting mid-fight resumes at the start of that fight with the post-rest Crest.
 - Then a hands-on polish pass of the hangar, combat, rest, mission select, and research screens.
 
@@ -239,7 +263,7 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 ## 5. Known Limitations (Vertical Slice)
 
 - One player-controlled Crest per encounter; up to two AI-controlled allied pilots (no orders yet).
-- Three campaign missions (nine encounters) with five enemy types; the Proving Grounds encounter remains the single-fight test case for the balance runner.
+- Five campaign missions (the 3-mission demo region plus 2 later ones) and six enemy types, including one boss. The Proving Grounds encounter remains the single-fight test case for the balance runner.
 - Player progress (assemblies, spares, research, samples) is saved to `%LOCALAPPDATA%\ToolsAndTomes\profile.json`; component damage is not saved (the Workshop repairs everything).
 - Functional vector/shape graphics in WPF rather than final art assets.
 

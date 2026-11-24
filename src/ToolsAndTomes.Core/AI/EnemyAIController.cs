@@ -8,6 +8,8 @@ namespace ToolsAndTomes.Core.AI;
 /// <summary>
 /// Drives every enemy Crest. Each enemy picks a target among the player's lance (the player and allies): the
 /// nearest one, but it keeps its current target unless another is clearly closer, so it doesn't flip-flop.
+/// Ordinary enemies issue one command when idle; a <see cref="EnemyArchetype.Warlord"/> fights like
+/// <see cref="AutoPilot"/>, committing every affordable attack each beat.
 /// </summary>
 public sealed class EnemyAIController
 {
@@ -16,6 +18,7 @@ public sealed class EnemyAIController
 
     private readonly int _decisionIntervalBeats;
     private readonly Dictionary<string, string> _targets = new(StringComparer.Ordinal);
+    private readonly AutoPilot _warlordPilot = new();
 
     public EnemyAIController(int decisionIntervalBeats = 1)
     {
@@ -41,6 +44,12 @@ public sealed class EnemyAIController
         {
             if (enemy.Faction != Faction.Enemy || enemy.IsDefeated)
                 continue;
+
+            if (enemy.Archetype == EnemyArchetype.Warlord)
+            {
+                _warlordPilot.Update(simulation, enemy, ChooseTarget(enemy, lance));
+                continue;
+            }
 
             if (enemy.State != ActionState.Idle || enemy.HasQueuedCommands)
                 continue;

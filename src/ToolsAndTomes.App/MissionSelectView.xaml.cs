@@ -33,10 +33,13 @@ public partial class MissionSelectView : UserControl
             bool unlocked = MissionRun.IsUnlocked(mission, _session.Workshop);
             string encounters = string.Join("  →  ", mission.EncounterIds.Select(id => catalog.Encounters[id].Name));
             string rewards = string.Join(", ", mission.CompletionRewards.Select(r => $"{catalog.Materials[r.MaterialId].Name} ×{r.Count}"));
-            string requirement = mission.RequiredResearch.Count == 0
-                ? "Available"
-                : "Requires research: " + string.Join(", ", mission.RequiredResearch.Select(id =>
-                    $"{catalog.Materials[id].Name}{(_session.Workshop.IsResearched(id) ? " ✓" : "")}"));
+            var needs = mission.RequiredMissions
+                .Select(id => $"complete {catalog.Missions[id].Name}{(_session.Workshop.HasCompleted(id) ? " ✓" : "")}")
+                .Concat(mission.RequiredResearch.Select(id =>
+                    $"research {catalog.Materials[id].Name}{(_session.Workshop.IsResearched(id) ? " ✓" : "")}"))
+                .ToList();
+            string requirement = (needs.Count == 0 ? "Available" : "Requires: " + string.Join(", ", needs)) +
+                                 (_session.Workshop.HasCompleted(mission.Id) ? "  ·  Completed ✓" : "");
 
             var card = new Border
             {

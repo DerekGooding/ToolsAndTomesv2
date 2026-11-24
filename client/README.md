@@ -32,7 +32,9 @@ Runs the fight headless at full speed with the player on autopilot, prints the r
 godot --headless --path client/ToolsAndTomes.Client -- --autoplay
 ```
 
-The fight includes the two allied pilots (teal Crests, AI-controlled, status on the HUD's "Lance" line). Add `--solo` (e.g. `-- --autoplay --solo`) to fight alone.
+The fight is the demo's **Border Fort** with the two allied pilots (teal Crests, AI-controlled, status on the HUD's "Lance" line).
+- `--encounter <id>` picks another fight (ids in `src/ToolsAndTomes.Core/Content/encounters.json`, e.g. `enc_bm_warlord`).
+- `--solo` fights alone, e.g. `-- --autoplay --solo`.
 
 ## What's placeholder
 

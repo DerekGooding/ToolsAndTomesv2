@@ -40,6 +40,8 @@
                     </DockPanel>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
                         <Button x:Name="BtnRepair" Content="Repair selected (1 fast-iron)" Padding="10,5" Background="#0F766E" Foreground="White" Click="BtnRepair_Click"/>
+                        <Button x:Name="BtnGive" Content="Give 1 fast-iron from your Crest" Padding="10,5" Margin="6,0,0,0" Background="#334155" Foreground="White" Click="BtnGive_Click"
+                                ToolTip="Hand fast-iron to this ally so it can repair (free, takes no time)"/>
                     </StackPanel>
                     <ListBox x:Name="LstComponents" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#334155" FontSize="12"/>
                 </DockPanel>

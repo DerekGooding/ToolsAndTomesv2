@@ -19,6 +19,7 @@ public sealed record PlayerProfile
     public IReadOnlyList<string> SpareComponentIds { get; init; } = [];
     public IReadOnlyDictionary<string, int> Samples { get; init; } = new Dictionary<string, int>();
     public IReadOnlyList<string> ResearchedMaterials { get; init; } = [];
+    public IReadOnlyList<string> CompletedMissions { get; init; } = [];
     public int EncountersWon { get; init; }
 
     /// <summary>Each allied pilot's current Crest (refit in the Workshop). Pilots missing here use their starting assembly.</summary>
@@ -105,12 +106,13 @@ public static class ProfileSerializer
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         var researched = raw.ResearchedMaterials.Where(catalog.Materials.ContainsKey).ToList();
+        var completed = raw.CompletedMissions.Where(catalog.Missions.ContainsKey).Distinct().ToList();
 
         return new ProfileLoadResult(
             raw with
             {
                 Assemblies = assemblies, SpareComponentIds = spares, Samples = samples, ResearchedMaterials = researched,
-                Pilots = pilots, Lance = lance
+                Pilots = pilots, Lance = lance, CompletedMissions = completed
             },
             warnings);
     }

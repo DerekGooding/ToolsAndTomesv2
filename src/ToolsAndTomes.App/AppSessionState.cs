@@ -210,6 +210,9 @@ public sealed class AppSessionState
 
     private void EndMission(MissionRun run)
     {
+        if (run.Phase == MissionPhase.Completed)
+            Workshop.MarkMissionCompleted(run.Mission.Id);
+
         int samples = run.RewardsEarned.Sum(r => r.Count);
         string outcome = run.Phase switch
         {
@@ -233,6 +236,7 @@ public sealed class AppSessionState
             SpareComponentIds = SpareInventory.Select(e => e.Definition.Id).ToList(),
             Samples = Workshop.Samples.ToDictionary(),
             ResearchedMaterials = Workshop.ResearchedMaterials.Order(StringComparer.Ordinal).ToList(),
+            CompletedMissions = Workshop.CompletedMissions.Order(StringComparer.Ordinal).ToList(),
             EncountersWon = EncountersWon,
             Pilots = PilotCrests
                 .OrderBy(kv => kv.Key, StringComparer.Ordinal)
@@ -292,7 +296,7 @@ public sealed class AppSessionState
             foreach (var id in profile.SpareComponentIds)
                 AddSpare(id);
 
-            Workshop.Restore(profile.Samples, profile.ResearchedMaterials);
+            Workshop.Restore(profile.Samples, profile.ResearchedMaterials, profile.CompletedMissions);
             EncountersWon = profile.EncountersWon;
             EncounterSeed = 1337 + EncountersWon;
             SelectedCrestId = CrestAssemblies.Any(a => a.Id == profile.SelectedAssemblyId)

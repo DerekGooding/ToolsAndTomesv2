@@ -16,9 +16,17 @@ public sealed class WorkshopState
 {
     private readonly Dictionary<string, int> _samples = [];
     private readonly HashSet<string> _researched = [];
+    private readonly HashSet<string> _completedMissions = [];
 
     public IReadOnlyDictionary<string, int> Samples => _samples;
     public IReadOnlySet<string> ResearchedMaterials => _researched;
+
+    /// <summary>Missions completed at least once (they unlock later missions).</summary>
+    public IReadOnlySet<string> CompletedMissions => _completedMissions;
+
+    public bool HasCompleted(string missionId) => _completedMissions.Contains(missionId);
+
+    public void MarkMissionCompleted(string missionId) => _completedMissions.Add(missionId);
 
     public int GetSamples(string materialId) => _samples.TryGetValue(materialId, out int n) ? n : 0;
 
@@ -74,8 +82,11 @@ public sealed class WorkshopState
         catalog.Equipment.ContainsKey(componentId) && KnownComponentIds(catalog).Contains(componentId);
 
     /// <summary>Restores saved progress (used by profile loading).</summary>
-    public void Restore(IReadOnlyDictionary<string, int> samples, IEnumerable<string> researched)
+    public void Restore(IReadOnlyDictionary<string, int> samples, IEnumerable<string> researched, IEnumerable<string>? completedMissions = null)
     {
+        _completedMissions.Clear();
+        _completedMissions.UnionWith(completedMissions ?? []);
+
         _samples.Clear();
         foreach (var (id, n) in samples)
             AddSamples(id, n);

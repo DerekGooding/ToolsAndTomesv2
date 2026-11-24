@@ -1,15 +1,57 @@
 [
   {
-    "id": "enc_scout_pair",
-    "name": "Scout Pair",
-    "description": "Two fast scouts probing the border. One blinks away from heavy blows.",
+    "id": "enc_bm_outriders",
+    "name": "Outriders",
+    "description": "Two Vesper Skirmishers ride the border road. Learn the field: watch their windups and answer the hits.",
     "arenaWidth": 24,
     "arenaHeight": 14,
     "playerStart": { "x": 4, "y": 7 },
     "playerStartingMotes": 2,
     "enemies": [
-      { "enemyId": "enemy_skirmisher", "position": { "x": 17, "y": 4 }, "startingMotes": 1 },
-      { "enemyId": "enemy_skyblade", "position": { "x": 18, "y": 10 }, "startingMotes": 1 }
+      { "enemyId": "enemy_skirmisher", "position": { "x": 16, "y": 4 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skirmisher", "position": { "x": 17, "y": 10 }, "startingMotes": 1 }
+    ],
+    "rewards": {
+      "draws": 1,
+      "pool": [
+        { "materialId": "mat_oathsteel", "weight": 2 },
+        { "materialId": "mat_corrodite", "weight": 1 }
+      ]
+    }
+  },
+  {
+    "id": "enc_bm_roadblock",
+    "name": "Roadblock",
+    "description": "An Ironclad Bruiser blocks the road with Skirmishers on both flanks. Keep it off balance.",
+    "arenaWidth": 24,
+    "arenaHeight": 14,
+    "playerStart": { "x": 4, "y": 7 },
+    "playerStartingMotes": 2,
+    "enemies": [
+      { "enemyId": "enemy_bruiser", "position": { "x": 15, "y": 7 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skirmisher", "position": { "x": 18, "y": 4 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skirmisher", "position": { "x": 18, "y": 10 }, "startingMotes": 1 }
+    ],
+    "rewards": {
+      "draws": 1,
+      "pool": [
+        { "materialId": "mat_oathsteel", "weight": 2 },
+        { "materialId": "mat_corrodite", "weight": 2 }
+      ]
+    }
+  },
+  {
+    "id": "enc_bm_scout_screen",
+    "name": "Scout Screen",
+    "description": "Skirmishers and a blinking Skyblade screen the border crossing.",
+    "arenaWidth": 24,
+    "arenaHeight": 14,
+    "playerStart": { "x": 4, "y": 7 },
+    "playerStartingMotes": 2,
+    "enemies": [
+      { "enemyId": "enemy_skirmisher", "position": { "x": 16, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skyblade", "position": { "x": 18, "y": 7 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skirmisher", "position": { "x": 16, "y": 11 }, "startingMotes": 1 }
     ],
     "rewards": {
       "guaranteed": [ { "materialId": "mat_oathsteel", "count": 1 } ],
@@ -21,15 +63,16 @@
     }
   },
   {
-    "id": "enc_bruiser_escort",
-    "name": "Bruiser Escort",
-    "description": "An Ironclad Bruiser advances behind a screening Skirmisher.",
+    "id": "enc_bm_iron_column",
+    "name": "Iron Column",
+    "description": "Two Bruisers march behind an Artillery Crest's shells.",
     "arenaWidth": 24,
     "arenaHeight": 14,
     "playerStart": { "x": 4, "y": 7 },
     "enemies": [
-      { "enemyId": "enemy_skirmisher", "position": { "x": 16, "y": 3 }, "startingMotes": 1 },
-      { "enemyId": "enemy_bruiser", "position": { "x": 15, "y": 8 }, "startingMotes": 1 }
+      { "enemyId": "enemy_bruiser", "position": { "x": 14, "y": 5 }, "startingMotes": 1 },
+      { "enemyId": "enemy_bruiser", "position": { "x": 15, "y": 9 }, "startingMotes": 1 },
+      { "enemyId": "enemy_artillery", "position": { "x": 21, "y": 7 }, "startingMotes": 1 }
     ],
     "rewards": {
       "draws": 2,
@@ -41,21 +84,70 @@
     }
   },
   {
-    "id": "enc_lone_bruiser",
-    "name": "Lone Bruiser",
-    "description": "A single Ironclad Bruiser blocks the road. Keep it off balance.",
+    "id": "enc_bm_border_fort",
+    "name": "Border Fort",
+    "description": "The fort's Warden holds the gate while a Bruiser and an Artillery Crest cover it.",
+    "arenaWidth": 24,
+    "arenaHeight": 14,
+    "playerStart": { "x": 4, "y": 7 },
+    "playerStartingMotes": 2,
+    "enemies": [
+      { "enemyId": "enemy_warden", "position": { "x": 14, "y": 7 }, "startingMotes": 1 },
+      { "enemyId": "enemy_bruiser", "position": { "x": 16, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skirmisher", "position": { "x": 17, "y": 11 }, "startingMotes": 1 },
+      { "enemyId": "enemy_artillery", "position": { "x": 21, "y": 7 }, "startingMotes": 1 }
+    ],
+    "rewards": {
+      "guaranteed": [ { "materialId": "mat_oathsteel", "count": 1 } ],
+      "draws": 2,
+      "pool": [
+        { "materialId": "mat_corrodite", "weight": 3 },
+        { "materialId": "mat_bastion_ore", "weight": 2 },
+        { "materialId": "mat_stormglass", "weight": 1 },
+        { "materialId": "mat_oathsteel", "weight": 1 }
+      ]
+    }
+  },
+  {
+    "id": "enc_bm_gatehouse",
+    "name": "Gatehouse",
+    "description": "A Warden holds the gatehouse door beside a Bruiser while an Artillery Crest shells the approach.",
     "arenaWidth": 24,
     "arenaHeight": 14,
     "playerStart": { "x": 4, "y": 7 },
     "enemies": [
-      { "enemyId": "enemy_bruiser", "position": { "x": 16, "y": 7 }, "startingMotes": 1 }
+      { "enemyId": "enemy_warden", "position": { "x": 13, "y": 7 }, "startingMotes": 1 },
+      { "enemyId": "enemy_bruiser", "position": { "x": 15, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_artillery", "position": { "x": 21, "y": 9 }, "startingMotes": 1 }
     ],
     "rewards": {
       "draws": 2,
       "pool": [
-        { "materialId": "mat_corrodite", "weight": 2 },
-        { "materialId": "mat_oathsteel", "weight": 2 },
-        { "materialId": "mat_bastion_ore", "weight": 1 }
+        { "materialId": "mat_bastion_ore", "weight": 2 },
+        { "materialId": "mat_stormglass", "weight": 1 }
+      ]
+    }
+  },
+  {
+    "id": "enc_bm_warlord",
+    "name": "The Warlord's Gate",
+    "description": "Gatewarden Kastor stands in the gate: plated, spell-bound, and armed with salvo, blade, and hammer, firing all at once. A Skyblade and a Bruiser guard his flanks.",
+    "arenaWidth": 26,
+    "arenaHeight": 14,
+    "playerStart": { "x": 4, "y": 7 },
+    "playerStartingMotes": 2,
+    "enemies": [
+      { "enemyId": "enemy_warlord", "position": { "x": 16, "y": 7 }, "startingMotes": 2 },
+      { "enemyId": "enemy_skyblade", "position": { "x": 15, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_bruiser", "position": { "x": 15, "y": 11 }, "startingMotes": 1 }
+    ],
+    "rewards": {
+      "guaranteed": [ { "materialId": "mat_bastion_ore", "count": 1 } ],
+      "draws": 2,
+      "pool": [
+        { "materialId": "mat_bastion_ore", "weight": 2 },
+        { "materialId": "mat_stormglass", "weight": 2 },
+        { "materialId": "mat_skyweave", "weight": 1 }
       ]
     }
   },

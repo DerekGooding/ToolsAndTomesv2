@@ -73,6 +73,9 @@ public partial class RestView : UserControl
         BtnSummon.Content = summon is null ? "No Square Summon" : $"{summon.Name} ({summon.MoteCost} Motes → fast-iron)";
         BtnSummon.IsEnabled = summon is not null && !crest.IsDefeated && crest.Resources.CurrentMotes >= summon.MoteCost;
         BtnRepair.Content = $"Repair selected (1 fast-iron → +{Math.Max(1, crest.Rules.RepairPointsPerFastIron)} durability)";
+        BtnGive.Visibility = crest == run.Crest ? Visibility.Collapsed : Visibility.Visible;
+        BtnGive.Content = $"Give 1 fast-iron from your Crest ({run.Crest.TotalFastIron} on hand)";
+        BtnGive.IsEnabled = run.Crest.TotalFastIron > 0;
 
         string? selected = (LstComponents.SelectedItem as ComponentRow)?.Instance.InstanceId;
         var rows = crest.Loadout.DamageOrder.Select((e, i) => new ComponentRow(e, i + 1)).ToList();
@@ -139,6 +142,12 @@ public partial class RestView : UserControl
         }
 
         Show(run.Repair(row.Instance.InstanceId, _crestId));
+    }
+
+    private void BtnGive_Click(object sender, RoutedEventArgs e)
+    {
+        if (Run is { } run && _crestId is not null)
+            Show(run.GiveFastIron(null, _crestId));
     }
 
     private void CmbField_DropDownOpened(object? sender, EventArgs e)

@@ -87,5 +87,28 @@
       ]
     },
     "preferredRange": 7
+  },
+  {
+    "id": "enemy_warlord",
+    "name": "Gatewarden Kastor",
+    "archetype": "Warlord",
+    "assembly": {
+      "id": "cfg_enemy_warlord",
+      "name": "Gatewarden Kastor",
+      "componentIds": [
+        "armor_heavy_plate",
+        "eq_repulsor",
+        "spellbook_grimoire",
+        "eq_falconet",
+        "eq_righteous",
+        "eq_titan",
+        "mob_anchor_legs",
+        "core_aether_furnace"
+      ],
+      "reactionRules": [
+        { "actionId": "defense_repulsor", "telegraph": "MeleeCommit" }
+      ]
+    },
+    "preferredRange": 2.2
   }
 ]

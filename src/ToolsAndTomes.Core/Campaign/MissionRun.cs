@@ -37,6 +37,7 @@ public sealed record RestResult(bool Succeeded, string Message)
 /// are assumed to happen between Mote generations, so they cost fast-iron and Motes but no extra time.
 /// At the table: during a rest, advance time one Mote interval at a time; between intervals, summon, repair, and shape.
 /// Every Crest in the lance gains Motes while waiting; each summons, repairs, and shapes with its own Motes and fast-iron.
+/// Fast-iron can be handed between Crests at no cost, so one Crest's Square Summon can fuel the lance's repairs.
 /// </remarks>
 public sealed class MissionRun
 {
@@ -124,7 +125,7 @@ public sealed class MissionRun
         crestId is null ? Crest : Lance.FirstOrDefault(c => c.Id == crestId);
 
     public static bool IsUnlocked(MissionDefinition mission, WorkshopState workshop) =>
-        mission.RequiredResearch.All(workshop.IsResearched);
+        mission.RequiredResearch.All(workshop.IsResearched) && mission.RequiredMissions.All(workshop.HasCompleted);
 
     // ---- Encounters ------------------------------------------------------------------------
 
@@ -313,6 +314,29 @@ public sealed class MissionRun
 
         weapon.RefillAmmo();
         return Log(RestResult.Ok($"{Who(crest)}{action.Name}: {weapon.Definition.Name} restocked ({weapon.CurrentAmmo}/{weapon.Definition.MaxAmmo})."), crest);
+    }
+
+    /// <summary>
+    /// Hands fast-iron from one lance member to another (loose fast-iron first, then cargo). Free, and takes no time.
+    /// A downed Crest can still receive fast-iron, so it can be repaired.
+    /// </summary>
+    /// <param name="fromCrestId">The giver (null: the player's Crest).</param>
+    /// <param name="toCrestId">The receiver (null: the player's Crest).</param>
+    public RestResult GiveFastIron(string? fromCrestId, string? toCrestId, int count = 1)
+    {
+        if (Phase != MissionPhase.Rest)
+            return RestResult.Fail("Not resting.");
+        if (FindCrest(fromCrestId) is not { } from || FindCrest(toCrestId) is not { } to)
+            return RestResult.Fail("Unknown Crest.");
+        if (from == to)
+            return RestResult.Fail("Pick another Crest to give fast-iron to.");
+        if (count < 1)
+            return RestResult.Fail("Give at least 1 fast-iron.");
+        if (!from.TrySpendFastIron(count))
+            return RestResult.Fail($"{from.Name} has only {from.TotalFastIron} fast-iron.");
+
+        to.Resources.AddFastIron(count);
+        return Log(RestResult.Ok($"{from.Name} gave {count} fast-iron to {to.Name} ({to.TotalFastIron} on hand)."), to);
     }
 
     /// <summary>An operational lance member, resting; otherwise null with the reason.</summary>

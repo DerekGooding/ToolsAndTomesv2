@@ -66,5 +66,8 @@ public enum EnemyArchetype
 {
     Skirmisher,
     Bruiser,
-    Artillery
+    Artillery,
+
+    /// <summary>A boss: every beat, commits every attack its Wit allows against its target (and closes in when out of reach).</summary>
+    Warlord
 }

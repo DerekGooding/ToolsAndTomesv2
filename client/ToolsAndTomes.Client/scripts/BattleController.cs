@@ -7,8 +7,8 @@ using ToolsAndTomes.Core.Simulation;
 namespace ToolsAndTomes.Client;
 
 /// <summary>
-/// Godot vertical-slice entry point. Runs one Core encounter (the Proving Grounds, with the allied pilots in the
-/// player's lance; `-- --solo` leaves them out) on the beat clock:
+/// Godot vertical-slice entry point. Runs one Core encounter (the demo's Border Fort unless `-- --encounter <id>`,
+/// with the allied pilots in the player's lance; `-- --solo` leaves them out) on the beat clock:
 /// the simulation advances one beat per second (three seconds in slow motion while a reaction is available),
 /// and everything in between is presentation-only interpolation. All rules come from ToolsAndTomes.Core.
 /// </summary>
@@ -21,6 +21,10 @@ public partial class BattleController : Node3D
     private EnemyAIController _enemyAi = new();
     private readonly AllyAIController _allyAi = new();
     private bool _solo;
+    private string _encounterId = DefaultEncounterId;
+
+    /// <summary>The fight shown by default: a full demo encounter (Border Patrol's last).</summary>
+    public const string DefaultEncounterId = "enc_bm_border_fort";
     private GameCatalog _catalog = null!;
     private CombatSimulation _sim = null!;
     private Combatant _player = null!;
@@ -45,7 +49,16 @@ public partial class BattleController : Node3D
     {
         _catalog = GameCatalog.Default;
         _autoplay = OS.GetCmdlineUserArgs().Contains("--autoplay");
-        _solo = OS.GetCmdlineUserArgs().Contains("--solo");
+        var userArgs = OS.GetCmdlineUserArgs();
+        _solo = userArgs.Contains("--solo");
+        int at = Array.IndexOf(userArgs, "--encounter");
+        if (at >= 0 && at + 1 < userArgs.Length)
+        {
+            if (_catalog.Encounters.ContainsKey(userArgs[at + 1]))
+                _encounterId = userArgs[at + 1];
+            else
+                GD.PrintErr($"Unknown encounter '{userArgs[at + 1]}'; using {_encounterId}.");
+        }
 
         AddChild(new WorldEnvironment
         {
@@ -81,7 +94,7 @@ public partial class BattleController : Node3D
         _arena?.QueueFree();
 
         var loadout = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog, "player");
-        var encounter = _catalog.Encounters[EncounterFactory.TestEncounterId];
+        var encounter = _catalog.Encounters[_encounterId];
         var allies = _solo
             ? []
             : EncounterFactory.CreateAllies(_catalog.Pilots.Keys.Take(ToolsAndTomes.Core.Campaign.MissionRun.MaxAllies), _catalog,
@@ -172,7 +185,7 @@ public partial class BattleController : Node3D
 
         if (_sim.Outcome != EncounterOutcome.InProgress || _sim.CurrentBeat >= 300)
         {
-            GD.Print($"AUTOPLAY RESULT: {_sim.Outcome} after {_sim.CurrentBeat} beats; " +
+            GD.Print($"AUTOPLAY RESULT ({_encounterId}): {_sim.Outcome} after {_sim.CurrentBeat} beats; " +
                      $"enemies defeated {_sim.Combatants.Count(c => c.Faction == Faction.Enemy && c.IsDefeated)}, " +
                      $"allies {_sim.Combatants.Count(AllyAIController.IsAlly)} ({_sim.Combatants.Count(c => AllyAIController.IsAlly(c) && c.IsDefeated)} down), " +
                      $"events {_sim.Events.Count}");

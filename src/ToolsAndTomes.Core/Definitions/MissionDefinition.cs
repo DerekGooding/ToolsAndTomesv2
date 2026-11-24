@@ -3,7 +3,8 @@ namespace ToolsAndTomes.Core.Definitions;
 /// <summary>
 /// A multi-part campaign mission: encounters fought in order, with a timed rest in the field between each.
 /// Damage, ammo, cargo, Motes, and fast-iron carry through the whole mission; the Workshop only repairs and
-/// restocks before it starts. Missions unlock when all <see cref="RequiredResearch"/> materials are researched.
+/// restocks before it starts. Missions unlock when all <see cref="RequiredResearch"/> materials are researched and
+/// all <see cref="RequiredMissions"/> have been completed.
 /// </summary>
 public sealed record MissionDefinition
 {
@@ -13,6 +14,12 @@ public sealed record MissionDefinition
 
     /// <summary>Materials that must be researched before this mission can be chosen.</summary>
     public IReadOnlyList<string> RequiredResearch { get; init; } = [];
+
+    /// <summary>Missions that must have been completed (every encounter won) before this one can be chosen.</summary>
+    public IReadOnlyList<string> RequiredMissions { get; init; } = [];
+
+    /// <summary>The campaign region this mission belongs to (e.g. the demo's first region). Empty: unassigned.</summary>
+    public string Region { get; init; } = "";
 
     public IReadOnlyList<string> EncounterIds { get; init; } = [];
 

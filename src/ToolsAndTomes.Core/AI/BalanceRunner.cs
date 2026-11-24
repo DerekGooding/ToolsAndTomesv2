@@ -36,7 +36,9 @@ public sealed record MissionSummary(
     int Failed,
     int TimedOut,
     double AverageEncountersWon,
-    double AverageSamples)
+    double AverageSamples,
+    double AverageAlliesDown = 0,
+    double AverageBeatsPerFight = 0)
 {
     public double CompletionRate => Runs == 0 ? 0 : (double)Completed / Runs;
 }
@@ -206,7 +208,9 @@ public sealed class BalanceRunner(GameCatalog catalog, IReadOnlyList<string>? al
 
     /// <summary>
     /// A simple rest policy for every Crest in the lance: wait out the rest (summoning fast-iron whenever Motes
-    /// allow), then repair the most damaged components, Core first, while each Crest's fast-iron lasts.
+    /// allow), then repair across the whole lance in priority order while any fast-iron lasts: disabled Cores
+    /// first (to bring downed allies back), then the player's damaged parts (Core first), then the allies'.
+    /// A Crest spends its own fast-iron first; the rest of the lance hands over what it needs.
     /// </summary>
     public static void AutoRest(MissionRun run)
     {
@@ -219,19 +223,28 @@ public sealed class BalanceRunner(GameCatalog catalog, IReadOnlyList<string>? al
         do SummonAll(); while (run.Wait().Succeeded);
         SummonAll();
 
-        foreach (var crest in run.Lance)
+        var lance = run.Lance.ToList();
+        while (true)
         {
-            while (true)
-            {
-                var part = crest.Loadout.Installed
+            var next = lance
+                .SelectMany((crest, order) => crest.Loadout.Installed
                     .Where(e => e.CurrentDurability < e.Definition.MaxDurability)
-                    .OrderByDescending(e => e.Definition.IsCore)
-                    .ThenByDescending(e => e.Definition.MaxDurability - e.CurrentDurability)
-                    .ThenBy(e => e.InstanceId, StringComparer.Ordinal)
-                    .FirstOrDefault();
-                if (part is null || !run.Repair(part.InstanceId, crest.Id).Succeeded)
-                    break;
-            }
+                    .Select(e => (Crest: crest, Order: order, Part: e)))
+                .OrderByDescending(x => x.Part.Definition.IsCore && x.Part.IsDisabled)
+                .ThenBy(x => x.Order)
+                .ThenByDescending(x => x.Part.Definition.IsCore)
+                .ThenByDescending(x => x.Part.Definition.MaxDurability - x.Part.CurrentDurability)
+                .ThenBy(x => x.Part.InstanceId, StringComparer.Ordinal)
+                .FirstOrDefault();
+            if (next.Crest is null)
+                break;
+
+            if (next.Crest.TotalFastIron == 0 &&
+                lance.FirstOrDefault(c => c != next.Crest && c.TotalFastIron > 0) is { } donor)
+                run.GiveFastIron(donor.Id, next.Crest.Id);
+
+            if (!run.Repair(next.Part.InstanceId, next.Crest.Id).Succeeded)
+                break;
         }
     }
 
@@ -246,18 +259,20 @@ public sealed class BalanceRunner(GameCatalog catalog, IReadOnlyList<string>? al
                 g.Count(r => r.Phase == MissionPhase.Failed),
                 g.Count(r => r.TimedOut),
                 g.Average(r => r.EncountersWon),
-                g.Average(r => r.SamplesEarned)))
+                g.Average(r => r.SamplesEarned),
+                g.Average(r => r.AlliesDownAtEnd),
+                g.Sum(r => r.TotalBeats) / (double)Math.Max(1, g.Sum(r => r.EncountersWon + (r.Phase == MissionPhase.Completed ? 0 : 1)))))
             .ToList();
 
     public static string FormatMissionTable(IEnumerable<MissionSummary> summaries)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"{"Build",-24} {"Mission",-15} {"Runs",5} {"Done%",6} {"Fail",5} {"T/O",4} {"Wins",5} {"Samples",8}");
+        sb.AppendLine($"{"Build",-24} {"Mission",-15} {"Runs",5} {"Done%",6} {"Fail",5} {"T/O",4} {"Wins",5} {"Samples",8} {"AllyDn",6} {"Beats",6}");
         foreach (var s in summaries)
         {
             sb.AppendLine(
                 $"{Truncate(s.BuildName, 24),-24} {Truncate(s.MissionName, 15),-15} {s.Runs,5} {s.CompletionRate,6:P0} {s.Failed,5} {s.TimedOut,4} " +
-                $"{s.AverageEncountersWon,5:F1} {s.AverageSamples,8:F1}");
+                $"{s.AverageEncountersWon,5:F1} {s.AverageSamples,8:F1} {s.AverageAlliesDown,6:F1} {s.AverageBeatsPerFight,6:F0}");
         }
 
         return sb.ToString();

@@ -1,9 +1,20 @@
 [
   {
+    "id": "mis_first_patrol",
+    "name": "First Patrol",
+    "region": "border_march",
+    "description": "Your first ride along the border with Anvil and Kestrel. Two short fights to learn the field.",
+    "encounterIds": [ "enc_bm_outriders", "enc_bm_roadblock" ],
+    "restBeats": 30,
+    "completionRewards": [ { "materialId": "mat_oathsteel", "count": 1 } ]
+  },
+  {
     "id": "mis_border_patrol",
     "name": "Border Patrol",
-    "description": "Sweep the border: scouts, a lone Bruiser, then the Proving Grounds. Short rests between fights.",
-    "encounterIds": [ "enc_scout_pair", "enc_lone_bruiser", "enc_proving_grounds" ],
+    "region": "border_march",
+    "requiredMissions": [ "mis_first_patrol" ],
+    "description": "Sweep the border: a scout screen, an iron column, then the border fort. Short rests between fights.",
+    "encounterIds": [ "enc_bm_scout_screen", "enc_bm_iron_column", "enc_bm_border_fort" ],
     "restBeats": 30,
     "completionRewards": [
       { "materialId": "mat_oathsteel", "count": 1 },
@@ -11,10 +22,24 @@
     ]
   },
   {
+    "id": "mis_warlords_gate",
+    "name": "The Warlord's Gate",
+    "region": "border_march",
+    "requiredMissions": [ "mis_border_patrol" ],
+    "description": "Break the gatehouse, then face Gatewarden Kastor in the gate itself.",
+    "encounterIds": [ "enc_bm_gatehouse", "enc_bm_warlord" ],
+    "restBeats": 35,
+    "completionRewards": [
+      { "materialId": "mat_bastion_ore", "count": 2 },
+      { "materialId": "mat_stormglass", "count": 1 }
+    ]
+  },
+  {
     "id": "mis_quarry_siege",
     "name": "Quarry Siege",
     "description": "Break the quarry's artillery and its Oathbound Wardens. Requires Oathsteel research.",
     "requiredResearch": [ "mat_oathsteel" ],
+    "requiredMissions": [ "mis_warlords_gate" ],
     "encounterIds": [ "enc_artillery_nest", "enc_iron_wall", "enc_quarry_keep" ],
     "restBeats": 30,
     "completionRewards": [
@@ -27,6 +52,7 @@
     "name": "Storm Reach",
     "description": "Push into the storm-swept reach against raiders and Wardens. Requires Bastion Ore and Corrodite research.",
     "requiredResearch": [ "mat_bastion_ore", "mat_corrodite" ],
+    "requiredMissions": [ "mis_quarry_siege" ],
     "encounterIds": [ "enc_skyblade_raid", "enc_warden_line", "enc_storm_crown" ],
     "restBeats": 35,
     "completionRewards": [

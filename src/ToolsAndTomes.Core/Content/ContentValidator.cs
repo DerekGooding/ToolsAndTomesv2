@@ -116,12 +116,16 @@ public static class ContentValidator
                 errors.Add($"{at}: unknown encounter '{id}'.");
             foreach (var id in m.RequiredResearch.Where(id => !catalog.Materials.ContainsKey(id)))
                 errors.Add($"{at}: requires unknown material '{id}'.");
+            foreach (var id in m.RequiredMissions.Where(id => !catalog.Missions.ContainsKey(id)))
+                errors.Add($"{at}: requires unknown mission '{id}'.");
+            if (RequiresItself(catalog, m.Id, m.Id, []))
+                errors.Add($"{at}: its required missions lead back to itself, so it can never unlock.");
             foreach (var reward in m.CompletionRewards.Where(x => !catalog.Materials.ContainsKey(x.MaterialId)))
                 errors.Add($"{at}: rewards unknown material '{reward.MaterialId}'.");
         }
 
-        if (catalog.Missions.Count > 0 && !catalog.Missions.Values.Any(m => m.RequiredResearch.Count == 0))
-            errors.Add("missions: at least one mission must be available without research.");
+        if (catalog.Missions.Count > 0 && !catalog.Missions.Values.Any(m => m.RequiredResearch.Count == 0 && m.RequiredMissions.Count == 0))
+            errors.Add("missions: at least one mission must be available without research or earlier missions.");
 
         // Encounters
         foreach (var enc in catalog.Encounters.Values)
@@ -144,6 +148,13 @@ public static class ContentValidator
         }
 
         return errors;
+    }
+
+    private static bool RequiresItself(GameCatalog catalog, string origin, string current, HashSet<string> seen)
+    {
+        if (!seen.Add(current) || !catalog.Missions.TryGetValue(current, out var mission))
+            return false;
+        return mission.RequiredMissions.Any(id => id == origin || RequiresItself(catalog, origin, id, seen));
     }
 
     public static List<string> FindDuplicateIds(

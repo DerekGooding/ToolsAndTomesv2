@@ -29,16 +29,75 @@ public sealed class MissionTests
     }
 
     [TestMethod]
-    public void Missions_UnlockByResearch()
+    public void Missions_UnlockByCompletingEarlierMissions_AndResearch()
     {
         var workshop = new WorkshopState();
-        Assert.IsTrue(MissionRun.IsUnlocked(_catalog.Missions["mis_border_patrol"], workshop));
-        Assert.IsFalse(MissionRun.IsUnlocked(_catalog.Missions["mis_quarry_siege"], workshop));
+        bool Unlocked(string id) => MissionRun.IsUnlocked(_catalog.Missions[id], workshop);
 
+        // The demo region unlocks in order.
+        Assert.IsTrue(Unlocked("mis_first_patrol"));
+        Assert.IsFalse(Unlocked("mis_border_patrol"));
+        workshop.MarkMissionCompleted("mis_first_patrol");
+        Assert.IsTrue(Unlocked("mis_border_patrol"));
+        Assert.IsFalse(Unlocked("mis_warlords_gate"));
+        workshop.MarkMissionCompleted("mis_border_patrol");
+        Assert.IsTrue(Unlocked("mis_warlords_gate"));
+
+        // Later regions need the finale and research.
+        Assert.IsFalse(Unlocked("mis_quarry_siege"));
+        workshop.MarkMissionCompleted("mis_warlords_gate");
+        Assert.IsFalse(Unlocked("mis_quarry_siege"), "still needs Oathsteel research");
         workshop.AddSamples("mat_oathsteel", 2);
         workshop.Research(_catalog.Materials["mat_oathsteel"]);
-        Assert.IsTrue(MissionRun.IsUnlocked(_catalog.Missions["mis_quarry_siege"], workshop));
-        Assert.IsFalse(MissionRun.IsUnlocked(_catalog.Missions["mis_storm_reach"], workshop));
+        Assert.IsTrue(Unlocked("mis_quarry_siege"));
+        Assert.IsFalse(Unlocked("mis_storm_reach"));
+
+        Assert.IsTrue(_catalog.Missions.Values.Where(m => m.Region == "border_march").Select(m => m.Id)
+            .SequenceEqual(["mis_first_patrol", "mis_border_patrol", "mis_warlords_gate"]));
+    }
+
+    [TestMethod]
+    public void AWarlord_CommitsSeveralAttacksAtOnce()
+    {
+        var sim = EncounterFactory.CreateEncounter(_catalog.Encounters["enc_bm_warlord"],
+            CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, _catalog), 4, _catalog);
+        var boss = sim.Combatants.Single(c => c.Archetype == EnemyArchetype.Warlord);
+        var ai = new Core.AI.EnemyAIController();
+
+        int mostAtOnce = 0;
+        while (sim.Outcome == EncounterOutcome.InProgress && sim.CurrentBeat < 120)
+        {
+            ai.Update(sim);
+            sim.StepBeat();
+            mostAtOnce = Math.Max(mostAtOnce, boss.ActionsInMotion.Count(a => !a.Definition.IsReactive));
+        }
+
+        Assert.IsGreaterThanOrEqualTo(2, mostAtOnce);
+    }
+
+    [TestMethod]
+    public void MissionCycles_AreContentErrors()
+    {
+        var missions = _catalog.Missions.Values
+            .Select(m => m.Id == "mis_first_patrol" ? m with { RequiredMissions = ["mis_warlords_gate"] } : m)
+            .ToDictionary(m => m.Id);
+        var catalog = new GameCatalog(_catalog.Actions, _catalog.Equipment, _catalog.StarterConfigurations, _catalog.Enemies,
+            _catalog.Rules, _catalog.Materials, _catalog.Encounters, _catalog.Consumables, missions, _catalog.Pilots);
+
+        var errors = ContentValidator.Validate(catalog);
+        Assert.IsTrue(errors.Any(e => e.Contains("lead back to itself")), string.Join("\n", errors));
+    }
+
+    [TestMethod]
+    public void Profile_RemembersCompletedMissions()
+    {
+        var profile = new PlayerProfile { Assemblies = [ConfigurationCatalog.AgileSkirmish], CompletedMissions = ["mis_first_patrol", "mis_gone"] };
+        var loaded = ProfileSerializer.Deserialize(ProfileSerializer.Serialize(profile), _catalog).Profile;
+        CollectionAssert.AreEqual(new[] { "mis_first_patrol" }, loaded.CompletedMissions.ToList());
+
+        var workshop = new WorkshopState();
+        workshop.Restore(loaded.Samples, loaded.ResearchedMaterials, loaded.CompletedMissions);
+        Assert.IsTrue(MissionRun.IsUnlocked(_catalog.Missions["mis_border_patrol"], workshop));
     }
 
     [TestMethod]
