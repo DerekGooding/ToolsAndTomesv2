@@ -196,6 +196,12 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - Balance (autopilot, starter builds, 100 seeds, after the code-review rule fixes): Border Patrol 3% / 8% completion (Agile / Heavy), Quarry Siege 25% / 7%, Storm Reach 0% / 0%. **Needs retuning**: interrupted committed actions now keep their cooldown, which cut Agile's single-fight win rate from 42% to 19%. Run `tools/ToolsAndTomes.Balance -- --missions` or `--encounters` to re-measure.
 - In-progress missions are not saved across app restarts (banked samples and assemblies are).
 
+### Next: make the campaign playable [Planned]
+- **Difficulty targets** (starter builds, autopilot, which plays worse than a human with pause): Border Patrol ~60–70% completion, Quarry Siege ~30–40%, Storm Reach ~10–20%.
+- **Fight length target:** about 1–2 minutes real time (roughly 60–120 beats) per encounter.
+- **Mid-mission saves:** save the mission at each rest; quitting mid-fight resumes at the start of that fight with the post-rest Crest.
+- Then a hands-on polish pass of the hangar, combat, rest, mission select, and research screens.
+
 ---
 
 ## 4. Deferred Long-Term Concepts (Preserved in Architecture)
