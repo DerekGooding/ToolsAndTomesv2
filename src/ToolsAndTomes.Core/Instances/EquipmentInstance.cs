@@ -34,6 +34,18 @@ public sealed class EquipmentInstance
         return IsDisabled;
     }
 
+    /// <summary>Restores durability (field repair). A disabled component that regains durability is operational again.</summary>
+    public void RestoreDurability(int amount)
+    {
+        if (amount <= 0 || CurrentDurability >= Definition.MaxDurability)
+            return;
+
+        bool wasDisabled = IsDisabled;
+        CurrentDurability = Math.Min(Definition.MaxDurability, CurrentDurability + amount);
+        if (wasDisabled && IsOperational)
+            OperationalVersion++;
+    }
+
     public bool TryConsumeAmmo(int amount)
     {
         if (amount <= 0)

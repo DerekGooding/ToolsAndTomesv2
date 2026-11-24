@@ -104,6 +104,23 @@ public static class ContentValidator
             }
         }
 
+        // Missions
+        foreach (var m in catalog.Missions.Values)
+        {
+            string at = $"mission '{m.Id}'";
+            if (m.EncounterIds.Count == 0) errors.Add($"{at}: has no encounters.");
+            if (m.RestBeats < 0) errors.Add($"{at}: restBeats cannot be negative.");
+            foreach (var id in m.EncounterIds.Where(id => !catalog.Encounters.ContainsKey(id)))
+                errors.Add($"{at}: unknown encounter '{id}'.");
+            foreach (var id in m.RequiredResearch.Where(id => !catalog.Materials.ContainsKey(id)))
+                errors.Add($"{at}: requires unknown material '{id}'.");
+            foreach (var reward in m.CompletionRewards.Where(x => !catalog.Materials.ContainsKey(x.MaterialId)))
+                errors.Add($"{at}: rewards unknown material '{reward.MaterialId}'.");
+        }
+
+        if (catalog.Missions.Count > 0 && !catalog.Missions.Values.Any(m => m.RequiredResearch.Count == 0))
+            errors.Add("missions: at least one mission must be available without research.");
+
         // Encounters
         foreach (var enc in catalog.Encounters.Values)
         {
@@ -132,7 +149,8 @@ public static class ContentValidator
         IEnumerable<EnemyDefinition> enemies,
         IEnumerable<ExoticMaterialDefinition>? materials = null,
         IEnumerable<EncounterDefinition>? encounters = null,
-        IEnumerable<ConsumableDefinition>? consumables = null)
+        IEnumerable<ConsumableDefinition>? consumables = null,
+        IEnumerable<MissionDefinition>? missions = null)
     {
         var errors = new List<string>();
         void Check(string kind, IEnumerable<string> ids) =>
@@ -145,6 +163,7 @@ public static class ContentValidator
         Check("material", (materials ?? []).Select(m => m.Id));
         Check("encounter", (encounters ?? []).Select(e => e.Id));
         Check("consumable", (consumables ?? []).Select(c => c.Id));
+        Check("mission", (missions ?? []).Select(m => m.Id));
         return errors;
     }
 

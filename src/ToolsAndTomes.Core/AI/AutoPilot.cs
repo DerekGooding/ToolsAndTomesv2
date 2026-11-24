@@ -6,7 +6,8 @@ namespace ToolsAndTomes.Core.AI;
 
 /// <summary>
 /// A simple, build-agnostic controller for any Crest: every beat, it commits every offensive action it can
-/// afford against the nearest enemy (one per component, within available Wit). Defensive play comes from the
+/// afford against the nearest enemy (one per component, within available Wit), and keeps walking toward a target
+/// that stays beyond its damaging reach. Defensive play comes from the
 /// Crest's own reaction rules. Used for headless balance runs; deliberately unclever so that results reflect
 /// the build rather than the pilot.
 /// </summary>

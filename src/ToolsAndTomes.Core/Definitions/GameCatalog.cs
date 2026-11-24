@@ -15,6 +15,8 @@ public sealed class GameCatalog
         new Dictionary<string, EncounterDefinition>();
     private static readonly IReadOnlyDictionary<string, ConsumableDefinition> NoConsumables =
         new Dictionary<string, ConsumableDefinition>();
+    private static readonly IReadOnlyDictionary<string, MissionDefinition> NoMissions =
+        new Dictionary<string, MissionDefinition>();
 
     public IReadOnlyDictionary<string, ActionDefinition> Actions { get; }
     public IReadOnlyDictionary<string, EquipmentDefinition> Equipment { get; }
@@ -23,6 +25,7 @@ public sealed class GameCatalog
     public IReadOnlyDictionary<string, ExoticMaterialDefinition> Materials { get; }
     public IReadOnlyDictionary<string, EncounterDefinition> Encounters { get; }
     public IReadOnlyDictionary<string, ConsumableDefinition> Consumables { get; }
+    public IReadOnlyDictionary<string, MissionDefinition> Missions { get; }
     public RulesConfig Rules { get; }
 
     /// <summary>
@@ -39,7 +42,8 @@ public sealed class GameCatalog
         RulesConfig? rules = null,
         IReadOnlyDictionary<string, ExoticMaterialDefinition>? materials = null,
         IReadOnlyDictionary<string, EncounterDefinition>? encounters = null,
-        IReadOnlyDictionary<string, ConsumableDefinition>? consumables = null)
+        IReadOnlyDictionary<string, ConsumableDefinition>? consumables = null,
+        IReadOnlyDictionary<string, MissionDefinition>? missions = null)
     {
         Rules = rules ?? RulesConfig.Default;
         Actions = actions;
@@ -49,12 +53,13 @@ public sealed class GameCatalog
         Materials = materials ?? NoMaterials;
         Encounters = encounters ?? NoEncounters;
         Consumables = consumables ?? NoConsumables;
+        Missions = missions ?? NoMissions;
         BaselineComponentIds = starterConfigurations.Values.SelectMany(c => c.ComponentIds).ToHashSet();
     }
 
     /// <summary>A copy of this catalog with different global rules.</summary>
     public GameCatalog WithRules(RulesConfig rules) =>
-        new(Actions, Equipment, StarterConfigurations, Enemies, rules, Materials, Encounters, Consumables);
+        new(Actions, Equipment, StarterConfigurations, Enemies, rules, Materials, Encounters, Consumables, Missions);
 
     public ActionDefinition GetAction(string id) => Actions[id];
     public EquipmentDefinition GetEquipment(string id) => Equipment[id];

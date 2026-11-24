@@ -79,6 +79,45 @@ public static class ShapingRules
         return (ActionValidationResult.Valid, plan);
     }
 
+    /// <summary>
+    /// Produces what a validated plan describes (fast-iron already paid): a component installed at the very end of
+    /// the Damage Order, a consumable stowed in cargo (fast-iron returned loose if there is no room), or a full
+    /// ammo refill. Shared by the Shape Fast-iron spell in combat and shaping during rests.
+    /// </summary>
+    public static void Apply(Combatant actor, ShapingPlan plan, string instanceIdPrefix, int beat, List<CombatEvent> events)
+    {
+        if (plan.Component is { } component)
+        {
+            var instance = new EquipmentInstance($"{instanceIdPrefix}_{component.Id}", component);
+            actor.Loadout.InstallAtEnd(instance);
+            events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
+                $"{actor.Name} shaped {plan.FastIronCost} fast-iron into a new {component.Name} (end of Damage Order).",
+                Value: plan.FastIronCost));
+        }
+        else if (plan.Consumable is { } item)
+        {
+            if (actor.Loadout.TryAddConsumable(item, actor.Rules))
+            {
+                events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
+                    $"{actor.Name} shaped {plan.FastIronCost} fast-iron into {item.Name} (stowed in cargo).",
+                    Value: plan.FastIronCost));
+            }
+            else
+            {
+                actor.Resources.AddFastIron(plan.FastIronCost);
+                events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+                    $"{actor.Name} has no cargo room for {item.Name}; the fast-iron is kept."));
+            }
+        }
+        else if (plan.AmmoTarget is { } weapon && weapon.IsOperational)
+        {
+            weapon.RefillAmmo();
+            events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
+                $"{actor.Name} shaped {plan.FastIronCost} fast-iron into ammunition for {weapon.Definition.Name} ({weapon.CurrentAmmo}/{weapon.Definition.MaxAmmo}).",
+                Value: plan.FastIronCost));
+        }
+    }
+
     private static (ActionValidationResult, EquipmentInstance?) ValidateAmmoTarget(Combatant actor, string? componentId)
     {
         var weapon = componentId is null ? null : actor.Loadout.FindById(componentId);

@@ -28,11 +28,26 @@ public static class EncounterFactory
         int seed,
         GameCatalog catalog)
     {
-        var combatants = new List<Combatant>
-        {
-            new(PlayerCombatantId, playerLoadout.Name, Faction.Player, playerLoadout,
-                encounter.PlayerStart, encounter.PlayerStartingMotes)
-        };
+        var player = new Combatant(PlayerCombatantId, playerLoadout.Name, Faction.Player, playerLoadout,
+            encounter.PlayerStart, encounter.PlayerStartingMotes);
+        return CreateEncounter(encounter, player, seed, catalog);
+    }
+
+    /// <summary>
+    /// Builds a simulation around an existing player Crest (campaign missions: damage, Motes, and fast-iron carry
+    /// over). The Crest is readied with <see cref="Combatant.PrepareForEncounter"/>.
+    /// </summary>
+    public static CombatSimulation CreateEncounter(
+        EncounterDefinition encounter,
+        Combatant player,
+        int seed,
+        GameCatalog catalog)
+    {
+        if (player.Id != PlayerCombatantId)
+            throw new ArgumentException($"The player Crest must use id '{PlayerCombatantId}'.", nameof(player));
+
+        player.PrepareForEncounter(encounter.PlayerStart);
+        var combatants = new List<Combatant> { player };
 
         for (int i = 0; i < encounter.Enemies.Count; i++)
         {

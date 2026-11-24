@@ -92,6 +92,12 @@ public sealed class ResourceState
         return false;
     }
 
+    public void ResetHeat()
+    {
+        CurrentHeat = 0;
+        IsOverheated = false;
+    }
+
     /// <summary>Adds heat. Returns true if this addition caused an overheat.</summary>
     public bool AddHeat(int amount, int heatCapacity)
     {

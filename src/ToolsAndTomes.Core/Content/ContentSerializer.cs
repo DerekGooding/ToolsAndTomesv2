@@ -9,7 +9,7 @@ namespace ToolsAndTomes.Core.Content;
 
 /// <summary>
 /// Reads and writes game content as JSON: <c>rules.json</c>, <c>actions.json</c>, <c>equipment.json</c>,
-/// <c>configurations.json</c>, <c>enemies.json</c>, <c>materials.json</c>, <c>encounters.json</c>, and <c>consumables.json</c>. The shipped content is embedded in this assembly;
+/// <c>configurations.json</c>, <c>enemies.json</c>, <c>materials.json</c>, <c>encounters.json</c>, <c>consumables.json</c>, and <c>missions.json</c>. The shipped content is embedded in this assembly;
 /// a directory with the same files can replace it (for modding, tools, or generated content).
 /// All loaded content is validated by <see cref="ContentValidator"/>.
 /// </summary>
@@ -23,6 +23,7 @@ public static class ContentSerializer
     public const string MaterialsFile = "materials.json";
     public const string EncountersFile = "encounters.json";
     public const string ConsumablesFile = "consumables.json";
+    public const string MissionsFile = "missions.json";
 
     public static JsonSerializerOptions Options { get; } = new()
     {
@@ -71,11 +72,11 @@ public static class ContentSerializer
         return Load(name => ReadEmbedded(assembly, name));
     }
 
-    /// <summary>Loads and validates content from a directory containing the eight content files.</summary>
+    /// <summary>Loads and validates content from a directory containing the nine content files.</summary>
     public static GameCatalog LoadFromDirectory(string directory) =>
         Load(name => File.ReadAllText(Path.Combine(directory, name)));
 
-    /// <summary>Writes a catalog as the eight content files.</summary>
+    /// <summary>Writes a catalog as the nine content files.</summary>
     public static void SaveToDirectory(GameCatalog catalog, string directory)
     {
         Directory.CreateDirectory(directory);
@@ -92,7 +93,8 @@ public static class ContentSerializer
         (EnemiesFile, JsonSerializer.Serialize(catalog.Enemies.Values.ToList(), Options)),
         (MaterialsFile, JsonSerializer.Serialize(catalog.Materials.Values.ToList(), Options)),
         (EncountersFile, JsonSerializer.Serialize(catalog.Encounters.Values.ToList(), Options)),
-        (ConsumablesFile, JsonSerializer.Serialize(catalog.Consumables.Values.ToList(), Options))
+        (ConsumablesFile, JsonSerializer.Serialize(catalog.Consumables.Values.ToList(), Options)),
+        (MissionsFile, JsonSerializer.Serialize(catalog.Missions.Values.ToList(), Options))
     ];
 
     public static GameCatalog Load(Func<string, string> readFile)
@@ -105,8 +107,9 @@ public static class ContentSerializer
         var materials = Deserialize<List<ExoticMaterialDefinition>>(readFile, MaterialsFile);
         var encounters = Deserialize<List<EncounterDefinition>>(readFile, EncountersFile);
         var consumables = Deserialize<List<ConsumableDefinition>>(readFile, ConsumablesFile);
+        var missions = Deserialize<List<MissionDefinition>>(readFile, MissionsFile);
 
-        IReadOnlyList<string> errors = ContentValidator.FindDuplicateIds(actions, equipment, configurations, enemies, materials, encounters, consumables);
+        IReadOnlyList<string> errors = ContentValidator.FindDuplicateIds(actions, equipment, configurations, enemies, materials, encounters, consumables, missions);
         if (errors.Count > 0)
             throw new ContentValidationException(errors);
 
@@ -118,7 +121,8 @@ public static class ContentSerializer
             rules,
             materials.ToDictionary(m => m.Id),
             encounters.ToDictionary(e => e.Id),
-            consumables.ToDictionary(c => c.Id));
+            consumables.ToDictionary(c => c.Id),
+            missions.ToDictionary(m => m.Id));
 
         errors = ContentValidator.Validate(catalog);
         if (errors.Count > 0)

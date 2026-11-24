@@ -298,6 +298,20 @@ public sealed class Combatant
         Resources.ReserveWit(AegisWitReservationKey, witReserve);
     }
 
+    /// <summary>
+    /// Readies a Crest that carries over from a previous encounter (campaign missions): clears all activity,
+    /// cooldowns, evasion, and heat, and places it at its start position. Damage, ammo, cargo, Motes, and
+    /// fast-iron are kept.
+    /// </summary>
+    public void PrepareForEncounter(Vec2 startPosition)
+    {
+        ClearAllActivity();
+        _cooldowns.Clear();
+        EvadeBeatsRemaining = 0;
+        Resources.ResetHeat();
+        Position = startPosition;
+    }
+
     public void ClearAegis()
     {
         AegisBlocksRemaining = 0;

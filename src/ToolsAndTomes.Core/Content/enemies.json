@@ -47,5 +47,45 @@
       ]
     },
     "preferredRange": 11
+  },
+  {
+    "id": "enemy_warden",
+    "name": "Oathbound Warden",
+    "archetype": "Bruiser",
+    "assembly": {
+      "id": "cfg_enemy_warden",
+      "name": "Oathbound Warden",
+      "componentIds": [
+        "armor_heavy_plate",
+        "eq_repulsor",
+        "eq_righteous",
+        "mob_anchor_legs",
+        "core_aether_furnace"
+      ],
+      "reactionRules": [
+        { "actionId": "defense_repulsor", "telegraph": "MeleeCommit" }
+      ]
+    },
+    "preferredRange": 2
+  },
+  {
+    "id": "enemy_skyblade",
+    "name": "Skyblade Raider",
+    "archetype": "Skirmisher",
+    "assembly": {
+      "id": "cfg_enemy_skyblade",
+      "name": "Skyblade Raider",
+      "componentIds": [
+        "eq_jump_jets",
+        "eq_talon",
+        "eq_blink_drive",
+        "mob_stride_legs",
+        "core_aether_dynamo"
+      ],
+      "reactionRules": [
+        { "actionId": "defense_blink", "minIncomingDamage": 2 }
+      ]
+    },
+    "preferredRange": 7
   }
 ]
