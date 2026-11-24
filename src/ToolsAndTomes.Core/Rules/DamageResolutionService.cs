@@ -227,7 +227,7 @@ public sealed class DamageResolutionService
                 ? Math.Max(_thresholds.CancellationMinPenaltyBeats, def.RecoveryBeats)
                 : _thresholds.InterruptedStunBeats;
 
-            target.RemoveAction(act);
+            target.AbortAction(act);
             target.LockOutComponent(act.SourceEquipmentInstanceId, penaltyBeats);
 
             string label = tier == InterruptionTier.Cancellation ? "CANCELED" : "INTERRUPTED";

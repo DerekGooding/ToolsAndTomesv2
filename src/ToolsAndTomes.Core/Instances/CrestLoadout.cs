@@ -74,10 +74,11 @@ public sealed class CrestLoadout
     /// Installs a component. By default it is placed ahead of any Core(s) at the end of the Damage Order,
     /// so the Core keeps its recommended last position.
     /// </summary>
-    public void Install(EquipmentInstance instance)
+    /// <returns>False (and nothing changes) if a component with the same instance id is already installed.</returns>
+    public bool Install(EquipmentInstance instance)
     {
         if (_installed.Any(e => e.InstanceId == instance.InstanceId))
-            return;
+            return false;
 
         int insertAt = _installed.Count;
         if (!instance.Definition.IsCore)
@@ -88,6 +89,7 @@ public sealed class CrestLoadout
 
         _installed.Insert(insertAt, instance);
         _structureVersion++;
+        return true;
     }
 
     // ---- Cargo -------------------------------------------------------------------------------
@@ -243,15 +245,14 @@ public sealed class CrestLoadout
 
     public bool TransferComponentTo(string instanceId, CrestLoadout destination)
     {
-        if (ReferenceEquals(this, destination))
+        if (ReferenceEquals(this, destination) || destination.FindById(instanceId) is not null)
             return false;
 
         var removed = Uninstall(instanceId);
         if (removed is null)
             return false;
 
-        destination.Install(removed);
-        return true;
+        return destination.Install(removed);
     }
 
     /// <summary>

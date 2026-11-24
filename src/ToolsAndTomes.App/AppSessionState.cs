@@ -97,8 +97,10 @@ public sealed class AppSessionState
         if (item is null)
             return false;
 
+        if (!SelectedLoadout.Install(item))
+            return false; // an identical instance is already installed; the spare stays in inventory
+
         SpareInventory.Remove(item);
-        SelectedLoadout.Install(item);
         return true;
     }
 

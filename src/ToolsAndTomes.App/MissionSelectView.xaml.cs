@@ -23,8 +23,8 @@ public partial class MissionSelectView : UserControl
     {
         var catalog = _session.Catalog;
         var crest = _session.SelectedLoadout;
-        var warnings = LoadoutRules.GetWarnings(crest);
-        bool canLaunch = LoadoutRules.ComputeStats(crest).IsCoreOperational;
+        var warnings = LoadoutRules.GetWarnings(crest, _session.Catalog.Rules);
+        bool canLaunch = LoadoutRules.ComputeStats(crest, _session.Catalog.Rules).IsCoreOperational;
         TxtCrest.Text = $"Crest: {crest.Name}" + (warnings.Count > 0 ? $"  (⚠ {warnings.Count} warning(s) in the Crest Bay)" : "");
 
         MissionsPanel.Children.Clear();

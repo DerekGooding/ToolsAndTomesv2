@@ -102,6 +102,8 @@ internal sealed class ActorStateProcessor
         List<IncomingHit> hits,
         List<CombatEvent> events)
     {
+        // Reactions resolve instantly, but within this step each holds its Wit so the next reaction sees what is left.
+        var heldThisStep = new List<string>();
         foreach (var cmd in actor.TakePendingReactions())
         {
             if (!_catalog.Actions.TryGetValue(cmd.ActionId, out var def))
@@ -120,9 +122,17 @@ internal sealed class ActorStateProcessor
             var act = actor.AddAction(def, provider.InstanceId, cmd.TargetActorId, cmd.TargetPoint);
             act.OwnComponentInstanceId = cmd.OwnComponentInstanceId;
             act.ShapingPlan = plan;
+            if (def.WitReserve > 0 && def.AegisBlocks == 0) // Aegis reserves its own Wit while it lasts
+            {
+                // Held under its own key: a zero-recovery reaction completes (and releases its action key) at once.
+                actor.Resources.ReserveWit($"reaction_hold_{act.Id}", def.WitReserve);
+                heldThisStep.Add($"reaction_hold_{act.Id}");
+            }
+
             if (!TryCommitCosts(actor, act))
             {
                 actor.RemoveAction(act);
+                actor.Resources.ReleaseWit($"reaction_hold_{act.Id}");
                 Reject(actor, def, "costs could not be paid", beat, events);
                 continue;
             }
@@ -136,6 +146,9 @@ internal sealed class ActorStateProcessor
             // The declaring beat was the reaction's impact; recovery starts next beat.
             EnterRecovery(actor, act, enteredThisBeat: beat);
         }
+
+        foreach (var key in heldThisStep)
+            actor.Resources.ReleaseWit(key);
     }
 
     // ---- Step 3: actions in motion ----------------------------------------------------------
@@ -245,8 +258,6 @@ internal sealed class ActorStateProcessor
 
             if (ActionValidationRules.IsInRange(actor, act.Definition, target, act.TargetPoint))
             {
-                if (actor.Movement?.ForActionId == act.Id)
-                    actor.StopMovement();
                 BeginAction(actor, act, beat, events);
             }
             else if (actor.Movement is null)
@@ -256,6 +267,10 @@ internal sealed class ActorStateProcessor
                 Reject(actor, act.Definition, "target out of range", beat, events);
             }
         }
+
+        // An approach walk ends once nothing is approaching any more.
+        if (actor.Movement is { ForActionId: not null } && !actor.ActionsInMotion.Any(a => a.Phase == ActionState.Moving))
+            actor.StopMovement();
     }
 
     // ---- Step 6: buffered commands ----------------------------------------------------------
@@ -328,19 +343,45 @@ internal sealed class ActorStateProcessor
             return;
         }
 
-        if (!TryReserveMovementWit(actor, legs))
+        if (!CanAffordMovement(actor, legs))
         {
             events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
                 $"{actor.Name} cannot move: insufficient Wit for {legs.Definition.Name}."));
             return;
         }
 
-        // A plain move redirects the legs; any approaching actions are abandoned at the movement step.
+        // A plain move redirects the legs: attacks that were approaching a target are abandoned.
+        AbandonApproaches(actor, keepActionId: null, "the legs were ordered elsewhere", beat, events);
+        ReserveMovementWit(actor, legs);
         actor.Movement = new MovementOrder
         {
             ProviderInstanceId = legs.InstanceId,
             Destination = ClampToArena(move.Destination)
         };
+    }
+
+    /// <summary>
+    /// Whether a new approach heads for the same place as the current one: the same combatant, the same point, or a
+    /// point on (within 1 unit of) the combatant being followed, e.g. a Mortar aimed at the enemy a blade is chasing.
+    /// </summary>
+    private static bool IsSameApproachTarget(MovementOrder current, Combatant? newTarget, Vec2? newPoint, IReadOnlyList<Combatant> all)
+    {
+        Vec2? currentSpot = current.FollowActorId is { } followId ? FindTarget(all, followId)?.Position : current.Destination;
+        Vec2? newSpot = newTarget?.Position ?? newPoint;
+
+        if (newTarget is not null && current.FollowActorId == newTarget.Id)
+            return true;
+        return currentSpot is { } a && newSpot is { } b && a.DistanceTo(b) <= 1.0;
+    }
+
+    /// <summary>Removes approaching (not yet winding up) actions, except <paramref name="keepActionId"/>, with a notice.</summary>
+    private static void AbandonApproaches(Combatant actor, int? keepActionId, string reason, int beat, List<CombatEvent> events)
+    {
+        foreach (var approaching in actor.ActionsInMotion.Where(a => a.Phase == ActionState.Moving && a.Id != keepActionId).ToList())
+        {
+            actor.RemoveAction(approaching);
+            Reject(actor, approaching.Definition, $"approach abandoned: {reason}", beat, events);
+        }
     }
 
     private void StartUseAction(
@@ -385,13 +426,29 @@ internal sealed class ActorStateProcessor
             return;
         }
 
-        if (!TryReserveMovementWit(actor, legs!))
+        // Another attack is already approaching the same target: share the walk, stopping at the shorter range.
+        if (actor.Movement is { ForActionId: not null } shared && IsSameApproachTarget(shared, target, cmd.TargetPoint, allCombatants))
+        {
+            act.Phase = ActionState.Moving;
+            actor.Movement = shared with { StopDistance = Math.Min(shared.StopDistance, def.Range) };
+            return;
+        }
+
+        if (!CanAffordMovement(actor, legs!))
         {
             actor.RemoveAction(act);
             Reject(actor, def, $"insufficient Wit to walk with {legs!.Definition.Name}", beat, events);
             return;
         }
 
+        AbandonApproaches(actor, keepActionId: act.Id, $"the legs were redirected toward {def.Name}'s target", beat, events);
+        if (actor.Movement is { ForActionId: null })
+        {
+            events.Add(new CombatEvent(beat, CombatEventType.OrderReplaced, actor.Id,
+                $"{actor.Name}'s move order was replaced: approaching for {def.Name}."));
+        }
+
+        ReserveMovementWit(actor, legs!);
         act.Phase = ActionState.Moving;
         actor.Movement = new MovementOrder
         {
@@ -472,18 +529,22 @@ internal sealed class ActorStateProcessor
         act.PhaseBeatsRemaining = beats;
     }
 
-    private static bool TryReserveMovementWit(Combatant actor, EquipmentInstance legs)
+    /// <summary>Whether a new walk is affordable, counting the current walk's Wit as freed (it would be replaced).</summary>
+    private static bool CanAffordMovement(Combatant actor, EquipmentInstance legs)
     {
-        actor.Resources.ReleaseWit(Combatant.MovementWitReservationKey);
         int cost = legs.Definition.MovementWitCost;
         if (cost <= 0)
             return true;
 
-        if (actor.Stats.AvailableWit(actor.Resources.ReservedWit) < cost)
-            return false;
+        int current = actor.Resources.GetReservation(Combatant.MovementWitReservationKey);
+        return actor.Stats.AvailableWit(actor.Resources.ReservedWit - current) >= cost;
+    }
 
-        actor.Resources.ReserveWit(Combatant.MovementWitReservationKey, cost);
-        return true;
+    /// <summary>Replaces the walk's Wit reservation (call only after <see cref="CanAffordMovement"/>).</summary>
+    private static void ReserveMovementWit(Combatant actor, EquipmentInstance legs)
+    {
+        actor.Resources.ReleaseWit(Combatant.MovementWitReservationKey);
+        actor.Resources.ReserveWit(Combatant.MovementWitReservationKey, legs.Definition.MovementWitCost);
     }
 
     private static bool TryCommitCosts(Combatant actor, ActiveAction act)

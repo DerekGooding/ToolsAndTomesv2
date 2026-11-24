@@ -23,6 +23,7 @@ public enum CombatEventType
     CommandRejected,
     ReactionRuleTriggered,
     WitCollapse,
+    OrderReplaced,
     FastIronProduced,
     FieldShaped,
     AmmoRefilled

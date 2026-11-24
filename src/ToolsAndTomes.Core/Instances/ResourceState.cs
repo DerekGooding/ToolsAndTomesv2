@@ -25,6 +25,8 @@ public sealed class ResourceState
         _witReservations[key] = amount;
     }
 
+    public int GetReservation(string key) => _witReservations.TryGetValue(key, out int amount) ? amount : 0;
+
     public void ReleaseWit(string key)
     {
         _witReservations.Remove(key);

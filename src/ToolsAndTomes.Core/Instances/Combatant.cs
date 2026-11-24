@@ -149,13 +149,26 @@ public sealed class Combatant
         return act;
     }
 
-    /// <summary>Removes an action and releases any Wit it reserved (and its movement, if it was approaching).</summary>
+    /// <summary>
+    /// Removes an action and releases any Wit it reserved. An approach walk stops once no action is approaching.
+    /// </summary>
     public void RemoveAction(ActiveAction act)
     {
         _actions.Remove(act);
         Resources.ReleaseWit(act.WitReservationKey);
-        if (Movement?.ForActionId == act.Id)
+        if (Movement is { ForActionId: not null } && !_actions.Any(a => a.Phase == ActionState.Moving))
             StopMovement();
+    }
+
+    /// <summary>
+    /// Removes an action cut short (interrupted, canceled, or dropped by Wit collapse). If its costs were already
+    /// committed, its cooldown still applies.
+    /// </summary>
+    public void AbortAction(ActiveAction act)
+    {
+        RemoveAction(act);
+        if (act.CostsCommitted)
+            SetCooldown(act.Definition.Id, act.Definition.CooldownBeats);
     }
 
     public void StopMovement()
@@ -192,15 +205,16 @@ public sealed class Combatant
         var dropped = new List<string>();
         int Available() => Stats.AvailableWit(Resources.ReservedWit);
 
-        foreach (var act in _actions.Where(a => a.Definition.WitReserve > 0).OrderByDescending(a => a.Id).ToList())
+        // Only actions currently holding Wit (winding up or in their impact window) free anything when dropped.
+        foreach (var act in _actions
+                     .Where(a => a.Phase is ActionState.Windup or ActionState.Executing && Resources.GetReservation(a.WitReservationKey) > 0)
+                     .OrderByDescending(a => a.Id)
+                     .ToList())
         {
             if (Available() >= 0)
                 return dropped;
 
-            if (Resources.ReservedWit == 0)
-                break;
-
-            RemoveAction(act);
+            AbortAction(act);
             dropped.Add(act.Definition.Name);
         }
 
@@ -291,11 +305,19 @@ public sealed class Combatant
         }
     }
 
+    /// <summary>
+    /// Raises or reinforces the Aegis ward. Wards stack: blocks add up, the longer duration wins, and the larger
+    /// Wit commitment is kept (so a cheap Iron Ward never weakens an active Aegis Barrier).
+    /// </summary>
     public void ActivateAegis(int blocks, int durationBeats, int witReserve)
     {
-        AegisBlocksRemaining = blocks;
-        AegisBeatsRemaining = durationBeats;
-        Resources.ReserveWit(AegisWitReservationKey, witReserve);
+        bool active = HasActiveAegis;
+        AegisBlocksRemaining = active ? AegisBlocksRemaining + blocks : blocks;
+        AegisBeatsRemaining = active ? Math.Max(AegisBeatsRemaining, durationBeats) : durationBeats;
+
+        int held = Resources.GetReservation(AegisWitReservationKey);
+        if (witReserve > held)
+            Resources.ReserveWit(AegisWitReservationKey, witReserve);
     }
 
     /// <summary>

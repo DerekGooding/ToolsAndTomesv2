@@ -88,7 +88,13 @@ public static class ShapingRules
     {
         if (plan.Component is { } component)
         {
-            var instance = new EquipmentInstance($"{instanceIdPrefix}_{component.Id}", component);
+            // Shaped parts persist on the assembly, so ids must stay unique across rests, fights, and missions.
+            // Include the assembly's id: every player Crest shares one combatant id, and counters restart per mission.
+            string baseId = $"{actor.Loadout.Id}_{instanceIdPrefix}_{component.Id}";
+            string id = baseId;
+            for (int n = 2; actor.Loadout.FindById(id) is not null; n++)
+                id = $"{baseId}_{n}";
+            var instance = new EquipmentInstance(id, component);
             actor.Loadout.InstallAtEnd(instance);
             events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
                 $"{actor.Name} shaped {plan.FastIronCost} fast-iron into a new {component.Name} (end of Damage Order).",

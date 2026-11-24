@@ -73,7 +73,7 @@ public partial class HangarView : UserControl
         _suppressSelection = false;
 
         var loadout = _session.SelectedLoadout;
-        var stats = LoadoutRules.ComputeStats(loadout);
+        var stats = LoadoutRules.ComputeStats(loadout, _session.Catalog.Rules);
 
         TxtAssemblyName.Text = loadout.Name;
         TxtSeed.Text = _session.EncounterSeed.ToString();
@@ -90,7 +90,7 @@ public partial class HangarView : UserControl
         RefreshFabricationList();
         RefreshCargo(loadout, stats);
 
-        var warnings = LoadoutRules.GetWarnings(loadout);
+        var warnings = LoadoutRules.GetWarnings(loadout, _session.Catalog.Rules);
         var allWarnings = (_session.LastMissionReport is { } report ? new[] { report } : [])
             .Concat(_session.ProfileWarnings)
             .Concat(warnings)

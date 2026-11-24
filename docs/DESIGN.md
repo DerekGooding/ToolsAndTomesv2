@@ -193,7 +193,7 @@ After each hit-resolution pass, a Crest whose available Wit fell below zero (a W
 - **Rewards** bank as each encounter is won (granted to the Workshop immediately); finishing grants the mission's completion bonus. **Defeat fails the mission but keeps banked samples.** The player can withdraw during a rest (or abandon a fight) keeping banked samples.
 - **Missions unlock by research:** Border Patrol (always), Quarry Siege (Oathsteel), Storm Reach (Bastion Ore + Corrodite).
 - Enemies with reaction rules: Oathbound Warden (repulses melee), Skyblade Raider (blinks from heavy impacts).
-- Balance (autopilot, starter builds, 100 seeds): Border Patrol 46% / 13% completion (Agile / Heavy), Quarry Siege 15% / 6%, Storm Reach ~0% (endgame, expects researched parts). Run `tools/ToolsAndTomes.Balance -- --missions` or `--encounters` to re-measure.
+- Balance (autopilot, starter builds, 100 seeds, after the code-review rule fixes): Border Patrol 3% / 8% completion (Agile / Heavy), Quarry Siege 25% / 7%, Storm Reach 0% / 0%. **Needs retuning**: interrupted committed actions now keep their cooldown, which cut Agile's single-fight win rate from 42% to 19%. Run `tools/ToolsAndTomes.Balance -- --missions` or `--encounters` to re-measure.
 - In-progress missions are not saved across app restarts (banked samples and assemblies are).
 
 ---

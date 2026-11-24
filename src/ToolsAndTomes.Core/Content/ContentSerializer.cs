@@ -45,21 +45,48 @@ public static class ContentSerializer
     {
         if (typeInfo.Kind != JsonTypeInfoKind.Object ||
             typeInfo.Type == typeof(RulesConfig) ||
-            typeInfo.Type == typeof(InterruptionThresholds))
+            typeInfo.Type == typeof(InterruptionThresholds) ||
+            typeInfo.Type == typeof(Workshop.PlayerProfile)) // profiles always record their version
             return;
+
+        // A freshly constructed instance supplies each property's real default (e.g. a "minIncomingDamage" of 1),
+        // so only values equal to that default are omitted. Types without a parameterless constructor (positional
+        // records) always write their numbers and flags.
+        object? defaults = null;
+        try
+        {
+            defaults = Activator.CreateInstance(typeInfo.Type);
+        }
+        catch (Exception) // no parameterless constructor, abstract type, or a throwing constructor
+        {
+            defaults = null;
+        }
 
         foreach (var property in typeInfo.Properties)
         {
             if (property.IsRequired || property.PropertyType.IsEnum)
                 continue;
 
-            property.ShouldSerialize = static (_, value) => value switch
+            object? defaultValue = null;
+            bool hasDefault = false;
+            if (defaults is not null && property.Get is { } get)
+            {
+                try
+                {
+                    defaultValue = get(defaults);
+                    hasDefault = true;
+                }
+                catch (Exception) // a getter that needs fully initialized state: always write the value
+                {
+                }
+            }
+
+            property.ShouldSerialize = (_, value) => value switch
             {
                 null => false,
-                int i => i != 0,
-                bool b => b,
                 string s => s.Length > 0,
                 System.Collections.IEnumerable e => e.GetEnumerator().MoveNext(),
+                int or bool => !hasDefault || !Equals(value, defaultValue),
                 _ => true
             };
         }
