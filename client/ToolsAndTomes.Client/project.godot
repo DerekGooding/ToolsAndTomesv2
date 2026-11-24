@@ -1,0 +1,25 @@
+; Engine configuration file.
+; Godot client for Tools and Tomes. Rules live in ToolsAndTomes.Core (referenced from the .csproj);
+; this project only presents them.
+
+config_version=5
+
+[application]
+
+config/name="Tools and Tomes"
+config/description="Real-time tactical Crest combat (Godot client, placeholder assets)."
+run/main_scene="res://scenes/Battle.tscn"
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+
+[dotnet]
+
+project/assembly_name="ToolsAndTomes.Client"
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2

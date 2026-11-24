@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/client/">
+    <Project Path="client/ToolsAndTomes.Client/ToolsAndTomes.Client.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/ToolsAndTomes.App/ToolsAndTomes.App.csproj" />
     <Project Path="src/ToolsAndTomes.Core/ToolsAndTomes.Core.csproj" />
