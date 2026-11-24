@@ -70,4 +70,14 @@ public sealed class EquipmentInstance
     {
         CurrentAmmo = Definition.MaxAmmo;
     }
+
+    /// <summary>Sets saved durability and ammo (clamped to the definition), e.g. when resuming a mission.</summary>
+    public void RestoreState(int durability, int ammo)
+    {
+        bool wasOperational = IsOperational;
+        CurrentDurability = Math.Clamp(durability, 0, Definition.MaxDurability);
+        CurrentAmmo = Math.Clamp(ammo, 0, Definition.MaxAmmo);
+        if (wasOperational != IsOperational)
+            OperationalVersion++;
+    }
 }

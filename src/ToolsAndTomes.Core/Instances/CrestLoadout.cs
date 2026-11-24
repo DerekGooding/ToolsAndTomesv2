@@ -146,6 +146,17 @@ public sealed class CrestLoadout
     public int CargoWeight(RulesConfig rules) =>
         CarriedFastIron * rules.FastIronWeight + _consumables.Values.Sum(c => c.Def.Weight * c.Count);
 
+    /// <summary>Sets the carried cargo to a saved state (fast-iron and consumables), e.g. when resuming a mission.</summary>
+    public void RestoreCargo(int carriedFastIron, IReadOnlyDictionary<string, int> consumables, GameCatalog catalog)
+    {
+        CarriedFastIron = Math.Max(0, carriedFastIron);
+        _consumables.Clear();
+        foreach (var (id, count) in consumables)
+            if (count > 0 && catalog.Consumables.TryGetValue(id, out var def))
+                _consumables[id] = (def, count);
+        _structureVersion++;
+    }
+
     public bool TryTakeCarriedFastIron(int amount)
     {
         if (amount <= 0)

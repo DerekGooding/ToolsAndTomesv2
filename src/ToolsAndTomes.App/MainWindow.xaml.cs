@@ -35,7 +35,13 @@ public partial class MainWindow : Window
         _restView.ContinueRequested += ShowCombat;
         _restView.WithdrawRequested += ShowHangar;
 
-        MainHost.Content = _hangarView;
+        // A mission saved in progress picks up where it left off: at its rest, or at the start of its next fight.
+        if (_session.ActiveMission is { Phase: MissionPhase.Rest })
+            ShowRest();
+        else if (_session.ActiveMission is { Phase: MissionPhase.Encounter })
+            ShowCombat();
+        else
+            MainHost.Content = _hangarView;
     }
 
     private void ShowCombat()

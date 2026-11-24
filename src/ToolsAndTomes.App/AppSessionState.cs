@@ -18,6 +18,9 @@ public sealed class AppSessionState
     private int _nextAssemblyCounter = 1;
     private CombatSimulation? _rewardedSimulation;
 
+    /// <summary>The last between-fights snapshot of the active mission (kept while a fight is in progress).</summary>
+    private MissionSave? _missionSave;
+
     public GameCatalog Catalog { get; } = GameCatalog.Default;
     public List<CrestLoadout> CrestAssemblies { get; } = [];
     public List<EquipmentInstance> SpareInventory { get; } = [];
@@ -157,6 +160,7 @@ public sealed class AppSessionState
             .ToList();
         ActiveMission = MissionRun.Start(mission, SelectedLoadout, Catalog, EncounterSeed, Workshop.KnownComponentIds(Catalog), allies);
         EncounterSeed++; // the next mission rolls differently
+        Save();
         return ActiveMission;
     }
 
@@ -165,6 +169,7 @@ public sealed class AppSessionState
     {
         var run = ActiveMission ?? throw new InvalidOperationException("No mission in progress.");
         LastRewards = [];
+        Save(); // quitting mid-fight resumes here, at the start of this fight
         ActiveSimulation = run.BeginEncounter();
         ActiveSimulation.Pause();
         ActiveAI = new EnemyAIController(decisionIntervalBeats: 1); // fresh target memory per fight
@@ -223,12 +228,19 @@ public sealed class AppSessionState
         LastMissionReport = $"{run.Mission.Name} {outcome}: {samples} sample(s) recovered.";
         ActiveMission = null;
         ActiveSimulation = null;
+        _missionSave = null;
     }
 
     // ---- Profile ----------------------------------------------------------------------------
 
+    /// <summary>Saves the profile, including the active mission's latest between-fights snapshot.</summary>
     public void Save()
     {
+        if (ActiveMission is null)
+            _missionSave = null;
+        else if (ActiveMission.CanSave)
+            _missionSave = ActiveMission.CreateSave();
+
         var profile = new PlayerProfile
         {
             SelectedAssemblyId = SelectedCrestId,
@@ -242,7 +254,8 @@ public sealed class AppSessionState
                 .OrderBy(kv => kv.Key, StringComparer.Ordinal)
                 .Select(kv => new PilotRecord { PilotId = kv.Key, Assembly = kv.Value.ExportConfiguration() })
                 .ToList(),
-            Lance = Lance.ToList()
+            Lance = Lance.ToList(),
+            ActiveMission = _missionSave
         };
 
         try
@@ -271,6 +284,7 @@ public sealed class AppSessionState
         EncounterSeed = 1337;
         ActiveMission = null;
         ActiveSimulation = null;
+        _missionSave = null;
         LastMissionReport = null;
         ProfileWarnings = [];
         CreateNewProfile();
@@ -309,7 +323,11 @@ public sealed class AppSessionState
             Lance.AddRange(profile.Lance.Take(MissionRun.MaxAllies));
             EnsureRoster(fillLance: profile.Pilots.Count == 0 && profile.Lance.Count == 0);
 
-            ProfileWarnings = loaded.Warnings;
+            var warnings = loaded.Warnings.ToList();
+            if (profile.ActiveMission is { } saved)
+                ResumeMission(saved, warnings);
+
+            ProfileWarnings = warnings;
             return true;
         }
         catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
@@ -321,6 +339,38 @@ public sealed class AppSessionState
             Lance.Clear();
             return false;
         }
+    }
+
+    /// <summary>
+    /// Rebuilds a saved mission. The mission's Crest replaces the assembly it was launched with (it carries the
+    /// mission's damage and shaped parts), and allied pilots' Crests are taken from the save.
+    /// </summary>
+    private void ResumeMission(MissionSave saved, List<string> warnings)
+    {
+        var run = MissionRun.TryResume(saved, Catalog, Workshop.KnownComponentIds(Catalog), out var error);
+        if (run is null)
+        {
+            warnings.Add($"The mission in progress could not be resumed ({error}); it was abandoned. Banked samples are kept.");
+            return;
+        }
+
+        int index = CrestAssemblies.FindIndex(a => a.Id == run.Loadout.Id);
+        if (index >= 0)
+            CrestAssemblies[index] = run.Loadout;
+        else
+            CrestAssemblies.Add(run.Loadout);
+        SelectedCrestId = run.Loadout.Id;
+
+        foreach (var ally in run.Allies)
+            if (run.PilotOf(ally) is { } pilotId)
+                PilotCrests[pilotId] = ally.Loadout;
+
+        ActiveMission = run;
+        _missionSave = saved;
+        string where = run.Phase == MissionPhase.Rest
+            ? $"resting after encounter {run.StageIndex + 1}"
+            : $"at the start of encounter {run.StageIndex + 1} ({run.CurrentEncounter.Name})";
+        warnings.Add($"Resumed {run.Mission.Name}, {where}.");
     }
 
     /// <summary>

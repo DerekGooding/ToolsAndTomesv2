@@ -27,6 +27,9 @@ public sealed record PlayerProfile
 
     /// <summary>Pilot ids who join the player on missions, in lance order.</summary>
     public IReadOnlyList<string> Lance { get; init; } = [];
+
+    /// <summary>The mission in progress, saved between fights (null when none). See <see cref="Campaign.MissionSave"/>.</summary>
+    public Campaign.MissionSave? ActiveMission { get; init; }
 }
 
 public sealed record PilotRecord

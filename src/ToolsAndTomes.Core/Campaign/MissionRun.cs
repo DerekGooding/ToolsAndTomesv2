@@ -47,6 +47,7 @@ public sealed class MissionRun
     private readonly List<MaterialCount> _rewardsEarned = [];
     private readonly List<CombatEvent> _restLog = [];
     private int _restOps;
+    private readonly Dictionary<string, string> _pilotIds = new(StringComparer.Ordinal);
 
     public MissionDefinition Mission { get; }
     public GameCatalog Catalog { get; }
@@ -54,6 +55,9 @@ public sealed class MissionRun
 
     /// <summary>The player's Crest for the whole mission.</summary>
     public Combatant Crest { get; }
+
+    /// <summary>The pilot flying an allied Crest, if known.</summary>
+    public string? PilotOf(Combatant ally) => _pilotIds.GetValueOrDefault(ally.Id);
 
     /// <summary>Allied pilots' Crests for the whole mission, in lance order.</summary>
     public IReadOnlyList<Combatant> Allies { get; }
@@ -117,7 +121,133 @@ public sealed class MissionRun
         loadout.RepairAll();
         foreach (var ally in allies)
             ally.Loadout.RepairAll();
-        return new MissionRun(mission, loadout, catalog, seed, knownBlueprints, allies);
+        var run = new MissionRun(mission, loadout, catalog, seed, knownBlueprints, allies);
+        foreach (var ally in allies)
+            if (catalog.Pilots.Values.FirstOrDefault(p => EncounterFactory.AllyCombatantId(p.Id) == ally.Id) is { } pilot)
+                run._pilotIds[ally.Id] = pilot.Id;
+        return run;
+    }
+
+    // ---- Saving -----------------------------------------------------------------------------
+
+    /// <summary>True between fights (before an encounter begins, or during a rest): the only times a mission is saved.</summary>
+    public bool CanSave => !IsOver && ActiveSimulation is null;
+
+    /// <summary>Snapshots the mission between fights. Throws during a fight or after the mission ended.</summary>
+    public MissionSave CreateSave()
+    {
+        if (!CanSave)
+            throw new InvalidOperationException("A mission can only be saved between fights.");
+
+        return new MissionSave
+        {
+            MissionId = Mission.Id,
+            BaseSeed = BaseSeed,
+            StageIndex = StageIndex,
+            Phase = Phase,
+            RestBeatsRemaining = RestBeatsRemaining,
+            RestOps = _restOps,
+            RewardsEarned = _rewardsEarned.ToList(),
+            RestLog = _restLog.Select(e => new RestLogEntry(e.ActorId, e.Message)).ToList(),
+            Lance = Lance.Select(c => new CrestSave
+            {
+                CombatantId = c.Id,
+                Name = c.Name,
+                PilotId = c == Crest ? null : _pilotIds.GetValueOrDefault(c.Id),
+                Assembly = c.Loadout.ExportConfiguration(),
+                Components = c.Loadout.DamageOrder.Select(e => new ComponentSave(e.InstanceId, e.CurrentDurability, e.CurrentAmmo)).ToList(),
+                Motes = c.Resources.CurrentMotes,
+                FastIron = c.Resources.FastIron,
+                CarriedFastIron = c.Loadout.CarriedFastIron,
+                Consumables = c.Loadout.CarriedConsumables
+            }).ToList()
+        };
+    }
+
+    /// <summary>
+    /// Rebuilds a saved mission. The player's Crest gets a fresh <see cref="Loadout"/> built from the save (the
+    /// caller swaps it in for the assembly with the same id). Fails, with a reason, if the save no longer matches
+    /// the content (an unknown mission, pilot, or component, or a stage past the mission's end).
+    /// </summary>
+    public static MissionRun? TryResume(MissionSave save, GameCatalog catalog, IReadOnlySet<string>? knownBlueprints, out string? error)
+    {
+        error = Validate(save, catalog);
+        if (error is not null)
+            return null;
+
+        var mission = catalog.Missions[save.MissionId];
+        var player = save.Lance[0];
+        var allies = save.Lance.Skip(1)
+            .Select(a => new Combatant(a.CombatantId, a.Name, Faction.Player, RestoreLoadout(a, catalog), new Vec2(0, 0), a.Motes)
+            {
+                Rules = catalog.Rules
+            })
+            .ToList();
+
+        var run = new MissionRun(mission, RestoreLoadout(player, catalog), catalog, save.BaseSeed, knownBlueprints, allies)
+        {
+            StageIndex = save.StageIndex,
+            Phase = save.Phase,
+            RestBeatsRemaining = save.Phase == MissionPhase.Rest ? Math.Max(0, save.RestBeatsRemaining) : 0
+        };
+        foreach (var a in save.Lance.Skip(1))
+            if (a.PilotId is not null)
+                run._pilotIds[a.CombatantId] = a.PilotId;
+
+        foreach (var (crest, saved) in run.Lance.Zip(save.Lance))
+        {
+            crest.Resources.TrySpendMotes(crest.Resources.CurrentMotes);
+            crest.Resources.AddMotes(saved.Motes, int.MaxValue);
+            crest.Resources.AddFastIron(saved.FastIron);
+        }
+
+        run._restOps = save.RestOps;
+        run._rewardsEarned.AddRange(save.RewardsEarned);
+        run._restLog.AddRange(save.RestLog.Select(e => new CombatEvent(-1, CombatEventType.FieldShaped, e.ActorId, e.Message)));
+        return run;
+    }
+
+    private static string? Validate(MissionSave save, GameCatalog catalog)
+    {
+        if (save.Version > MissionSave.CurrentVersion)
+            return $"The mission was saved by a newer version (save v{save.Version}).";
+        if (!catalog.Missions.TryGetValue(save.MissionId, out var mission))
+            return $"Mission '{save.MissionId}' no longer exists.";
+        if (save.Phase is not (MissionPhase.Encounter or MissionPhase.Rest))
+            return $"A {save.Phase} mission cannot be resumed.";
+        if (save.StageIndex < 0 || save.StageIndex >= mission.EncounterIds.Count ||
+            (save.Phase == MissionPhase.Rest && save.StageIndex >= mission.EncounterIds.Count - 1))
+            return $"{mission.Name} has no stage {save.StageIndex + 1} to resume.";
+        if (save.Lance.Count == 0 || save.Lance.Count > MaxAllies + 1)
+            return "The saved lance is malformed.";
+        if (save.Lance.Skip(1).Any(a => a.PilotId is not null && !catalog.Pilots.ContainsKey(a.PilotId)))
+            return "A saved ally's pilot no longer exists.";
+        if (save.Lance.Select(c => c.CombatantId).Distinct().Count() != save.Lance.Count ||
+            save.Lance[0].CombatantId != EncounterFactory.PlayerCombatantId)
+            return "The saved lance is malformed.";
+        if (save.Lance.SelectMany(c => c.Assembly.ComponentIds).FirstOrDefault(id => !catalog.Equipment.ContainsKey(id)) is { } gone)
+            return $"Component '{gone}' no longer exists.";
+        if (save.Lance.Any(c => c.Components.Count != c.Assembly.ComponentIds.Count))
+            return "A saved Crest's components don't match its assembly.";
+        return null;
+    }
+
+    private static CrestLoadout RestoreLoadout(CrestSave saved, GameCatalog catalog)
+    {
+        var parts = saved.Assembly.ComponentIds.Select((id, i) =>
+        {
+            var state = saved.Components[i];
+            var part = new EquipmentInstance(state.InstanceId, catalog.GetEquipment(id));
+            part.RestoreState(state.Durability, state.Ammo);
+            return part;
+        });
+
+        var loadout = new CrestLoadout(saved.Assembly.Id, saved.Assembly.Name, parts);
+        foreach (var rule in saved.Assembly.ReactionRules.Where(r => catalog.Actions.TryGetValue(r.ActionId, out var a) && a.IsReactive))
+            loadout.AddReactionRule(rule);
+        loadout.SetCargoManifest(saved.Assembly.Cargo, catalog);
+        loadout.RestoreCargo(saved.CarriedFastIron, saved.Consumables, catalog);
+        return loadout;
     }
 
     /// <summary>The lance member with this id (null: the player's Crest).</summary>

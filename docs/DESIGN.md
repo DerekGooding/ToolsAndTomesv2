@@ -217,7 +217,12 @@ The free demo's region (`region: "border_march"`), played in order with the lanc
 
   - Heavy Anchor is slow: about 12% of its Border Patrol runs hit the 300-beat limit.
   - **Solo, the demo is nearly unwinnable** (0–2% completion). The demo is designed around the lance.
-- In-progress missions are not saved across app restarts (banked samples and assemblies are).
+- **Mid-mission saves [Implemented]:** the mission in progress is saved inside the profile (`activeMission`, a `MissionSave`).
+  - It is saved only **between fights**: at mission start, just before each encounter begins, and after every rest action.
+  - Quitting mid-fight resumes **at the start of that fight**, with the lance as it left the last rest. The encounter's seed is fixed, so the fight replays identically.
+  - Each Crest is saved in full: Damage Order including field-shaped parts, durability, ammo, cargo, Motes, and loose fast-iron. The mission saves its stage, rest time, banked rewards, and rest log.
+  - On launch, the app resumes at the rest or at the next fight. The resumed Crest replaces the assembly it launched with.
+  - A save that no longer matches the content (a removed mission, pilot, or component) is abandoned with a warning; banked samples are kept.
 
 ### Allied pilots [Implemented]
 - **The player pilots one Crest; up to two allied Crests (a lance of three) fight alongside under AI control.** Allies take no orders.
@@ -242,7 +247,7 @@ The free demo's region (`region: "border_march"`), played in order with the lanc
   - Use a **mid-distance third-person camera**, so Crests must read as detailed machines up close.
 - ✅ **Demo region tuned** (see *Demo region* above). Targets, measured with the full lance and the autopilot (which plays worse than a human with pause): First Patrol ~90%+, Border Patrol ~60–70%, The Warlord's Gate ~40%. Fights last about 1–2 minutes of real time (60–120 beats).
 - Still to do: retune Quarry Siege (~30–40%) and Storm Reach (~10–20%) for the lance. These are post-demo, Early Access content.
-- **Mid-mission saves:** save the mission at each rest; quitting mid-fight resumes at the start of that fight with the post-rest Crest.
+- ✅ **Mid-mission saves** (see *Campaign missions*).
 - Then a hands-on polish pass of the hangar, combat, rest, mission select, and research screens.
 
 ---
@@ -275,7 +280,7 @@ The free demo's region (`region: "border_march"`), played in order with the lanc
 
 | Phase | Goal | Key work |
 |---|---|---|
-| 0. Finish the current loop | A fun, playable 3-mission demo region | Allied pilots ✅; difficulty retune with the lance; fights of 60–120 beats; mid-mission saves; a feel pass for the close camera. |
+| 0. Finish the current loop | A fun, playable 3-mission demo region | Allied pilots ✅; the demo region tuned with the lance ✅; fights of 60–120 beats ✅; mid-mission saves ✅; a feel pass for the close camera. |
 | 1. Godot vertical slice | One encounter at target quality | Confirm Godot's .NET version can reference Core (multi-target Core if needed); Core↔Godot bridge (beat events + snapshots, presentation interpolates); tactical camera; one modular 3D Crest assembled from component models; telegraph VFX; audio hooks; controller-ready input. |
 | 2. Core hardening | Production-ready rules engine | Full save/load (including mid-fight); a stable presentation API; asset ids on content (model, VFX, sound per component/action); localization keys; performance budgets. |
 | 3. Content & tools pipeline | Designers add content without code | Editors for components, actions, encounters, missions over the JSON + validator; balance runner in CI. |

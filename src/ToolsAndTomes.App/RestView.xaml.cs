@@ -98,6 +98,8 @@ public partial class RestView : UserControl
     private void Show(RestResult result)
     {
         TxtMessage.Text = result.Message;
+        if (result.Succeeded)
+            _session.Save(); // the mission is saved throughout the rest
         RefreshUI();
     }
 
