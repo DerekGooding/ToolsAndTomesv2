@@ -200,7 +200,7 @@ public sealed class MissionRun
         return Log(RestResult.Ok($"{summon.Name}: {summon.MoteCost} Motes → {summon.FastIronProduced} fast-iron ({Crest.TotalFastIron} on hand)."));
     }
 
-    /// <summary>Restores one point of durability to a component for fast-iron (a disabled part comes back online).</summary>
+    /// <summary>Spends 1 fast-iron to restore up to <see cref="RulesConfig.RepairPointsPerFastIron"/> durability (a disabled part comes back online).</summary>
     public RestResult Repair(string componentInstanceId)
     {
         if (Phase != MissionPhase.Rest)
@@ -212,12 +212,11 @@ public sealed class MissionRun
         if (part.CurrentDurability >= part.Definition.MaxDurability)
             return RestResult.Fail($"{part.Definition.Name} is undamaged.");
 
-        int cost = Crest.Rules.FastIronPerRepairPoint;
-        if (!Crest.TrySpendFastIron(cost))
-            return RestResult.Fail($"Repair needs {cost} fast-iron (have {Crest.TotalFastIron}).");
+        if (!Crest.TrySpendFastIron(1))
+            return RestResult.Fail($"Repair needs 1 fast-iron (have {Crest.TotalFastIron}).");
 
-        part.RestoreDurability(1);
-        return Log(RestResult.Ok($"Repaired {part.Definition.Name} ({part.CurrentDurability}/{part.Definition.MaxDurability}) for {cost} fast-iron."));
+        part.RestoreDurability(Math.Max(1, Crest.Rules.RepairPointsPerFastIron));
+        return Log(RestResult.Ok($"Repaired {part.Definition.Name} ({part.CurrentDurability}/{part.Definition.MaxDurability}) for 1 fast-iron."));
     }
 
     /// <summary>Shapes fast-iron into a component, consumable, or ammo (needs a Shaping spell on the Crest).</summary>

@@ -28,6 +28,20 @@ public sealed class BalanceRunnerTests
     }
 
     [TestMethod]
+    public void MissionRuns_AreDeterministic_AndAlwaysEnd()
+    {
+        var runner = new BalanceRunner(_catalog);
+        var mission = _catalog.Missions["mis_border_patrol"];
+
+        var a = runner.RunMissions([ConfigurationCatalog.AgileSkirmish], [mission], seeds: 3, maxBeatsPerEncounter: 200);
+        var b = runner.RunMissions([ConfigurationCatalog.AgileSkirmish], [mission], seeds: 3, maxBeatsPerEncounter: 200);
+
+        CollectionAssert.AreEqual(a.ToList(), b.ToList());
+        Assert.IsTrue(a.All(r => r.Phase is Core.Campaign.MissionPhase.Completed or Core.Campaign.MissionPhase.Failed or Core.Campaign.MissionPhase.Withdrawn));
+        StringAssert.Contains(BalanceRunner.FormatMissionTable(BalanceRunner.SummarizeMissions(a, _catalog)), "Border Patrol");
+    }
+
+    [TestMethod]
     public void AutoPilot_FightsWithTheBuild_AndRespectsWit()
     {
         var result = new BalanceRunner(_catalog).RunOne(ConfigurationCatalog.AgileSkirmish, seed: 3, maxBeats: 200);

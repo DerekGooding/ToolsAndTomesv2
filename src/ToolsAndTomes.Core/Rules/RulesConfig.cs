@@ -38,8 +38,8 @@ public sealed record RulesConfig
     /// <summary>Cargo units occupied by one unit of fast-iron.</summary>
     public int FastIronCargoSize { get; init; } = 1;
 
-    /// <summary>Fast-iron to restore one point of durability during a rest in the field.</summary>
-    public int FastIronPerRepairPoint { get; init; } = 1;
+    /// <summary>Durability restored by one field repair during a rest (each repair costs 1 fast-iron).</summary>
+    public int RepairPointsPerFastIron { get; init; } = 2;
 
     /// <summary>When a component sets no fastIronCost, shaping it costs ceil(weight / this), minimum 1.</summary>
     public int ComponentWeightPerFastIron { get; init; } = 10;

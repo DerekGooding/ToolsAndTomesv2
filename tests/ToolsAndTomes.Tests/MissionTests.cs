@@ -56,7 +56,7 @@ public sealed class MissionTests
             phases.Add(run.Phase);
             if (run.Phase == MissionPhase.Rest)
             {
-                Assert.AreEqual(15, run.RestBeatsRemaining);
+                Assert.AreEqual(_catalog.Missions["mis_border_patrol"].RestBeats, run.RestBeatsRemaining);
                 run.ContinueToNextEncounter();
             }
         }
@@ -101,16 +101,19 @@ public sealed class MissionTests
         crest.Loadout.TryTakeCarriedFastIron(crest.Loadout.CarriedFastIron);
         Assert.AreEqual(5, run.MoteIntervalBeats);
 
+        int budget = run.RestBeatsRemaining;
         Assert.IsTrue(run.Wait().Succeeded);
         Assert.IsTrue(run.Wait().Succeeded);
         Assert.IsTrue(run.Wait().Succeeded);
-        Assert.AreEqual(0, run.RestBeatsRemaining);
+        Assert.AreEqual(budget - 15, run.RestBeatsRemaining, "Each wait spends one Mote interval.");
         Assert.AreEqual(3, crest.Resources.CurrentMotes);
-        Assert.IsFalse(run.Wait().Succeeded, "Out of rest time.");
         Assert.IsFalse(run.SquareSummon().Succeeded, "Needs 4 Motes.");
 
-        crest.Resources.AddMotes(1, crest.Stats.MaxMotes);
+        Assert.IsTrue(run.Wait().Succeeded);
         Assert.IsTrue(run.SquareSummon().Succeeded);
+        while (run.Wait().Succeeded) { }
+        Assert.IsLessThan(run.MoteIntervalBeats, run.RestBeatsRemaining, "Waits until the budget runs out.");
+        crest.Resources.TrySpendMotes(crest.Resources.CurrentMotes);
         Assert.AreEqual(1, crest.TotalFastIron);
         Assert.AreEqual(0, crest.Resources.CurrentMotes);
 
@@ -119,8 +122,12 @@ public sealed class MissionTests
         Assert.IsTrue(talon.IsDisabled);
         Assert.IsTrue(run.Repair(talon.InstanceId).Succeeded);
         Assert.IsTrue(talon.IsOperational, "A disabled part comes back online.");
+        Assert.AreEqual(talon.Definition.MaxDurability, talon.CurrentDurability, "One fast-iron restores 2 points.");
         Assert.AreEqual(0, crest.TotalFastIron);
-        Assert.IsFalse(run.Repair(talon.InstanceId).Succeeded, "No fast-iron left.");
+
+        var vorpal = crest.Loadout.Installed.First(e => e.Definition.Id == "eq_vorpal");
+        vorpal.ApplyDamage(1);
+        Assert.IsFalse(run.Repair(vorpal.InstanceId).Succeeded, "No fast-iron left.");
     }
 
     [TestMethod]

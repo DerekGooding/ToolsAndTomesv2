@@ -2,9 +2,9 @@
   {
     "id": "mis_border_patrol",
     "name": "Border Patrol",
-    "description": "Sweep the border: scouts, an escorted Bruiser, then the Proving Grounds. Short rests between fights.",
-    "encounterIds": [ "enc_scout_pair", "enc_bruiser_escort", "enc_proving_grounds" ],
-    "restBeats": 15,
+    "description": "Sweep the border: scouts, a lone Bruiser, then the Proving Grounds. Short rests between fights.",
+    "encounterIds": [ "enc_scout_pair", "enc_lone_bruiser", "enc_proving_grounds" ],
+    "restBeats": 30,
     "completionRewards": [
       { "materialId": "mat_oathsteel", "count": 1 },
       { "materialId": "mat_corrodite", "count": 1 }
@@ -16,7 +16,7 @@
     "description": "Break the quarry's artillery and its Oathbound Wardens. Requires Oathsteel research.",
     "requiredResearch": [ "mat_oathsteel" ],
     "encounterIds": [ "enc_artillery_nest", "enc_iron_wall", "enc_quarry_keep" ],
-    "restBeats": 20,
+    "restBeats": 30,
     "completionRewards": [
       { "materialId": "mat_bastion_ore", "count": 2 },
       { "materialId": "mat_stormglass", "count": 1 }
@@ -28,7 +28,7 @@
     "description": "Push into the storm-swept reach against raiders and Wardens. Requires Bastion Ore and Corrodite research.",
     "requiredResearch": [ "mat_bastion_ore", "mat_corrodite" ],
     "encounterIds": [ "enc_skyblade_raid", "enc_warden_line", "enc_storm_crown" ],
-    "restBeats": 25,
+    "restBeats": 35,
     "completionRewards": [
       { "materialId": "mat_skyweave", "count": 2 },
       { "materialId": "mat_stormglass", "count": 1 }

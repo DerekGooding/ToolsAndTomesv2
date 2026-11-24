@@ -41,6 +41,25 @@
     }
   },
   {
+    "id": "enc_lone_bruiser",
+    "name": "Lone Bruiser",
+    "description": "A single Ironclad Bruiser blocks the road. Keep it off balance.",
+    "arenaWidth": 24,
+    "arenaHeight": 14,
+    "playerStart": { "x": 4, "y": 7 },
+    "enemies": [
+      { "enemyId": "enemy_bruiser", "position": { "x": 16, "y": 7 }, "startingMotes": 1 }
+    ],
+    "rewards": {
+      "draws": 2,
+      "pool": [
+        { "materialId": "mat_corrodite", "weight": 2 },
+        { "materialId": "mat_oathsteel", "weight": 2 },
+        { "materialId": "mat_bastion_ore", "weight": 1 }
+      ]
+    }
+  },
+  {
     "id": "enc_proving_grounds",
     "name": "Proving Grounds",
     "description": "A Skirmisher, a Bruiser, and an Artillery Crest hold the far side of the field.",
@@ -129,15 +148,14 @@
   {
     "id": "enc_skyblade_raid",
     "name": "Skyblade Raid",
-    "description": "Two Skyblade Raiders and a Skirmisher strike fast and blink away.",
+    "description": "A Skyblade Raider and a Skirmisher strike fast and blink away.",
     "arenaWidth": 24,
     "arenaHeight": 14,
-    "playerStart": { "x": 12, "y": 7 },
+    "playerStart": { "x": 4, "y": 7 },
     "playerStartingMotes": 2,
     "enemies": [
-      { "enemyId": "enemy_skyblade", "position": { "x": 3, "y": 3 }, "startingMotes": 1 },
-      { "enemyId": "enemy_skyblade", "position": { "x": 21, "y": 11 }, "startingMotes": 1 },
-      { "enemyId": "enemy_skirmisher", "position": { "x": 21, "y": 3 }, "startingMotes": 1 }
+      { "enemyId": "enemy_skyblade", "position": { "x": 19, "y": 4 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skirmisher", "position": { "x": 19, "y": 10 }, "startingMotes": 1 }
     ],
     "rewards": {
       "draws": 2,
@@ -171,15 +189,14 @@
   {
     "id": "enc_storm_crown",
     "name": "Storm Crown",
-    "description": "The reach's last defenders: a Bruiser, a Warden, a Skyblade, and an Artillery Crest.",
+    "description": "The reach's last defenders: a Bruiser, a Skyblade, and an Artillery Crest.",
     "arenaWidth": 26,
     "arenaHeight": 16,
     "playerStart": { "x": 3, "y": 8 },
     "enemies": [
       { "enemyId": "enemy_bruiser", "position": { "x": 14, "y": 6 }, "startingMotes": 1 },
-      { "enemyId": "enemy_warden", "position": { "x": 14, "y": 10 }, "startingMotes": 1 },
-      { "enemyId": "enemy_skyblade", "position": { "x": 19, "y": 3 }, "startingMotes": 1 },
-      { "enemyId": "enemy_artillery", "position": { "x": 23, "y": 13 }, "startingMotes": 1 }
+      { "enemyId": "enemy_artillery", "position": { "x": 23, "y": 13 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skyblade", "position": { "x": 19, "y": 3 }, "startingMotes": 1 }
     ],
     "rewards": {
       "guaranteed": [ { "materialId": "mat_stormglass", "count": 1 } ],
