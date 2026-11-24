@@ -11,7 +11,8 @@ public sealed record EncounterResult(
     EncounterOutcome Outcome,
     int Beats,
     int ComponentsLost,
-    int EnemiesDefeated);
+    int EnemiesDefeated,
+    string SurvivingEnemies);
 
 public sealed record BuildSummary(
     string BuildId,
@@ -67,7 +68,8 @@ public sealed class BalanceRunner(GameCatalog catalog)
             sim.Outcome,
             sim.CurrentBeat,
             loadout.Installed.Count(e => e.IsDisabled),
-            sim.Combatants.Count(c => c.Faction == Faction.Enemy && c.IsDefeated));
+            sim.Combatants.Count(c => c.Faction == Faction.Enemy && c.IsDefeated),
+            string.Join(",", sim.Combatants.Where(c => c.Faction == Faction.Enemy && !c.IsDefeated).Select(c => c.Id)));
     }
 
     public static IReadOnlyList<BuildSummary> Summarize(IEnumerable<EncounterResult> results, GameCatalog catalog) =>

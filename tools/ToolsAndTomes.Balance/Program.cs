@@ -59,7 +59,7 @@ if (details)
 {
     Console.WriteLine();
     foreach (var r in results)
-        Console.WriteLine($"{r.BuildId,-22} seed {r.Seed,4}: {r.Outcome,-14} beats {r.Beats,4}  lost {r.ComponentsLost}  kills {r.EnemiesDefeated}");
+        Console.WriteLine($"{r.BuildId,-22} seed {r.Seed,4}: {r.Outcome,-14} beats {r.Beats,4}  lost {r.ComponentsLost}  kills {r.EnemiesDefeated}  alive: {r.SurvivingEnemies}");
 }
 
 return 0;

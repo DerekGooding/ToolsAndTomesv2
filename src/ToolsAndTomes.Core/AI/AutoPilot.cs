@@ -53,5 +53,18 @@ public sealed class AutoPilot
             if (sim.IssueCommand(new UseActionCommand(crest.Id, action.Id, unit?.Id, point)).IsValid)
                 witBudget -= action.WitReserve;
         }
+
+        // Keep closing on a target that stays out of reach when nothing else is driving the legs.
+        int reach = crest.Loadout.GetOperationalActionIds()
+            .Select(id => sim.Catalog.GetAction(id))
+            .Where(a => a.BaseDamage > 0 && !a.IsReactive)
+            .Select(a => a.Range)
+            .DefaultIfEmpty(0)
+            .Max();
+        bool legsBusy = crest.Movement is not null ||
+                        crest.QueuedCommands.Any(c => c is MoveCommand or UseActionCommand) ||
+                        crest.ActionsInMotion.Any(a => a.Phase == ActionState.Moving);
+        if (!legsBusy && reach > 0 && crest.Position.DistanceTo(target.Position) > reach && crest.FindLocomotionProvider() is not null)
+            sim.IssueCommand(new MoveCommand(crest.Id, target.Position));
     }
 }
