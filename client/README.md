@@ -5,12 +5,19 @@ The game client, built in **Godot 4.7 (.NET / C#)** with placeholder assets. All
 
 ## Run it
 
-1. Install **Godot 4.7.2 .NET** (the "Mono" build) and the **.NET 10 SDK**.
-2. Open `client/ToolsAndTomes.Client/project.godot` in Godot and press **Play** (F5),
-   or from the repo root:
+1. Install the **.NET 10 SDK**.
+2. Get the project's own copy of **Godot 4.7.2 .NET**. It is portable and lives in `tools/godot/`, which git ignores, so deleting the repo removes it. From the repo root:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File tools/get-godot.ps1
    ```
-   godot --path client/ToolsAndTomes.Client
+   The script downloads the official build, checks it against the release's SHA-512 sums, and turns on self-contained mode (`_sc_`). In self-contained mode the editor keeps its settings and caches in `tools/godot/editor_data/`, not `%APPDATA%`.
+3. Play, or open the editor, from the repo root:
+   ```powershell
+   tools/godot.ps1 --path client/ToolsAndTomes.Client       # play
+   tools/godot.ps1 -e --path client/ToolsAndTomes.Client    # editor
    ```
+
+The game's own `user://` data (logs today, saves later) still goes to `%APPDATA%\Godot\app_userdata\Tools and Tomes`, as a shipped game's would.
 
 ## Controls
 
@@ -29,7 +36,7 @@ The game client, built in **Godot 4.7 (.NET / C#)** with placeholder assets. All
 Runs the fight headless at full speed with the player on autopilot, prints the result, and quits:
 
 ```
-godot --headless --path client/ToolsAndTomes.Client -- --autoplay
+tools/godot.ps1 --headless --path client/ToolsAndTomes.Client -- --autoplay
 ```
 
 The fight is the demo's **Border Fort** with the two allied pilots (teal Crests, AI-controlled, status on the HUD's "Lance" line).

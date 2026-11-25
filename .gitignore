@@ -488,3 +488,6 @@ export_presets.cfg
 
 # Asset generator services (Python)
 .venv/
+
+# Portable Godot engine (tools/get-godot.ps1 downloads it; not committed)
+/tools/godot/

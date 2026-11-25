@@ -40,7 +40,7 @@ public partial class BattleController : Node3D
     private string? _targetId;
     private ActionDefinition? _armedPointAction;
 
-    // Smoke-test mode: `godot --headless --path client/ToolsAndTomes.Client -- --autoplay`
+    // Smoke-test mode: `tools/godot.ps1 --headless --path client/ToolsAndTomes.Client -- --autoplay`
     // runs the fight at full speed with the player on autopilot, prints the result, and quits.
     private bool _autoplay;
     private readonly AutoPilot _autoPilot = new();
