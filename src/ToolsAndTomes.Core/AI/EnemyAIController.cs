@@ -84,6 +84,23 @@ public sealed class EnemyAIController
     {
         double dist = enemy.Position.DistanceTo(target.Position);
 
+        // Terrain first: slam the target into a hard obstacle if a shove would; ranged Crests take nearby cover.
+        foreach (var def in enemy.Loadout.GetOperationalActionIds().Select(sim.Catalog.GetAction)
+                     .Where(a => a.PushDistance != 0 && !a.IsReactive && a.Targeting == TargetingType.EnemyUnit))
+        {
+            if (TerrainTactics.WouldSlam(enemy, def, target) &&
+                ActionValidationRules.ValidateUseAction(enemy, def, target, null).IsValid)
+                return new UseActionCommand(enemy.Id, def.Id, target.Id);
+        }
+
+        if (enemy.Archetype is EnemyArchetype.Artillery or EnemyArchetype.Skirmisher && enemy.Movement is null &&
+            !TerrainTactics.InCover(enemy, target))
+        {
+            int reach = TerrainTactics.Reach(sim, enemy);
+            if (reach >= 5 && dist <= reach && TerrainTactics.FindCoverSpot(enemy, target, reach) is { } cover)
+                return new MoveCommand(enemy.Id, cover);
+        }
+
         return enemy.Archetype switch
         {
             EnemyArchetype.Skirmisher => DecideSkirmisher(enemy, target, dist, sim),

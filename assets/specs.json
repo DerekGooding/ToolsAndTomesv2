@@ -66,6 +66,7 @@
     { "source": "spell_storm_field", "prompt": "a storm cloud raining lightning onto a circle of ground", "palette": "stormglass" },
     { "source": "spell_quick_mend", "prompt": "a glowing iron patch sealing a crack in metal", "palette": "iron-brass-rune" },
     { "source": "spell_conjured_blade", "prompt": "a blade forming out of swirling molten iron", "palette": "iron-brass-rune" },
+    { "source": "spell_iron_wall", "prompt": "a dark iron wall erupting from the ground with glowing seams", "palette": "iron-brass-rune" },
     { "source": "harness_swap", "prompt": "two weapons crossing with circular swap arrows" },
     { "source": "weapon_iron_blade", "prompt": "a dark iron blade slashing twice", "palette": "iron-brass-rune" },
 
@@ -110,6 +111,7 @@
     { "source": "spell_storm_field", "slots": { "windup": "thunder rolling in, wind rising", "impact": "storm of lightning strikes hammering the ground" }, "durationSeconds": 2.5 },
     { "source": "spell_quick_mend", "slots": { "windup": "molten metal hiss", "impact": "metal patch sealing with a soft clank" } },
     { "source": "spell_conjured_blade", "slots": { "windup": "molten iron swirling", "impact": "blade forming with a ringing metal shing" } },
+    { "source": "spell_iron_wall", "slots": { "windup": "deep grinding metal rising", "impact": "heavy iron wall slamming up out of the ground" }, "durationSeconds": 2.0 },
     { "source": "harness_swap", "slots": { "windup": "mechanical clamps unlocking", "impact": "weapon clicking into a mechanical hand" } },
     { "source": "weapon_iron_blade", "slots": { "windup": "blade drawn back", "impact": "two quick metal slashes" } },
 

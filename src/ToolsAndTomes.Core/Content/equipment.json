@@ -286,7 +286,7 @@
     "id": "tome_iron_codex",
     "name": "Iron Codex",
     "category": "Arcane",
-    "description": "Iron-bound tome of fast-iron magic: Quick Mend and Conjured Blade. Held in a hand; stores 1 more Mote.",
+    "description": "Iron-bound tome of fast-iron magic: Quick Mend, Conjured Blade, and Iron Wall. Held in a hand; stores 1 more Mote.",
     "maxDurability": 3,
     "weight": 6,
     "bonusMoteStorage": 1,
@@ -294,7 +294,8 @@
     "handheld": true,
     "grantedActionIds": [
       "spell_quick_mend",
-      "spell_conjured_blade"
+      "spell_conjured_blade",
+      "spell_iron_wall"
     ]
   },
   {

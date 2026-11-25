@@ -50,8 +50,42 @@ public static class BattlefieldRenderer
             return;
 
         DrawGrid(canvas, w, h, sim);
+        DrawObstacles(canvas, sim);
         DrawTelegraphs(canvas, sim, beatFraction);
         DrawCombatants(canvas, sim, selectedCombatantId, armedAction, beatFraction);
+    }
+
+    /// <summary>Obstacles: Tall stone and iron in grey, Low rubble and barricades in brown; circles and thick round-capped walls.</summary>
+    private static void DrawObstacles(Canvas canvas, CombatSimulation sim)
+    {
+        double scale = Math.Min(canvas.ActualWidth / sim.ArenaWidth, canvas.ActualHeight / sim.ArenaHeight);
+        foreach (var o in sim.Terrain.Obstacles)
+        {
+            var def = o.Definition;
+            var color = def.Id == "iron_wall" ? Color.FromRgb(71, 85, 105)
+                : def.Height == ObstacleHeight.Tall ? Color.FromRgb(148, 163, 184)
+                : Color.FromRgb(146, 112, 72);
+            var brush = new SolidColorBrush(color) { Opacity = def.Height == ObstacleHeight.Tall ? 0.9 : 0.6 };
+            var a = WorldToCanvas(o.A, canvas, sim);
+            var b = WorldToCanvas(o.B, canvas, sim);
+            double width = o.HalfWidth * 2 * scale;
+            if (o.A.DistanceTo(o.B) < 0.01)
+            {
+                var circle = new Ellipse { Width = width, Height = width, Fill = brush };
+                Canvas.SetLeft(circle, a.X - width / 2);
+                Canvas.SetTop(circle, a.Y - width / 2);
+                canvas.Children.Add(circle);
+            }
+            else
+            {
+                canvas.Children.Add(new Line
+                {
+                    X1 = a.X, Y1 = a.Y, X2 = b.X, Y2 = b.Y,
+                    Stroke = brush, StrokeThickness = Math.Max(2, width),
+                    StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round
+                });
+            }
+        }
     }
 
     private static void DrawGrid(Canvas canvas, double w, double h, CombatSimulation sim)

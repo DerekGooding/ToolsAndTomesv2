@@ -1,3 +1,4 @@
+using ToolsAndTomes.Core.Instances;
 using ToolsAndTomes.Core.Definitions;
 
 namespace ToolsAndTomes.Core.Content;
@@ -76,6 +77,26 @@ public static class ContentValidator
                     errors.Add($"component '{e.Id}': not in a starter build and not unlocked by any material (unobtainable).");
             }
         }
+
+        // Obstacles
+        foreach (var o in catalog.Obstacles.Values)
+        {
+            string at = $"obstacle '{o.Id}'";
+            if (o.Shape == ObstacleShape.Circle && o.Radius <= 0) errors.Add($"{at}: a circle needs a radius.");
+            if (o.Shape == ObstacleShape.Wall && o.Thickness <= 0) errors.Add($"{at}: a wall needs a thickness.");
+            if (o.Durability < 1) errors.Add($"{at}: durability must be at least 1.");
+            if (o.Height == ObstacleHeight.Tall && o.CoverDice > 0) errors.Add($"{at}: Tall obstacles block line of fire; cover dice are for Low ones.");
+        }
+        if (catalog.Obstacles.Values.Count(o => o.IsRubble) > 1)
+            errors.Add("obstacles: only one obstacle type can be rubble.");
+        foreach (var a in catalog.Actions.Values.Where(a => a.RaisesObstacleId is not null))
+        {
+            if (!catalog.Obstacles.TryGetValue(a.RaisesObstacleId!, out var raised) || raised.Shape != ObstacleShape.Wall)
+                errors.Add($"action '{a.Id}': raises '{a.RaisesObstacleId}', which must be a wall obstacle.");
+            if (a.WallLength <= 0) errors.Add($"action '{a.Id}': a raised wall needs a wallLength.");
+        }
+        foreach (var enc in catalog.Encounters.Values)
+            ValidateLayout(catalog, enc, errors);
 
         // Tomes, hands, and spells
         foreach (var id in catalog.Rules.CoreSpellIds.Where(id => !catalog.Actions.ContainsKey(id)))
@@ -175,6 +196,56 @@ public static class ContentValidator
         return errors;
     }
 
+    /// <summary>
+    /// An encounter's obstacles: known, placeable types with the right points, inside the arena; no start position
+    /// overlaps an obstacle; and every enemy has a route to the player's start.
+    /// </summary>
+    private static void ValidateLayout(GameCatalog catalog, EncounterDefinition enc, List<string> errors)
+    {
+        if (enc.Obstacles.Count == 0)
+            return;
+        string at = $"encounter '{enc.Id}'";
+        var placed = new List<Obstacle>();
+        foreach (var (p, i) in enc.Obstacles.Select((p, i) => (p, i)))
+        {
+            if (!catalog.Obstacles.TryGetValue(p.Type, out var def))
+            {
+                errors.Add($"{at}: unknown obstacle '{p.Type}'.");
+                continue;
+            }
+            if (def.ConjuredOnly)
+                errors.Add($"{at}: '{p.Type}' is only raised by spells.");
+            bool shaped = def.Shape == ObstacleShape.Circle ? p.At is not null : p.From is not null && p.To is not null;
+            if (!shaped)
+            {
+                errors.Add($"{at}: obstacle {i + 1} ('{p.Type}') needs {(def.Shape == ObstacleShape.Circle ? "'at'" : "'from' and 'to'")}.");
+                continue;
+            }
+            var o = Obstacle.FromPlacement($"o{i}", def, p);
+            if (new[] { o.A, o.B }.Any(v => v.X < 0 || v.Y < 0 || v.X > enc.ArenaWidth || v.Y > enc.ArenaHeight))
+                errors.Add($"{at}: obstacle {i + 1} ('{p.Type}') lies outside the arena.");
+            placed.Add(o);
+        }
+
+        var terrain = new Simulation.Terrain(placed, enc.ArenaWidth, enc.ArenaHeight, catalog.Rules, catalog.Rubble);
+        var starts = new List<(string Who, Vec2 Where)> { ("the player's start", enc.PlayerStart) };
+        for (int i = 0; i < Campaign.MissionRun.MaxAllies; i++)
+            starts.Add(($"ally start {i + 1}", enc.AllyStart(i)));
+        starts.AddRange(enc.Enemies.Select((e, i) => ($"enemy {i + 1} ('{e.EnemyId}')", e.Position)));
+        foreach (var (who, where) in starts.Where(s => !terrain.IsFree(s.Where)))
+            errors.Add($"{at}: {who} at ({where.X}, {where.Y}) overlaps an obstacle.");
+
+        foreach (var (e, i) in enc.Enemies.Select((e, i) => (e, i)))
+        {
+            var path = terrain.FindPath(e.Position, enc.PlayerStart);
+            var legs = new[] { e.Position }.Concat(path).ToList();
+            bool reaches = path[^1].DistanceTo(enc.PlayerStart) < 0.01 &&
+                           legs.Zip(legs.Skip(1)).All(l => terrain.SegmentClear(l.First, l.Second));
+            if (!reaches)
+                errors.Add($"{at}: enemy {i + 1} ('{e.EnemyId}') has no route to the player's start.");
+        }
+    }
+
     private static bool RequiresItself(GameCatalog catalog, string origin, string current, HashSet<string> seen)
     {
         if (!seen.Add(current) || !catalog.Missions.TryGetValue(current, out var mission))
@@ -191,7 +262,8 @@ public static class ContentValidator
         IEnumerable<EncounterDefinition>? encounters = null,
         IEnumerable<ConsumableDefinition>? consumables = null,
         IEnumerable<MissionDefinition>? missions = null,
-        IEnumerable<PilotDefinition>? pilots = null)
+        IEnumerable<PilotDefinition>? pilots = null,
+        IEnumerable<ObstacleDefinition>? obstacles = null)
     {
         var errors = new List<string>();
         void Check(string kind, IEnumerable<string> ids) =>
@@ -206,6 +278,7 @@ public static class ContentValidator
         Check("consumable", (consumables ?? []).Select(c => c.Id));
         Check("mission", (missions ?? []).Select(m => m.Id));
         Check("pilot", (pilots ?? []).Select(p => p.Id));
+        Check("obstacle", (obstacles ?? []).Select(o => o.Id));
         return errors;
     }
 

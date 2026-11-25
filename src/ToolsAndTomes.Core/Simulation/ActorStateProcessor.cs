@@ -216,10 +216,18 @@ internal sealed class ActorStateProcessor
         if (destination is null)
             return new MovementResult(actor.Position, true, false);
 
-        var delta = destination.Value - actor.Position;
-        double travelNeeded = Math.Max(0, delta.Length - order.StopDistance);
+        // Walk the shortest route around obstacles. An approach stops once within range, unless line of fire is
+        // still blocked: then it keeps walking toward the target until it can see it.
+        var terrain = actor.Terrain;
+        var path = terrain.FindPath(actor.Position, destination.Value);
+        double pathLength = Terrain.PathLength(actor.Position, path);
+        bool needsSight = order.ForActionId is { } actionId &&
+                          actor.ActionsInMotion.FirstOrDefault(a => a.Id == actionId) is { } approaching &&
+                          ActionValidationRules.NeedsLineOfFire(approaching.Definition) &&
+                          !terrain.HasLineOfFire(actor.Position, destination.Value);
+        double travelNeeded = needsSight ? pathLength : Math.Max(0, pathLength - order.StopDistance);
         double step = Math.Min(actor.EffectiveMoveSpeed, travelNeeded);
-        var next = ClampToArena(actor.Position + delta.Normalized() * step);
+        var next = ClampToArena(Terrain.Walk(actor.Position, path, step));
 
         return new MovementResult(next, travelNeeded - step <= Epsilon, false);
     }

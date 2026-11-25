@@ -32,6 +32,9 @@ public sealed record EncounterDefinition
     }
 
     public IReadOnlyList<EnemyPlacement> Enemies { get; init; } = [];
+
+    /// <summary>The field's layout: pillars, rocks, walls, rubble, barricades.</summary>
+    public IReadOnlyList<ObstaclePlacement> Obstacles { get; init; } = [];
     public RewardTable Rewards { get; init; } = new();
 }
 

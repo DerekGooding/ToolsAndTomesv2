@@ -45,14 +45,18 @@ public sealed class CombatSimulation
     public IReadOnlyList<CombatEvent> Events => _events;
     public GameCatalog Catalog => _catalog;
 
+    /// <summary>The field's obstacles.</summary>
+    public Terrain Terrain { get; }
+
     public CombatSimulation(
         IEnumerable<Combatant> combatants,
         int seed = 1337,
         GameCatalog? catalog = null,
         DamageResolutionService? damageService = null,
         double arenaWidth = 24.0,
-        double arenaHeight = 14.0)
-        : this(combatants, new SeededRandom(seed), catalog, damageService, arenaWidth, arenaHeight)
+        double arenaHeight = 14.0,
+        IEnumerable<Obstacle>? obstacles = null)
+        : this(combatants, new SeededRandom(seed), catalog, damageService, arenaWidth, arenaHeight, obstacles)
     {
     }
 
@@ -62,14 +66,19 @@ public sealed class CombatSimulation
         GameCatalog? catalog = null,
         DamageResolutionService? damageService = null,
         double arenaWidth = 24.0,
-        double arenaHeight = 14.0)
+        double arenaHeight = 14.0,
+        IEnumerable<Obstacle>? obstacles = null)
     {
         _combatants.AddRange(combatants.OrderBy(c => c.Id, StringComparer.Ordinal));
         _rng = rng;
         _catalog = catalog ?? GameCatalog.Default;
         _damageService = damageService ?? new DamageResolutionService(_catalog.Rules);
+        Terrain = new Terrain(obstacles ?? [], arenaWidth, arenaHeight, _catalog.Rules, _catalog.Rubble);
         foreach (var c in _combatants)
+        {
             c.Rules = _catalog.Rules;
+            c.Terrain = Terrain;
+        }
         ArenaWidth = arenaWidth;
         ArenaHeight = arenaHeight;
         _stateProcessor = new ActorStateProcessor(_catalog, ArenaWidth, ArenaHeight);

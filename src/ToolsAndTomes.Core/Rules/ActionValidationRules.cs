@@ -121,6 +121,10 @@ public static class ActionValidationRules
         return ActionValidationResult.Valid;
     }
 
+    /// <summary>
+    /// Whether the action can be used from where the actor stands: in range and, for a direct attack on a Crest
+    /// or a point, with line of fire (no Tall obstacle between). Indirect attacks and ally/self spells need no line.
+    /// </summary>
     public static bool IsInRange(Combatant actor, ActionDefinition action, Combatant? target, Vec2? targetPoint)
     {
         if (action.Targeting == TargetingType.Self || action.Range <= 0)
@@ -130,6 +134,13 @@ public static class ActionValidationRules
         if (destination is null)
             return false;
 
-        return actor.Position.DistanceTo(destination.Value) <= action.Range + RangeEpsilon;
+        return actor.Position.DistanceTo(destination.Value) <= action.Range + RangeEpsilon &&
+               (!NeedsLineOfFire(action) || actor.Terrain.HasLineOfFire(actor.Position, destination.Value));
     }
+
+    /// <summary>Direct attacks on enemies or points need line of fire; indirect ones, ally spells, and self spells don't.</summary>
+    public static bool NeedsLineOfFire(ActionDefinition action) =>
+        !action.Indirect &&
+        action.Targeting is TargetingType.EnemyUnit or TargetingType.Point &&
+        action.RaisesObstacleId is null && action.BlinkDistance == 0 && action.DashDistance == 0;
 }

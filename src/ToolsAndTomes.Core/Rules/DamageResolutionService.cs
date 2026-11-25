@@ -96,47 +96,8 @@ public sealed class DamageResolutionService
                     target.ClearAegis();
             }
 
-            for (int p = 0; p < damagePoints && !target.IsDefeated; p++)
-            {
-                var rollResult = RollProtection(target.BonusProtectionDice, rng);
-                string diceText = string.Join(",", rollResult.Rolls);
-
-                if (rollResult.Saved)
-                {
-                    events.Add(new CombatEvent(
-                        beat,
-                        CombatEventType.DamageBlocked,
-                        target.Id,
-                        $"{target.Name} saved vs {hit.SourceActionName} (d6: [{diceText}]).",
-                        hit.SourceActorId));
-                    continue;
-                }
-
-                var component = SelectHitComponent(target);
-                if (component is null)
-                    break;
-
-                bool nowDisabled = component.ApplyDamage(1);
-                events.Add(new CombatEvent(
-                    beat,
-                    CombatEventType.ComponentDamaged,
-                    target.Id,
-                    $"{target.Name}'s {component.Definition.Name} damaged by {hit.SourceActionName} (d6: [{diceText}], {component.CurrentDurability}/{component.Definition.MaxDurability}).",
-                    hit.SourceActorId,
-                    1,
-                    ComponentInstanceId: component.InstanceId));
-
-                if (nowDisabled)
-                {
-                    events.Add(new CombatEvent(
-                        beat,
-                        CombatEventType.ComponentDisabled,
-                        target.Id,
-                        $"{target.Name}'s {component.Definition.Name} DISABLED! (Wit tax released: {component.Definition.WitTax}).",
-                        hit.SourceActorId,
-                        ComponentInstanceId: component.InstanceId));
-                }
-            }
+            // Partial cover: a Low obstacle the attack crossed near the target adds protection dice.
+            DealDamagePoints(target, damagePoints, target.BonusProtectionDice + hit.CoverDice, hit.SourceActionName, hit.SourceActorId, rng, beat, events);
 
             if (hit.PushDistance != 0 && !target.IsDefeated && !target.IsPinned)
             {
@@ -153,8 +114,10 @@ public sealed class DamageResolutionService
                     if (dir.Length < 0.01)
                         dir = new Vec2(1, 0);
 
-                    target.Position = (target.Position + dir * effectiveDist)
-                        .Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5);
+                    // The Crest slides until it would touch an obstacle.
+                    var wanted = (target.Position + dir * effectiveDist).Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5);
+                    var slide = target.Terrain.Sweep(target.Position, wanted);
+                    target.Position = slide.Stop;
                     anyDisplaced = true;
 
                     string verb = effectiveDist > 0 ? "pushed" : "pulled";
@@ -162,9 +125,13 @@ public sealed class DamageResolutionService
                         beat,
                         CombatEventType.CombatantDisplaced,
                         target.Id,
-                        $"{target.Name} {verb} {Math.Abs(effectiveDist)} by {hit.SourceActionName}.",
+                        $"{target.Name} {verb} {slide.Travelled:0.#} by {hit.SourceActionName}" +
+                        (slide.Hit is { } wall ? $", stopped by the {wall.Definition.Name}." : "."),
                         hit.SourceActorId,
                         Position: target.Position));
+
+                    if (slide.Hit is { } obstacle && slide.Shortfall > 0.05)
+                        Collide(target, obstacle, slide.Shortfall, hit, rng, beat, events);
                 }
             }
         }
@@ -185,6 +152,76 @@ public sealed class DamageResolutionService
     }
 
     /// <summary>Displacement resistance subtracts from the magnitude of a push or pull, never reversing it.</summary>
+    /// <summary>
+    /// A Crest slammed into an obstacle. A <b>hard</b> obstacle deals 1 damage per
+    /// <see cref="RulesConfig.CollisionShortfallPerDamage"/> inches of push cut short (rounded up), rolled and saved
+    /// like any damage. Either way, the obstacle takes the same damage; the shove's rubble keyword decides what a
+    /// destroyed obstacle leaves.
+    /// </summary>
+    private void Collide(Combatant target, Obstacle obstacle, double shortfall, IncomingHit hit, ISeededRandom rng, int beat, List<CombatEvent> events)
+    {
+        int damage = (int)Math.Ceiling(shortfall / Math.Max(0.1, _rules.CollisionShortfallPerDamage) - 1e-9);
+        if (damage <= 0)
+            return;
+
+        if (obstacle.Definition.Hard)
+        {
+            events.Add(new CombatEvent(beat, CombatEventType.Slammed, target.Id,
+                $"{target.Name} slammed into the {obstacle.Definition.Name} ({damage} collision damage).",
+                hit.SourceActorId, damage, Position: target.Position, ObstacleId: obstacle.Id));
+            DealDamagePoints(target, damage, target.BonusProtectionDice, $"a collision with the {obstacle.Definition.Name}", hit.SourceActorId, rng, beat, events);
+        }
+
+        target.Terrain.Damage(obstacle, damage, hit.LeavesRubble, $"{target.Name}'s collision", beat, hit.SourceActorId, events);
+    }
+
+    /// <summary>Rolls protection for each damage point; each failed save damages the first operational part in the Damage Order.</summary>
+    private void DealDamagePoints(Combatant target, int points, int bonusProtectionDice, string sourceName, string sourceActorId,
+        ISeededRandom rng, int beat, List<CombatEvent> events)
+    {
+        for (int p = 0; p < points && !target.IsDefeated; p++)
+        {
+            var rollResult = RollProtection(bonusProtectionDice, rng);
+            string diceText = string.Join(",", rollResult.Rolls);
+
+            if (rollResult.Saved)
+            {
+                events.Add(new CombatEvent(
+                    beat,
+                    CombatEventType.DamageBlocked,
+                    target.Id,
+                    $"{target.Name} saved vs {sourceName} (d6: [{diceText}]).",
+                    sourceActorId));
+                continue;
+            }
+
+            var component = SelectHitComponent(target);
+            if (component is null)
+                break;
+
+            bool nowDisabled = component.ApplyDamage(1);
+            events.Add(new CombatEvent(
+                beat,
+                CombatEventType.ComponentDamaged,
+                target.Id,
+                $"{target.Name}'s {component.Definition.Name} damaged by {sourceName} (d6: [{diceText}], {component.CurrentDurability}/{component.Definition.MaxDurability}).",
+                sourceActorId,
+                1,
+                ComponentInstanceId: component.InstanceId));
+
+            if (nowDisabled)
+            {
+                events.Add(new CombatEvent(
+                    beat,
+                    CombatEventType.ComponentDisabled,
+                    target.Id,
+                    $"{target.Name}'s {component.Definition.Name} DISABLED! (Wit tax released: {component.Definition.WitTax}).",
+                    sourceActorId,
+                    ComponentInstanceId: component.InstanceId));
+            }
+        }
+    }
+
     public static int EffectiveDisplacement(int pushDistance, int resistance) =>
         pushDistance > 0
             ? Math.Max(0, pushDistance - resistance)

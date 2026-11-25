@@ -18,6 +18,17 @@ public sealed record RulesConfig
     /// <summary>Spells every pilot knows and can cast in any Crest, with no component (one at a time).</summary>
     public IReadOnlyList<string> CoreSpellIds { get; init; } = ["spell_push", "spell_pull", "spell_square_summon", "spell_shape_fast_iron"];
 
+    // ---- Obstacles ----
+
+    /// <summary>A Crest's footprint around obstacles (Crests still pass through each other).</summary>
+    public double CrestRadius { get; init; } = 0.5;
+
+    /// <summary>A Low obstacle gives cover if it is on the line of fire within this distance of the defender.</summary>
+    public double CoverRange { get; init; } = 2;
+
+    /// <summary>Collision damage: 1 per this many inches of push cut short by a hard obstacle (rounded up).</summary>
+    public double CollisionShortfallPerDamage { get; init; } = 2;
+
     /// <summary>Hands every Crest has; extra limbs add more.</summary>
     public int BaseHands { get; init; } = 2;
 

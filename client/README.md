@@ -69,6 +69,8 @@ Everything the WPF tool does is now in the Godot client too. The WPF tool remain
 | Right-click | Move |
 | Action bar | Use an action: weapons, then tome spells (purple), then core spells (grey). Reactions light up during incoming impacts. |
 | Field ▾ | Shape fast-iron, use cargo, or swap a stowed handheld (Weapon Harness) into a hand |
+
+Terrain: grey stone (pillars, boulders, walls) blocks movement and shots; brown rubble and barricades only block movement, and give +1 protection die to a Crest right behind them. Moves path around obstacles automatically. Mortars, Storm Field, and Gravity Crush arc over walls. Push, Pull, and the Repulsor slam targets into stone for extra damage.
 | Space / `.` | Pause / step one beat while paused |
 | Tab | Next target |
 | WASD, Q/E, wheel, middle-drag | Pan (takes manual control), rotate, zoom, orbit/tilt the camera |

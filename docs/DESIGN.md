@@ -430,6 +430,147 @@ All demo balance numbers are re-measured afterwards with `--missions --allies al
 
 ---
 
+## 3c. Obstacles and Terrain [Implemented Nov 2026]
+
+Today the arena is an empty rectangle: nothing blocks movement or line of fire. This section adds obstacles. Items marked **(decided)** are the user's calls (Nov 2026). The review accepted the remaining proposals; the numbers will be tuned by playtesting.
+
+### Shapes (decided: circles and line walls)
+Two primitives, both measurable at a table with a tape and a template:
+- **Circle:** a pillar, rock, or post. A center and a radius.
+- **Wall:** a straight segment. Two endpoints and a thickness.
+
+**Proposed footprint for Crests:** today Crests are points. For obstacles only, a Crest is a **circle of radius 0.5**; it can't overlap an obstacle. Crests still pass through each other, as they do today.
+
+### Obstacle types (content: `obstacles.json`; numbers proposed)
+| Type | Shape | Height | Material | Durability | Cover | Notes |
+|---|---|---|---|---|---|---|
+| Stone Pillar | circle r 0.8 | Tall | Hard | 8 | — | Blocks line of fire |
+| Boulder | circle r 1.2 | Tall | Hard | 10 | — | Blocks line of fire |
+| Stone Wall | wall, thickness 0.5 | Tall | Hard | 10 per wall | — | Blocks line of fire |
+| Rubble | circle r 1.0 | Low | Soft | 4 | +1 die | Shots pass over it |
+| Barricade | wall, thickness 0.4 | Low | Soft | 5 | +1 die | Shots pass over it |
+| Iron Wall (conjured) | wall 3 long, thickness 0.4 | Tall | Hard | 4 | — | Iron Codex spell; lasts until destroyed or the fight ends |
+
+- **Tall** obstacles block line of fire. **Low** obstacles don't; they give partial cover.
+- **Hard** obstacles (stone, iron) deal collision damage. **Soft** ones (rubble, wood) only stop a Crest.
+- Every obstacle blocks movement.
+
+### Placement (decided: designed into encounters)
+- Encounters list their obstacles in `encounters.json`: `{ "type": "stone_wall", "from": {x,y}, "to": {x,y} }` or `{ "type": "boulder", "at": {x,y} }`.
+- The validator checks:
+  - every obstacle lies inside the arena;
+  - no start position overlaps an obstacle;
+  - every enemy can reach the lance.
+- Each demo encounter gets a layout (2–6 obstacles), and the demo is retuned afterwards.
+
+### Movement (decided: automatic pathfinding)
+- A move order finds the **shortest route around obstacles**. It's a path of straight legs, none passing within 0.5 of an obstacle. The route is recomputed when it gets blocked, for example by a new Iron Wall.
+- Speed, Wit, and following are unchanged. A Crest just walks the path instead of a straight line.
+- Approaching to use an action now stops when the Crest is **in range and has line of fire** (or the action is indirect).
+- **At the table:** "Move along straight legs, measuring each one. No leg may pass within 0.5" of an obstacle."
+- **Blink** teleports past obstacles but can't end inside one; it lands at the nearest free point short of the destination. **Dash** stops at the first obstacle, without collision damage.
+
+### Line of fire (decided: Tall obstacles block it; indirect attacks ignore it)
+- A **direct** action aimed at a Crest or a point needs a clear line from the attacker's center to the target's center: one that touches no Tall obstacle.
+  - It is checked when the action is ordered, as part of approaching, and again when the impact resolves.
+  - If the line is blocked at impact (the target stepped behind a wall), the attack **misses**: "no line of fire".
+- **Indirect (decided):** arcing or "from above" actions ignore line of fire and cover. Content gets an `indirect` flag. Proposed indirect actions: Siege Mortar, Storm Field, and Gravity Crush.
+- **Proposed:** ally-targeted spells (Ward Ally, Quick Mend) and self spells need no line of fire.
+- **Chain Lightning** needs a clear line for each jump.
+- **At the table:** "Stretch a string between the two Crests' centers. If it crosses a Tall obstacle, there is no line of fire."
+
+### Partial cover (decided)
+- When a direct attack's line of fire crosses a **Low** obstacle **within 2"** of the defender, the defender rolls that obstacle's cover dice (+1) as extra protection dice against that attack. The 2" figure is proposed.
+- Cover doesn't stack: the best single obstacle counts.
+- Indirect attacks ignore cover.
+
+### Displacement and collisions (decided: stops; hard obstacles hurt)
+- A push or pull moves the Crest along its line and **stops at the first obstacle** it would touch. The distance it didn't travel is the **shortfall**.
+- **Hard obstacle:** the Crest takes **1 damage per 2 inches of shortfall, rounded up** (a shortfall of 1–2 deals 1, 3–4 deals 2). Each point is rolled and saved like any damage point. The decision says "about 1 per 2 tiles"; rounding up is proposed.
+- **Soft obstacle:** the Crest just stops.
+- **Either way, the obstacle takes the same damage** (decided: collisions hit obstacles).
+- **At the table:** "Measure the push. If it meets an obstacle, stop there. Hard obstacle: 1 damage per 2" not travelled (round up), to both."
+
+### Destroying obstacles (decided: area attacks and collisions)
+- **Area attacks:** each hit of an area attack damages every obstacle its blast touches by the hit's base damage. No saves; obstacles don't roll protection.
+- **Collisions:** as above.
+- Obstacles **can't be targeted directly**, and blocked shots don't damage cover (decided).
+- An obstacle at 0 durability is destroyed: it no longer blocks or covers.
+- **Rubble depends on what destroyed it (decided).** Actions that can damage obstacles carry a **`leavesRubble`** keyword, and the destroying hit decides:
+  - With the keyword, the wreck becomes **Rubble in the same footprint**: Low, Soft, durability 3, cover +1. A wall leaves a line of rubble; a pillar leaves a mound.
+  - Without it, the wreck vanishes.
+  - **Proposed defaults:** Siege Mortar and the shoves (Push, Pull, Repulsor collisions) leave rubble. Storm Field and Dragon's Breath don't: lightning and flame shatter or melt.
+  - Rubble destroyed by anything simply vanishes.
+  - **At the table:** "If the hit that destroys an obstacle has *Leaves rubble*, replace it with rubble in the same footprint; otherwise remove it." 
+
+### Iron Wall (Iron Codex)
+| Spell | Beats | Cd | Range | Wit | Motes | Effect |
+|---|---|---|---|---|---|---|
+| Iron Wall | 2/1/1 | 12 | point 6 | 2 | 0 | Spends 2 fast-iron to raise a 3"-long Iron Wall centered on the point, square to the line from the caster. It is Tall and Hard, with durability 4, and lasts until destroyed or the fight ends. It can't overlap a Crest or another obstacle. |
+
+### AI (decided: seeks cover, shoves into walls; numbers proposed)
+- **Seeking cover:** a ranged Crest choosing where to stand (Artillery, Stormcaller, Skirmisher retreat, Kestrel) prefers a spot in range of its target with **a Low obstacle between them**. Failing that, it takes a spot beside a Tall obstacle that still has line of fire. It only moves if a covered spot is within one beat's walk.
+- **Shoving into walls:** before attacking, a Crest with Push, Pull, or a Repulsor checks whether a target in range would hit a **hard** obstacle within the push distance. If so, it uses that first.
+- **Pathing:** all AI moves pathfind. Melee Crests walk around walls to reach their targets.
+
+### Presentation (Godot)
+- Obstacles appear as primitives, like the placeholder Crests: Tall ones as stone cylinders, boxes, and walls; Low ones as short rubble mounds and barricades. Iron Walls are dark iron.
+- They crack as durability falls, and break apart when destroyed.
+- Move telegraphs draw the planned path as a dashed polyline.
+- The action bar marks actions with no line of fire ("No line of fire").
+- A covered defender shows a small shield icon. Collision damage floats up as "SLAMMED -2".
+
+### Implementation outline (after review)
+1. **Core:**
+   - obstacle definitions and instances on the simulation;
+   - geometry: segment–circle and segment–capsule intersection, and sweeps;
+   - a visibility-graph pathfinder over obstacles inflated by the Crest's 0.5;
+   - line of fire and cover;
+   - displacement collisions and obstacle damage;
+   - the `indirect` flag;
+   - Iron Wall.
+2. **Content:** `obstacles.json`, encounter layouts, the Iron Wall spell, validator checks.
+3. **Tests:** geometry, pathing around walls, LoF blocking and indirect fire, cover dice, collision damage to both sides, area damage to obstacles, Iron Wall, determinism.
+4. **AI:** cover seeking and wall shoves.
+5. **Godot:** obstacle rendering, path telegraphs, LoF and cover feedback. **WPF:** obstacles drawn in the 2D view.
+6. **Saves:** mission saves need no change, because obstacles exist only within a fight.
+7. **Rebalance** the demo region with layouts in place.
+
+### Review decisions (Nov 2026)
+1. **Crest footprint:** radius 0.5 for obstacles; Crests still pass through each other.
+2. **Ally and self spells** ignore line of fire.
+3. **Collision damage:** 1 per 2" of shortfall, rounded up, to both the Crest and the obstacle.
+4. **Rubble:** the destroying hit's `leavesRubble` keyword decides (see *Destroying obstacles*).
+5. **Gravity Crush** is indirect, with Siege Mortar and Storm Field.
+
+### As built (Nov 2026)
+- **Core:**
+  - `obstacles.json` holds the obstacle types. An `Obstacle` is a capsule: a segment plus a half-width, where a circle is a zero-length segment.
+  - `Terrain` handles line of fire, cover, free space, sweeps (slides that stop at obstacles), a shortest-path visibility graph over obstacles inflated by the Crest's 0.5 radius, damage and rubble, and raising walls.
+  - Every Crest holds a reference to the simulation's `Terrain`.
+- **Line of fire** is part of the range check: "in range" now means in range *and* able to see, for direct attacks. So approaching naturally walks until the target is visible, and reactions without line of fire are refused.
+- **Validator:** it checks layouts. Every type must be known and placeable, every obstacle inside the arena, no start position (player, ally, enemy) may overlap an obstacle, and every enemy needs a route to the player's start.
+- **AI (`TerrainTactics`):**
+  - The autopilot (the player's autopilot, allies, and Warlords) and the enemy AI use a shove first if it would slam the target into a hard obstacle.
+  - Ranged Crests (reach 5–6 or more) step into a covered spot within one beat's walk that still has line of fire.
+  - The AI doesn't cast Iron Wall yet.
+- **Layouts:** all seven demo encounters have terrain: boulders and rubble in the tutorial, a barricaded road, a walled chokepoint, a walled fort with a gate and barricade, a gatehouse, and the Warlord's flanking pillars and barricades.
+- **Balance** (autopilot, full lance, 200 seeds, Agile / Heavy), after adding a Skirmisher to Border Fort and a Stormcaller to the Gatehouse:
+
+  | Mission | Agile | Heavy | Average | Target |
+  |---|---|---|---|---|
+  | First Patrol | 100% | 100% | 100% | ~90%+ |
+  | Border Patrol | 73% | 50% | ~61% | 60–70% |
+  | The Warlord's Gate | 47% | 35% | ~41% | ~40% |
+
+  Fights last 38–150 beats; Heavy's finale fights run long.
+- **Presentation:**
+  - **Godot:** `ObstacleView` draws stone columns, boulders and walls, rubble mounds, timber barricades, and dark Iron Walls, which darken as durability falls. Move telegraphs draw the path. "SLAMMED -N", "WRECKED", and "IRON WALL" bursts float up.
+  - **WPF:** draws obstacles in the 2D view.
+- **Not yet:** a "no line of fire" mark on action buttons, a cover shield icon, and AI use of Iron Wall.
+
+---
+
 ## 4. Deferred Long-Term Concepts (Preserved in Architecture)
 
 - Inventor's Workshop beyond the Research Desk (Forge, Workbench, Crest Bays, Spell Lab, Storage). The Research Desk slice is implemented — see 3a.

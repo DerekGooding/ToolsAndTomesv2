@@ -1,0 +1,64 @@
+[
+  {
+    "id": "stone_pillar",
+    "name": "Stone Pillar",
+    "description": "A standing stone column. Blocks movement and line of fire; hard to be slammed into.",
+    "shape": "Circle",
+    "radius": 0.8,
+    "height": "Tall",
+    "hard": true,
+    "durability": 8
+  },
+  {
+    "id": "boulder",
+    "name": "Boulder",
+    "description": "A great rock. Blocks movement and line of fire; hard to be slammed into.",
+    "shape": "Circle",
+    "radius": 1.2,
+    "height": "Tall",
+    "hard": true,
+    "durability": 10
+  },
+  {
+    "id": "stone_wall",
+    "name": "Stone Wall",
+    "description": "A straight stone wall. Blocks movement and line of fire; hard to be slammed into.",
+    "shape": "Wall",
+    "thickness": 0.5,
+    "height": "Tall",
+    "hard": true,
+    "durability": 10
+  },
+  {
+    "id": "rubble",
+    "name": "Rubble",
+    "description": "A low heap of broken stone. Shots pass over it; a Crest hugging it gets +1 protection die. What wrecks become.",
+    "shape": "Circle",
+    "radius": 1.0,
+    "height": "Low",
+    "durability": 3,
+    "coverDice": 1,
+    "isRubble": true
+  },
+  {
+    "id": "barricade",
+    "name": "Barricade",
+    "description": "A low timber barricade. Shots pass over it; a Crest hugging it gets +1 protection die.",
+    "shape": "Wall",
+    "thickness": 0.4,
+    "height": "Low",
+    "durability": 5,
+    "coverDice": 1
+  },
+  {
+    "id": "iron_wall",
+    "name": "Iron Wall",
+    "description": "A wall of conjured fast-iron (Iron Codex). Blocks movement and line of fire; hard. Lasts until destroyed or the fight ends.",
+    "shape": "Wall",
+    "thickness": 0.4,
+    "height": "Tall",
+    "hard": true,
+    "durability": 4,
+    "conjuredOnly": true
+  }
+]

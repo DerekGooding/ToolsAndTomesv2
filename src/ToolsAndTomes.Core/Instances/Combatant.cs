@@ -66,6 +66,9 @@ public sealed class Combatant
 
     private RulesConfig _rules = RulesConfig.Default;
 
+    /// <summary>The field's obstacles (set by the simulation; an open field otherwise).</summary>
+    public Simulation.Terrain Terrain { get; set; } = Simulation.Terrain.Empty;
+
     // ---- Spell statuses (tomes) ----
 
     /// <summary>Extra protection dice from an ally's Bulwark, and the beats it lasts.</summary>

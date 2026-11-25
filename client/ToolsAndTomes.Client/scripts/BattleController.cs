@@ -62,6 +62,7 @@ public partial class BattleController : Node3D
     private BattleHud _hud = null!;
     private SoundBank _sounds = null!;
     private FeedbackView _feedback = null!;
+    private ObstacleView _obstacles = null!;
     private int _soundedEvents;
 
     /// <summary>Remaining hit-stop: a brief freeze of the beat clock on big hits (presentation only; rules unaffected).</summary>
@@ -118,6 +119,8 @@ public partial class BattleController : Node3D
         AddChild(_sounds);
         _feedback = new FeedbackView();
         AddChild(_feedback);
+        _obstacles = new ObstacleView();
+        AddChild(_obstacles);
 
         StartEncounter();
     }
@@ -214,6 +217,7 @@ public partial class BattleController : Node3D
         foreach (var view in _views.Values)
             view.Refresh(_sim, fraction, view.Crest.Id == _targetId);
         _telegraphs.Refresh(_sim, _views, fraction);
+        _obstacles.Refresh(_sim.Terrain);
         UpdateCameraFollow();
         _hud.Refresh(_sim, _player, Target(), fraction, _beatLength > BeatSeconds, _armedPointAction);
         _hud.ShowResult(_finished ? ResultHeadline() : null, _resultText, ContinueLabel, AllowRestart);
@@ -246,6 +250,7 @@ public partial class BattleController : Node3D
         foreach (var view in _views.Values)
             view.Refresh(_sim, 0, view.Crest.Id == _targetId);
         _telegraphs.Refresh(_sim, _views, 0);
+        _obstacles.Refresh(_sim.Terrain);
         UpdateCameraFollow();
         _hud.Refresh(_sim, _player, Target(), 0, false, null);
         CheckFinished();
@@ -315,6 +320,17 @@ public partial class BattleController : Node3D
 
         foreach (var e in events)
         {
+            // Obstacles: a wreck bursts; a raised Iron Wall pops up; collisions float "SLAMMED".
+            if (e.Type is CombatEventType.ObstacleDestroyed or CombatEventType.ObstacleRaised && e.Position is { } spot)
+            {
+                var at = Coords.ToWorld(spot, 1f);
+                bool raised = e.Type == CombatEventType.ObstacleRaised;
+                _feedback.Pop(at, (raised ? new Color(0.5f, 0.55f, 0.65f) : new Color(0.65f, 0.6f, 0.5f)) with { A = 0.7f }, raised ? 3.5f : 3f);
+                _feedback.Float(at + Vector3.Up * 1.6f, raised ? "IRON WALL" : "WRECKED", raised ? GuardColor : BreakColor, 0.85f, 1.4f);
+                shake = Math.Max(shake, 0.25f);
+                continue;
+            }
+
             if (!_views.TryGetValue(e.ActorId, out var view))
                 continue;
             bool firstOfKind = floated.Add((e.ActorId, e.Type));
@@ -365,6 +381,13 @@ public partial class BattleController : Node3D
 
                 case CombatEventType.CombatantBlinked when firstOfKind:
                     _feedback.Float(head, "BLINK", GuardColor, 0.7f, 0.8f);
+                    break;
+
+                case CombatEventType.Slammed:
+                    _feedback.Float(head + Vector3.Up * 0.3f, $"SLAMMED -{e.Value}", HurtColor, 1.1f, 1.4f);
+                    view.Hit(null, HurtColor, 1f);
+                    shake = Math.Max(shake, mine ? 0.55f : 0.35f);
+                    stop = Math.Max(stop, mine ? 0.1 : 0.06);
                     break;
 
                 case CombatEventType.Overheated when firstOfKind:

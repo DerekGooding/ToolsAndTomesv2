@@ -107,6 +107,18 @@ public sealed record ActionDefinition
     /// <summary>A harness swap: exchanges the stowed handheld with the held item named by the command.</summary>
     public bool IsSwap { get; init; }
 
+    // ---- Obstacles ----
+
+    /// <summary>Arcs or falls from above: needs no line of fire, and ignores cover.</summary>
+    public bool Indirect { get; init; }
+
+    /// <summary>An obstacle this action destroys becomes rubble (otherwise the wreck vanishes).</summary>
+    public bool LeavesRubble { get; init; }
+
+    /// <summary>Raises an obstacle of this type (a wall <see cref="WallLength"/> long, centered on the target point, square to the caster).</summary>
+    public string? RaisesObstacleId { get; init; }
+    public double WallLength { get; init; }
+
     [System.Text.Json.Serialization.JsonIgnore]
     public int TotalBeats => WindupBeats + ImpactBeats + RecoveryBeats;
 }

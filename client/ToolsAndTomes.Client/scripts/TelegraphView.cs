@@ -47,12 +47,19 @@ public partial class TelegraphView : MeshInstance3D
 
             if (crest.Movement is { } move)
             {
-                Vector3? dest = move.FollowActorId is { } id && views.TryGetValue(id, out var followed)
+                Vec2? dest = move.FollowActorId is { } id && sim.FindCombatant(id) is { } followed
                     ? followed.Position
-                    : move.Destination is { } d ? Coords.ToWorld(d) : null;
+                    : move.Destination;
                 if (dest is { } end)
                 {
-                    Dashed(view.Position + Vector3.Up * 0.05f, end + Vector3.Up * 0.05f, new Color(baseColor, 0.5f));
+                    // The planned route around obstacles, as a dashed polyline.
+                    var legStart = view.Position + Vector3.Up * 0.05f;
+                    foreach (var point in sim.Terrain.FindPath(Coords.ToTable(view.Position), end))
+                    {
+                        var legEnd = Coords.ToWorld(point, 0.05f);
+                        Dashed(legStart, legEnd, new Color(baseColor, 0.5f));
+                        legStart = legEnd;
+                    }
                     any = true;
                 }
             }

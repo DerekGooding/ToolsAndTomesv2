@@ -9,4 +9,6 @@ public sealed record IncomingHit(
     Vec2 SourcePosition,
     int DamagePoints,
     int PushDistance,
-    int InterruptionPower);
+    int InterruptionPower,
+    int CoverDice = 0,
+    bool LeavesRubble = false);

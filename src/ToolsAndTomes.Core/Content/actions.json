@@ -58,7 +58,8 @@
     ],
     "pushDistance": 2,
     "interruptionPower": 5,
-    "interruptionResistance": 4
+    "interruptionResistance": 4,
+    "leavesRubble": true
   },
   {
     "id": "weapon_talon",
@@ -137,7 +138,9 @@
     "hitCount": 1,
     "pushDistance": 2,
     "interruptionPower": 5,
-    "interruptionResistance": 2
+    "interruptionResistance": 2,
+    "indirect": true,
+    "leavesRubble": true
   },
   {
     "id": "defense_repulsor",
@@ -156,7 +159,8 @@
     "pushDistance": 4,
     "interruptionPower": 4,
     "interruptionResistance": 5,
-    "isReactive": true
+    "isReactive": true,
+    "leavesRubble": true
   },
   {
     "id": "defense_blink",
@@ -233,7 +237,8 @@
     "hitCount": 1,
     "pushDistance": 4,
     "interruptionPower": 3,
-    "interruptionResistance": 2
+    "interruptionResistance": 2,
+    "leavesRubble": true
   },
   {
     "id": "spell_pull",
@@ -251,7 +256,8 @@
     "hitCount": 1,
     "pushDistance": -4,
     "interruptionPower": 3,
-    "interruptionResistance": 2
+    "interruptionResistance": 2,
+    "leavesRubble": true
   },
   {
     "id": "spell_gravity_crush",
@@ -277,7 +283,8 @@
       }
     ],
     "interruptionPower": 5,
-    "interruptionResistance": 3
+    "interruptionResistance": 3,
+    "indirect": true
   },
   {
     "id": "spell_aegis",
@@ -464,7 +471,8 @@
     "areaRadius": 2,
     "damageType": "Electrical",
     "interruptionPower": 2,
-    "interruptionResistance": 3
+    "interruptionResistance": 3,
+    "indirect": true
   },
   {
     "id": "spell_quick_mend",
@@ -501,6 +509,25 @@
     "conjuresComponentId": "eq_iron_blade",
     "interruptionResistance": 1,
     "hitCount": 1
+  },
+  {
+    "id": "spell_iron_wall",
+    "name": "Iron Wall",
+    "description": "Iron Codex: spend 2 fast-iron to raise a 3\"-long Iron Wall (Tall, Hard, durability 4) centered on a point within 6, square to you. It lasts until destroyed or the fight ends.",
+    "category": "Spell",
+    "targeting": "Point",
+    "telegraph": "SpellWindup",
+    "windupBeats": 2,
+    "impactBeats": 1,
+    "recoveryBeats": 1,
+    "cooldownBeats": 12,
+    "range": 6,
+    "witReserve": 2,
+    "hitCount": 1,
+    "interruptionResistance": 2,
+    "fastIronSpent": 2,
+    "raisesObstacleId": "iron_wall",
+    "wallLength": 3
   },
   {
     "id": "harness_swap",

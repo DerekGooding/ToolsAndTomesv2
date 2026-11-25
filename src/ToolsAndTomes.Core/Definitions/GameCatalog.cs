@@ -19,6 +19,8 @@ public sealed class GameCatalog
         new Dictionary<string, MissionDefinition>();
     private static readonly IReadOnlyDictionary<string, PilotDefinition> NoPilots =
         new Dictionary<string, PilotDefinition>();
+    private static readonly IReadOnlyDictionary<string, ObstacleDefinition> NoObstacles =
+        new Dictionary<string, ObstacleDefinition>();
 
     public IReadOnlyDictionary<string, ActionDefinition> Actions { get; }
     public IReadOnlyDictionary<string, EquipmentDefinition> Equipment { get; }
@@ -31,6 +33,12 @@ public sealed class GameCatalog
 
     /// <summary>Named allied pilots (and their starting Crests) who can join the player's lance.</summary>
     public IReadOnlyDictionary<string, PilotDefinition> Pilots { get; }
+
+    /// <summary>Kinds of obstacle that encounters place and spells raise.</summary>
+    public IReadOnlyDictionary<string, ObstacleDefinition> Obstacles { get; }
+
+    /// <summary>What wrecks become when the destroying hit leaves rubble.</summary>
+    public ObstacleDefinition? Rubble => Obstacles.Values.FirstOrDefault(o => o.IsRubble);
     public RulesConfig Rules { get; }
 
     /// <summary>
@@ -49,7 +57,8 @@ public sealed class GameCatalog
         IReadOnlyDictionary<string, EncounterDefinition>? encounters = null,
         IReadOnlyDictionary<string, ConsumableDefinition>? consumables = null,
         IReadOnlyDictionary<string, MissionDefinition>? missions = null,
-        IReadOnlyDictionary<string, PilotDefinition>? pilots = null)
+        IReadOnlyDictionary<string, PilotDefinition>? pilots = null,
+        IReadOnlyDictionary<string, ObstacleDefinition>? obstacles = null)
     {
         Rules = rules ?? RulesConfig.Default;
         Actions = actions;
@@ -61,12 +70,13 @@ public sealed class GameCatalog
         Consumables = consumables ?? NoConsumables;
         Missions = missions ?? NoMissions;
         Pilots = pilots ?? NoPilots;
+        Obstacles = obstacles ?? NoObstacles;
         BaselineComponentIds = starterConfigurations.Values.SelectMany(c => c.ComponentIds).ToHashSet();
     }
 
     /// <summary>A copy of this catalog with different global rules.</summary>
     public GameCatalog WithRules(RulesConfig rules) =>
-        new(Actions, Equipment, StarterConfigurations, Enemies, rules, Materials, Encounters, Consumables, Missions, Pilots);
+        new(Actions, Equipment, StarterConfigurations, Enemies, rules, Materials, Encounters, Consumables, Missions, Pilots, Obstacles);
 
     public ActionDefinition GetAction(string id) => Actions[id];
     public EquipmentDefinition GetEquipment(string id) => Equipment[id];

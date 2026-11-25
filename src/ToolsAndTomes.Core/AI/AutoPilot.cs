@@ -98,8 +98,9 @@ public sealed class AutoPilot
             .Select(id => sim.Catalog.GetAction(id))
             .Where(a => a.Category is ActionCategory.Weapon or ActionCategory.Spell)
             .Where(a => !a.IsReactive && a.Targeting is TargetingType.EnemyUnit or TargetingType.Point)
-            .Where(a => !busyActions.Contains(a.Id))
-            .OrderByDescending(a => a.BaseDamage * a.HitCount)
+            .Where(a => !busyActions.Contains(a.Id) && a.RaisesObstacleId is null)
+            .OrderByDescending(a => TerrainTactics.WouldSlam(crest, a, target)) // shove into a wall first
+            .ThenByDescending(a => a.BaseDamage * a.HitCount)
             .ThenBy(a => a.Id, StringComparer.Ordinal);
 
         foreach (var action in candidates)
@@ -129,5 +130,9 @@ public sealed class AutoPilot
                         crest.ActionsInMotion.Any(a => a.Phase == ActionState.Moving);
         if (!legsBusy && reach > 0 && crest.Position.DistanceTo(target.Position) > reach && crest.FindLocomotionProvider() is not null)
             sim.IssueCommand(new MoveCommand(crest.Id, target.Position));
+        // A ranged build in reach steps into nearby cover.
+        else if (!legsBusy && reach >= 6 && crest.FindLocomotionProvider() is not null && !TerrainTactics.InCover(crest, target) &&
+                 TerrainTactics.FindCoverSpot(crest, target, reach) is { } cover)
+            sim.IssueCommand(new MoveCommand(crest.Id, cover));
     }
 }

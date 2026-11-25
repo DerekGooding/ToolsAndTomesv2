@@ -98,7 +98,8 @@ internal static class ActionEffectResolver
             var delta = dest - actor.Position;
             double dist = actor.IsPinned ? 0 : Math.Min(def.DashDistance, delta.Length);
             if (dist > 0.01)
-                actor.Position = (actor.Position + delta.Normalized() * dist).Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5);
+                actor.Position = actor.Terrain.Sweep(actor.Position,
+                    (actor.Position + delta.Normalized() * dist).Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5)).Stop; // a dash stops at walls
 
             events.Add(new CombatEvent(
                 beat,
@@ -124,7 +125,8 @@ internal static class ActionEffectResolver
                     ? actor.Position + delta.Normalized() * clampedDist
                     : actor.Position;
 
-                actor.Position = newPos.Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5);
+                // A blink teleports past obstacles but can't end inside one.
+                actor.Position = actor.Terrain.LastFreeAlong(actor.Position, newPos.Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5));
                 events.Add(new CombatEvent(
                     beat,
                     CombatEventType.CombatantBlinked,
@@ -159,6 +161,8 @@ internal static class ActionEffectResolver
         // An Arcane Amplifier lends tome and core spells +1 interruption power.
         int interruptionPower = def.InterruptionPower +
                                 (def.Category == ActionCategory.Spell && def.InterruptionPower > 0 && actor.Stats.HasSpellAmplifier ? 1 : 0);
+        DamageObstaclesInBlast(actor, active, allCombatants, beat, events);
+
         foreach (var target in targets)
         {
             ApplyDebuffs(def, target, actor, beat, events);
@@ -177,7 +181,9 @@ internal static class ActionEffectResolver
                     actor.Position,
                     damagePerHit,
                     i == 0 ? def.PushDistance : 0,
-                    interruptionPower));
+                    interruptionPower,
+                    def.Indirect ? 0 : actor.Terrain.CoverDice(actor.Position, target.Position),
+                    def.LeavesRubble));
             }
         }
 
@@ -219,6 +225,10 @@ internal static class ActionEffectResolver
             if (center is null && active.TargetActorId is not null)
                 center = allCombatants.FirstOrDefault(c => c.Id == active.TargetActorId)?.Position;
 
+            // A direct area attack needs line of fire to its center; an indirect one lands anywhere in range.
+            if (center is not null && ActionValidationRules.NeedsLineOfFire(def) && !actor.Terrain.HasLineOfFire(actor.Position, center.Value))
+                center = null;
+
             if (center is not null)
             {
                 foreach (var c in allCombatants)
@@ -237,7 +247,9 @@ internal static class ActionEffectResolver
         if (active.TargetActorId is not null)
         {
             var target = allCombatants.FirstOrDefault(c => c.Id == active.TargetActorId && !c.IsDefeated);
-            if (target is not null && actor.Position.DistanceTo(target.Position) <= def.Range + actor.Rules.ResolutionRangeTolerance)
+            // Line of fire is checked again at impact: a target that stepped behind a wall is missed.
+            if (target is not null && actor.Position.DistanceTo(target.Position) <= def.Range + actor.Rules.ResolutionRangeTolerance &&
+                (!ActionValidationRules.NeedsLineOfFire(def) || actor.Terrain.HasLineOfFire(actor.Position, target.Position)))
                 results.Add(target);
         }
 
@@ -247,7 +259,7 @@ internal static class ActionEffectResolver
             var last = results[^1];
             var next = allCombatants
                 .Where(c => !c.IsDefeated && c.Faction != actor.Faction && !results.Contains(c))
-                .Where(c => c.Position.DistanceTo(last.Position) <= def.ChainRange)
+                .Where(c => c.Position.DistanceTo(last.Position) <= def.ChainRange && actor.Terrain.HasLineOfFire(last.Position, c.Position))
                 .OrderBy(c => c.Position.DistanceTo(last.Position))
                 .ThenBy(c => c.Id, StringComparer.Ordinal)
                 .FirstOrDefault();
@@ -257,6 +269,24 @@ internal static class ActionEffectResolver
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Area attacks damage every obstacle their blast touches: each hit deals its base damage (no saves). The
+    /// action's <see cref="ActionDefinition.LeavesRubble"/> decides what a destroyed obstacle leaves.
+    /// </summary>
+    private static void DamageObstaclesInBlast(Combatant actor, ActiveAction active, IReadOnlyList<Combatant> all, int beat, List<CombatEvent> events)
+    {
+        var def = active.Definition;
+        if (def.AreaRadius <= 0 || def.BaseDamage <= 0)
+            return;
+        var center = active.TargetPoint ?? all.FirstOrDefault(c => c.Id == active.TargetActorId)?.Position;
+        if (center is null || (ActionValidationRules.NeedsLineOfFire(def) && !actor.Terrain.HasLineOfFire(actor.Position, center.Value)))
+            return;
+
+        int damage = def.BaseDamage * Math.Max(1, def.HitCount);
+        foreach (var obstacle in actor.Terrain.Obstacles.Where(o => o.DistanceTo(center.Value) <= def.AreaRadius).ToList())
+            actor.Terrain.Damage(obstacle, damage, def.LeavesRubble, $"{actor.Name}'s {def.Name}", beat, actor.Id, events);
     }
 
     /// <summary>Slow, windup delay, and pin on an enemy target (effects, so defenses don't save against them; evasion dodges them).</summary>
@@ -332,6 +362,37 @@ internal static class ActionEffectResolver
             events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
                 $"{actor.Name} conjured {conjuredDef.Name} into a free hand (until the fight ends).",
                 ComponentInstanceId: part.InstanceId));
+            return true;
+        }
+
+        if (def.RaisesObstacleId is { } obstacleId)
+        {
+            var terrain = actor.Terrain;
+            var at = active.TargetPoint ?? actor.Position;
+            bool ok = catalog.Obstacles.TryGetValue(obstacleId, out var wallDef);
+            Vec2 a = at, b = at;
+            if (ok)
+            {
+                // Square to the line from the caster, centered on the point.
+                var facing = (at - actor.Position).Normalized();
+                if (facing.Length < 0.01)
+                    facing = new Vec2(1, 0);
+                var along = new Vec2(-facing.Y, facing.X) * (def.WallLength / 2);
+                a = at - along;
+                b = at + along;
+                ok = terrain.WallFits(a, b, wallDef!.Thickness / 2, allCombatants.Where(c => !c.IsDefeated).Select(c => c.Position)) &&
+                     actor.TrySpendFastIron(def.FastIronSpent);
+            }
+            if (!ok)
+            {
+                events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+                    $"{actor.Name}'s {def.Name} fizzled: no room for the wall there, or not enough fast-iron ({def.FastIronSpent})."));
+                return true;
+            }
+
+            var wall = terrain.Add(wallDef!, a, b, wallDef!.Thickness / 2);
+            events.Add(new CombatEvent(beat, CombatEventType.ObstacleRaised, actor.Id,
+                $"{actor.Name} raised an {wallDef.Name}.", Position: at, ObstacleId: wall.Id));
             return true;
         }
 

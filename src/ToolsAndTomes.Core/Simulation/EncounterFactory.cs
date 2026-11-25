@@ -97,6 +97,10 @@ public static class EncounterFactory
                 def.PreferredRange));
         }
 
-        return new CombatSimulation(combatants, seed, catalog, arenaWidth: encounter.ArenaWidth, arenaHeight: encounter.ArenaHeight);
+        var obstacles = encounter.Obstacles
+            .Select((p, i) => Obstacle.FromPlacement($"obstacle_{i + 1}_{p.Type}", catalog.Obstacles[p.Type], p))
+            .ToList();
+        return new CombatSimulation(combatants, seed, catalog, arenaWidth: encounter.ArenaWidth, arenaHeight: encounter.ArenaHeight,
+            obstacles: obstacles);
     }
 }

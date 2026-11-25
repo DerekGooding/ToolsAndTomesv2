@@ -26,7 +26,13 @@ public enum CombatEventType
     OrderReplaced,
     FastIronProduced,
     FieldShaped,
-    AmmoRefilled
+    AmmoRefilled,
+    ObstacleDamaged,
+    ObstacleDestroyed,
+    ObstacleRaised,
+
+    /// <summary>A Crest was pushed or pulled into a hard obstacle (collision damage follows as ComponentDamaged).</summary>
+    Slammed
 }
 
 public sealed record CombatEvent(
@@ -39,4 +45,5 @@ public sealed record CombatEvent(
     InterruptionTier Interruption = InterruptionTier.None,
     Vec2? Position = null,
     string? ActionId = null,
-    string? ComponentInstanceId = null);
+    string? ComponentInstanceId = null,
+    string? ObstacleId = null);
