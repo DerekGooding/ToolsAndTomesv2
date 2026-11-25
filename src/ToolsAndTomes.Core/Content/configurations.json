@@ -31,7 +31,7 @@
   {
     "id": "cfg_heavy_anchor",
     "name": "Heavy Anchor Assembly",
-    "description": "Heavy build: a Heavy Aether Furnace, armor plating, Shield Generator, Repulsor, and Dragon's Breath, with a Titan Hammer and the Tome of Wards in its hands.",
+    "description": "Heavy build: a Heavy Aether Furnace, armor plating, Shield Generator, Repulsor, and Dragon's Breath, with a Titan Hammer and the Tome of Wards in its hands and a Talon on an Articulated Arm.",
     "componentIds": [
       "armor_heavy_plate",
       "eq_thermal_regulator",
@@ -39,6 +39,8 @@
       "eq_repulsor",
       "eq_shield_generator",
       "eq_titan",
+      "eq_talon",
+      "eq_articulated_arm",
       "mob_anchor_legs",
       "tome_wards",
       "core_aether_furnace"
@@ -53,6 +55,9 @@
         "actionId": "spell_aegis",
         "minIncomingDamage": 2
       }
+    ],
+    "holdings": [
+      { "held": 6, "holder": 7 }
     ]
   }
 ]

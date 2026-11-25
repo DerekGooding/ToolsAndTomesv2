@@ -51,7 +51,7 @@ public sealed class TraitAndWeightTests
         var heavy = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.HeavyAnchor, _catalog);
         var heavyStats = LoadoutRules.ComputeStats(heavy);
         Assert.AreEqual(150, heavyStats.LoadCapacity);
-        Assert.AreEqual(3, heavyStats.MoveSpeed, "181 weight on 150-rated legs: 31 over, under one 40-unit penalty step.");
+        Assert.AreEqual(2, heavyStats.MoveSpeed, "193 weight on 150-rated legs: 43 over, one 40-unit penalty step.");
 
         // Swap to light legs: badly overloaded, slowed but still mobile.
         var anchor = heavy.Installed.First(e => e.Definition.Id == "mob_anchor_legs");

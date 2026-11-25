@@ -183,6 +183,25 @@ public sealed class ObstacleTests
     }
 
     [TestMethod]
+    public void TheAutopilot_WallsOffARangedShooter_WithIronWall()
+    {
+        var caster = Plain(new Vec2(4, 7), parts: ["tome_iron_codex", "eq_talon", "mob_stride_legs", "core_aether_dynamo"]);
+        caster.Resources.AddFastIron(4);
+        var shooter = Plain(new Vec2(11, 7), "enemy", Faction.Enemy);
+        var sim = new CombatSimulation([caster, shooter], 1, _catalog, arenaWidth: 24, arenaHeight: 14);
+        var pilot = new AutoPilot();
+
+        for (int i = 0; i < 8 && sim.Terrain.Obstacles.Count == 0; i++)
+        {
+            pilot.Update(sim, caster, shooter);
+            sim.StepBeat();
+        }
+
+        Assert.AreEqual(1, sim.Terrain.Obstacles.Count, "an Iron Wall went up");
+        Assert.AreEqual("iron_wall", sim.Terrain.Obstacles[0].Definition.Id);
+    }
+
+    [TestMethod]
     public void ABlinkCantEndInsideAnObstacle()
     {
         var terrain = new Terrain([Circle("boulder", 10, 7)], 24, 14, _catalog.Rules, _catalog.Rubble);

@@ -273,10 +273,14 @@ public partial class BattleHud : CanvasLayer
             Vec2? point = a.Targeting == TargetingType.Point ? player.Position : null;
             bool valid = sim.ValidateUse(player, a, unit, point).IsValid;
             int cooldown = player.GetCooldown(a.Id);
-            return (Action: a, Valid: valid, Cooldown: cooldown);
+            // A direct attack on a target hidden behind a wall: pressing it walks until it can see.
+            bool noLine = a.Targeting == TargetingType.EnemyUnit && target is not null &&
+                          Core.Rules.ActionValidationRules.NeedsLineOfFire(a) &&
+                          !sim.Terrain.HasLineOfFire(player.Position, target.Position);
+            return (Action: a, Valid: valid, Cooldown: cooldown, NoLine: noLine);
         }).ToList();
 
-        string signature = string.Join("|", states.Select(s => $"{s.Action.Id}:{s.Valid}:{s.Cooldown}"));
+        string signature = string.Join("|", states.Select(s => $"{s.Action.Id}:{s.Valid}:{s.Cooldown}:{s.NoLine}"));
         if (signature == _actionBarSignature)
             return;
         _actionBarSignature = signature;
@@ -284,12 +288,12 @@ public partial class BattleHud : CanvasLayer
         foreach (var child in _actionBar.GetChildren())
             child.QueueFree();
 
-        foreach (var (action, valid, cooldown) in states)
+        foreach (var (action, valid, cooldown, noLine) in states)
         {
             string cost = (action.WitReserve > 0 ? $" W{action.WitReserve}" : "") + (action.MoteCost > 0 ? $" M{action.MoteCost}" : "");
             var button = new Button
             {
-                Text = $"{action.Name}{cost}{(cooldown > 0 ? $" ({cooldown}s)" : "")}",
+                Text = $"{action.Name}{cost}{(cooldown > 0 ? $" ({cooldown}s)" : "")}{(noLine ? " · no line" : "")}",
                 Disabled = !valid,
                 TooltipText = $"{action.Description}\nRange {action.Range} | {action.WindupBeats}/{action.ImpactBeats}/{action.RecoveryBeats} beats",
                 FocusMode = Control.FocusModeEnum.None
@@ -307,7 +311,11 @@ public partial class BattleHud : CanvasLayer
             else if (action.Category == ActionCategory.Spell)
                 button.Modulate = new Color(0.85f, 0.7f, 1f);
             button.TooltipText = (core.Contains(action.Id) ? "Core spell (every pilot knows it)\n"
-                                  : action.Category == ActionCategory.Spell ? $"Tome spell\n" : "") + button.TooltipText;
+                                  : action.Category == ActionCategory.Spell ? $"Tome spell\n" : "") + button.TooltipText +
+                                 (action.Indirect ? "\nIndirect: arcs over walls and ignores cover." : "") +
+                                 (noLine ? "\nNO LINE OF FIRE to the target: your Crest will walk until it can see it." : "");
+            if (noLine)
+                button.Modulate = button.Modulate * new Color(1f, 0.75f, 0.55f);
             button.Pressed += () => ActionPressed?.Invoke(action);
             _actionBar.AddChild(button);
         }

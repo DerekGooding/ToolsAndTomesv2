@@ -71,7 +71,8 @@ public partial class CrestView : Node3D
     }
 
     /// <summary>Refreshes the view from the simulation (called every frame).</summary>
-    public void Refresh(CombatSimulation sim, double beatFraction, bool selected)
+    /// <param name="cover">Protection dice this Crest gets from cover against its likely attacker (shown on its label).</param>
+    public void Refresh(CombatSimulation sim, double beatFraction, bool selected, int cover = 0)
     {
         var from = Crest.Position;
         var to = sim.ProjectEndOfBeatPosition(Crest);
@@ -95,7 +96,8 @@ public partial class CrestView : Node3D
         string? activity = Crest.IsDefeated
             ? "DEFEATED"
             : Crest.CurrentAction is { Phase: not ActionState.Moving } act ? $"{act.Phase}: {act.Definition.Name}" : null;
-        _label.Text = $"{name} {working}/{Crest.Loadout.Installed.Count}" + (activity is null ? "" : $"\n{activity}");
+        _label.Text = $"{name} {working}/{Crest.Loadout.Installed.Count}" + (cover > 0 && !Crest.IsDefeated ? "  · in cover" : "") +
+                      (activity is null ? "" : $"\n{activity}");
         _label.Modulate = Crest.IsDefeated ? new Color(0.5f, 0.5f, 0.5f) : Colors.White;
     }
 

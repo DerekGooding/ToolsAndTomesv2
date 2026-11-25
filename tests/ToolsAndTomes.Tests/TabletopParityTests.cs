@@ -44,28 +44,28 @@ public sealed class TabletopParityTests
     [TestMethod]
     public void WitCollapse_DropsNewestCommitments_WhenAWitGrantingComponentIsDestroyed()
     {
-        // Heavy Anchor: Wit 12 (10 with a tome + Furnace 2), tax 7 → 5 available.
+        // Heavy Anchor: Wit 12 (10 with a tome + Furnace 2), tax 9 → 3 available.
         var player = CreatePlayer(ConfigurationCatalog.HeavyAnchor, new Vec2(5, 5), startingMotes: 3);
         var enemy = CreateEnemy("enemy_bruiser", new Vec2(7, 5));
         var sim = new CombatSimulation([player, enemy], new FixedRandom(6));
 
         sim.IssueCommand(new UseActionCommand(player.Id, "weapon_titan", enemy.Id));          // 2 Wit
         sim.IssueCommand(new UseActionCommand(player.Id, "weapon_dragons_breath", enemy.Id)); // 1 Wit
-        sim.IssueCommand(new UseActionCommand(player.Id, "spell_push", enemy.Id));            // 1 Wit
+        sim.IssueCommand(new UseActionCommand(player.Id, "spell_push", enemy.Id));            // 1 Wit: none left, so it can't start
         sim.StepBeat();
-        Assert.AreEqual(4, player.Resources.ReservedWit);
+        Assert.AreEqual(3, player.Resources.ReservedWit);
 
-        // A backup core keeps the Crest alive; then the Furnace (+2 Wit) is destroyed: 1 Wit short.
+        // A backup core keeps the Crest alive; then the Furnace (+2 Wit) is destroyed: 2 Wit short.
         player.Loadout.Install(new EquipmentInstance("backup_core", _catalog.GetEquipment("core_aether_dynamo")));
         var furnace = player.Loadout.Installed.First(e => e.Definition.Id == "core_aether_furnace");
         furnace.ApplyDamage(furnace.Definition.MaxDurability);
-        Assert.AreEqual(-1, player.Stats.AvailableWit(player.Resources.ReservedWit));
+        Assert.AreEqual(-2, player.Stats.AvailableWit(player.Resources.ReservedWit));
 
         var dropped = player.EnforceWitBudget();
 
-        Assert.AreEqual(0, player.Stats.AvailableWit(player.Resources.ReservedWit));
-        CollectionAssert.AreEqual(new[] { "Kinetic Push" }, dropped, "Newest commitments drop first.");
-        Assert.HasCount(2, player.ActionsInMotion);
+        Assert.IsGreaterThanOrEqualTo(0, player.Stats.AvailableWit(player.Resources.ReservedWit));
+        CollectionAssert.AreEqual(new[] { "Dragon's Breath", "Titan Cleave" }, dropped, "Newest commitments drop first.");
+        Assert.IsEmpty(player.ActionsInMotion.Where(a => a.Phase is ActionState.Windup or ActionState.Executing).ToList());
     }
 
     /// <summary>

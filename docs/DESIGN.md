@@ -553,21 +553,24 @@ Two primitives, both measurable at a table with a tape and a template:
 - **AI (`TerrainTactics`):**
   - The autopilot (the player's autopilot, allies, and Warlords) and the enemy AI use a shove first if it would slam the target into a hard obstacle.
   - Ranged Crests (reach 5–6 or more) step into a covered spot within one beat's walk that still has line of fire.
-  - The AI doesn't cast Iron Wall yet.
+  - **Iron Wall:** an autopiloted Crest holding the Iron Codex, with fast-iron to spare, raises a wall 1.6" toward the nearest ranged enemy that has a clear shot from more than 3" away, if it isn't already in cover and the wall fits.
 - **Layouts:** all seven demo encounters have terrain: boulders and rubble in the tutorial, a barricaded road, a walled chokepoint, a walled fort with a gate and barricade, a gatehouse, and the Warlord's flanking pillars and barricades.
-- **Balance** (autopilot, full lance, 200 seeds, Agile / Heavy), after adding a Skirmisher to Border Fort and a Stormcaller to the Gatehouse:
+- **Balance** (autopilot, full lance, 200 seeds, Agile / Heavy). Changes made to hit the targets:
+  - a Skirmisher added to Border Fort and a Stormcaller to the Gatehouse;
+  - **Heavy Anchor gets its Talon back on an Articulated Arm**: since the hand limit it had only short-range weapons, and its fights dragged on chasing ranged enemies in cover. That raises its weight to 193 on 150-rated legs, so its speed is now 2;
+  - **the Warlord's Gate arena tightened from 26" to 22"**, with the enemies closer and an Artillery Crest added.
 
   | Mission | Agile | Heavy | Average | Target |
   |---|---|---|---|---|
   | First Patrol | 100% | 100% | 100% | ~90%+ |
-  | Border Patrol | 73% | 50% | ~61% | 60–70% |
-  | The Warlord's Gate | 47% | 35% | ~41% | ~40% |
+  | Border Patrol | 73% | 66% | ~70% | 60–70% |
+  | The Warlord's Gate | 49% | 35% | ~42% | ~40% |
 
-  Fights last 38–150 beats; Heavy's finale fights run long.
+  Average beats per fight: First Patrol 38–48, Border Patrol 84–113, the finale 125–134. Heavy's finale fell from about 150 beats but is still above the 60–120 target: the slow Heavy build walks a lot. A person who can pause should play faster than the autopilot.
 - **Presentation:**
   - **Godot:** `ObstacleView` draws stone columns, boulders and walls, rubble mounds, timber barricades, and dark Iron Walls, which darken as durability falls. Move telegraphs draw the path. "SLAMMED -N", "WRECKED", and "IRON WALL" bursts float up.
   - **WPF:** draws obstacles in the 2D view.
-- **Not yet:** a "no line of fire" mark on action buttons, a cover shield icon, and AI use of Iron Wall.
+  - **Line of fire and cover in battle:** an action button whose target is hidden reads "· no line" (tinted orange), and its tooltip explains that the Crest will walk until it can see. Indirect actions say so in their tooltips. A Crest in cover from its likely attacker shows "· in cover" on its label: for enemies that means cover from your Crest, for the lance cover from the nearest enemy.
 
 ---
 

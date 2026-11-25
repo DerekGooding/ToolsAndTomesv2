@@ -168,7 +168,7 @@ public partial class BattleController : Node3D
 
         // Draw the fight once now, so its first frame isn't the un-laid-out scene.
         foreach (var view in _views.Values)
-            view.Refresh(_sim, 0, view.Crest.Id == _targetId);
+            view.Refresh(_sim, 0, view.Crest.Id == _targetId, CoverOf(view.Crest));
         _telegraphs.Refresh(_sim, _views, 0);
         _hud.Refresh(_sim, _player, Target(), 0, false, null);
     }
@@ -215,7 +215,7 @@ public partial class BattleController : Node3D
 
         double fraction = Math.Clamp(_beatElapsed / _beatLength, 0, 1);
         foreach (var view in _views.Values)
-            view.Refresh(_sim, fraction, view.Crest.Id == _targetId);
+            view.Refresh(_sim, fraction, view.Crest.Id == _targetId, CoverOf(view.Crest));
         _telegraphs.Refresh(_sim, _views, fraction);
         _obstacles.Refresh(_sim.Terrain);
         UpdateCameraFollow();
@@ -248,7 +248,7 @@ public partial class BattleController : Node3D
             AdvanceBeat();
 
         foreach (var view in _views.Values)
-            view.Refresh(_sim, 0, view.Crest.Id == _targetId);
+            view.Refresh(_sim, 0, view.Crest.Id == _targetId, CoverOf(view.Crest));
         _telegraphs.Refresh(_sim, _views, 0);
         _obstacles.Refresh(_sim.Terrain);
         UpdateCameraFollow();
@@ -407,6 +407,21 @@ public partial class BattleController : Node3D
             _camera.Shake(shake);
         if (!Autoplay || AutoplayBeatsPerFrame == 0)
             _hitStop = Math.Max(_hitStop, stop);
+    }
+
+    /// <summary>
+    /// Cover a Crest has against its likely attacker: an enemy against your Crest's shots, a lance member against
+    /// the nearest enemy.
+    /// </summary>
+    private int CoverOf(Combatant crest)
+    {
+        if (crest.IsDefeated)
+            return 0;
+        Combatant? attacker = crest.Faction == Faction.Enemy
+            ? (_player.IsDefeated ? null : _player)
+            : _sim.Combatants.Where(c => c.Faction == Faction.Enemy && !c.IsDefeated)
+                .OrderBy(c => c.Position.DistanceTo(crest.Position)).FirstOrDefault();
+        return attacker is null ? 0 : _sim.Terrain.CoverDice(attacker.Position, crest.Position);
     }
 
     private Combatant? Target() =>

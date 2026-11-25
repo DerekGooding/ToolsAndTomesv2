@@ -163,16 +163,17 @@
   {
     "id": "enc_bm_warlord",
     "name": "The Warlord's Gate",
-    "description": "Gatewarden Kastor stands in the gate: plated, holding the Tome of Force, with a hammer in hand and a blade on a third arm, firing all at once. Two Stormcallers rain lightning on your tomes while a Skyblade hunts stragglers.",
-    "arenaWidth": 26,
+    "description": "Gatewarden Kastor stands in the gate: plated, holding the Tome of Force, with a hammer in hand and a blade on a third arm, firing all at once. Two Stormcallers rain lightning on your tomes, an Artillery Crest shells the gate, and a Skyblade hunts stragglers.",
+    "arenaWidth": 22,
     "arenaHeight": 14,
     "playerStart": { "x": 4, "y": 7 },
     "playerStartingMotes": 2,
     "enemies": [
-      { "enemyId": "enemy_warlord", "position": { "x": 16, "y": 7 }, "startingMotes": 2 },
-      { "enemyId": "enemy_stormcaller", "position": { "x": 21, "y": 3 }, "startingMotes": 1 },
-      { "enemyId": "enemy_stormcaller", "position": { "x": 21, "y": 11 }, "startingMotes": 1 },
-      { "enemyId": "enemy_skyblade", "position": { "x": 15, "y": 3 }, "startingMotes": 1 }
+      { "enemyId": "enemy_warlord", "position": { "x": 14, "y": 7 }, "startingMotes": 2 },
+      { "enemyId": "enemy_stormcaller", "position": { "x": 18.5, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_stormcaller", "position": { "x": 18.5, "y": 11 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skyblade", "position": { "x": 13, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_artillery", "position": { "x": 20, "y": 7 }, "startingMotes": 1 }
     ],
     "rewards": {
       "guaranteed": [ { "materialId": "mat_bastion_ore", "count": 1 } ],
@@ -184,11 +185,11 @@
       ]
     },
     "obstacles": [
-      { "type": "stone_pillar", "at": { "x": 12, "y": 4 } },
-      { "type": "stone_pillar", "at": { "x": 12, "y": 10 } },
-      { "type": "barricade", "from": { "x": 19.5, "y": 1.5 }, "to": { "x": 19.5, "y": 4.5 } },
-      { "type": "barricade", "from": { "x": 19.5, "y": 9.5 }, "to": { "x": 19.5, "y": 12.5 } },
-      { "type": "rubble", "at": { "x": 8, "y": 7 } }
+      { "type": "stone_pillar", "at": { "x": 10, "y": 4 } },
+      { "type": "stone_pillar", "at": { "x": 10, "y": 10 } },
+      { "type": "barricade", "from": { "x": 17, "y": 1.5 }, "to": { "x": 17, "y": 4.5 } },
+      { "type": "barricade", "from": { "x": 17, "y": 9.5 }, "to": { "x": 17, "y": 12.5 } },
+      { "type": "rubble", "at": { "x": 7, "y": 7 } }
     ]
   },
   {

@@ -32,6 +32,7 @@ public sealed class AutoPilot
                 continue;
 
             Combatant? ally = null;
+            Vec2? point = null;
             bool cast = false;
             if (action.Targeting == TargetingType.AllyUnit && action.AegisBlocks > 0)
             {
@@ -59,9 +60,15 @@ public sealed class AutoPilot
             {
                 cast = crest.TotalFastIron > action.FastIronSpent; // keep one fast-iron in hand for repairs
             }
+            else if (action.RaisesObstacleId is not null && crest.TotalFastIron > action.FastIronSpent &&
+                     IronWallSpot(sim, crest, action) is { } spot)
+            {
+                point = spot;
+                cast = true;
+            }
 
-            if (cast && sim.ValidateUse(crest, action, ally, null).IsValid &&
-                sim.IssueCommand(new UseActionCommand(crest.Id, action.Id, ally?.Id)).IsValid)
+            if (cast && sim.ValidateUse(crest, action, ally, point).IsValid &&
+                sim.IssueCommand(new UseActionCommand(crest.Id, action.Id, ally?.Id, point)).IsValid)
             {
                 spent += action.WitReserve;
                 busy.Add(action.Id);
@@ -69,6 +76,34 @@ public sealed class AutoPilot
         }
 
         return spent;
+    }
+
+    /// <summary>
+    /// Where to raise an Iron Wall: between the caster and the nearest ranged enemy that has a clear shot at it from
+    /// more than 3" away, when the caster isn't already in cover. Null when there's no such threat or no room.
+    /// </summary>
+    private static Vec2? IronWallSpot(CombatSimulation sim, Combatant crest, ActionDefinition action)
+    {
+        var terrain = crest.Terrain;
+        var shooter = sim.Combatants
+            .Where(c => c.Faction != crest.Faction && !c.IsDefeated && c.Position.DistanceTo(crest.Position) > 3 &&
+                        TerrainTactics.Reach(sim, c) >= c.Position.DistanceTo(crest.Position) &&
+                        terrain.HasLineOfFire(c.Position, crest.Position))
+            .OrderBy(c => c.Position.DistanceTo(crest.Position))
+            .ThenBy(c => c.Id, StringComparer.Ordinal)
+            .FirstOrDefault();
+        if (shooter is null || TerrainTactics.InCover(crest, shooter) ||
+            !sim.Catalog.Obstacles.TryGetValue(action.RaisesObstacleId!, out var wall))
+            return null;
+
+        // 1.6" toward the shooter, square to that line (as the spell raises it).
+        var facing = (shooter.Position - crest.Position).Normalized();
+        var spot = crest.Position + facing * 1.6;
+        var along = new Vec2(-facing.Y, facing.X) * (action.WallLength / 2);
+        bool fits = spot.DistanceTo(crest.Position) <= action.Range &&
+                    terrain.WallFits(spot - along, spot + along, wall.Thickness / 2,
+                        sim.Combatants.Where(c => !c.IsDefeated).Select(c => c.Position));
+        return fits ? spot : null;
     }
 
     /// <param name="target">The enemy to fight; the nearest living enemy when omitted.</param>
