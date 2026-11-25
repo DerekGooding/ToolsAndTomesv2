@@ -20,6 +20,14 @@ public partial class CrestView : Node3D
     private MeshInstance3D _selection = null!;
     private string _builtSignature = "";
 
+    // Hit feedback (presentation only). Flashes are keyed by component instance id ("" = the whole Crest),
+    // so they survive the rebuild that follows a part being disabled.
+    private const float FlashSeconds = 0.22f;
+    private readonly Dictionary<string, List<StandardMaterial3D>> _partMaterials = [];
+    private readonly Dictionary<string, (float Time, Color Color)> _flashes = [];
+    private float _recoil;
+    private float _defeat;
+
     public Combatant Crest { get; private set; } = null!;
 
     public void Bind(Combatant crest)
@@ -33,10 +41,10 @@ public partial class CrestView : Node3D
         _label = new Label3D
         {
             Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-            PixelSize = 0.008f,
+            PixelSize = 0.0055f,
             FontSize = 40,
-            OutlineSize = 10,
-            Position = new Vector3(0, 2.6f, 0),
+            OutlineSize = 12,
+            Position = new Vector3(0, 2.5f, 0),
             NoDepthTest = true
         };
         AddChild(_label);
@@ -76,17 +84,76 @@ public partial class CrestView : Node3D
         if (signature != _builtSignature)
             Rebuild();
 
-        _aegis.Visible = Crest.HasActiveAegis;
+        _aegis.Visible = Crest.HasActiveAegis || _flashes.ContainsKey(AegisKey);
         _selection.Visible = selected && !Crest.IsDefeated;
         _body.Visible = true;
         Scale = Crest.IsEvading ? new Vector3(1f, 0.85f, 1f) : Vector3.One;
 
+        // Compact: the name and working parts; a second line only while an action is under way.
         int working = Crest.Loadout.Installed.Count(e => e.IsOperational);
-        string activity = Crest.IsDefeated
+        string name = Crest.Id == EncounterFactory.PlayerCombatantId ? "You" : Crest.Name;
+        string? activity = Crest.IsDefeated
             ? "DEFEATED"
-            : Crest.CurrentAction is { } act ? $"{act.Phase}: {act.Definition.Name}" : Crest.State.ToString();
-        _label.Text = $"{Crest.Name} [{working}/{Crest.Loadout.Installed.Count}]\n{activity}";
+            : Crest.CurrentAction is { Phase: not ActionState.Moving } act ? $"{act.Phase}: {act.Definition.Name}" : null;
+        _label.Text = $"{name} {working}/{Crest.Loadout.Installed.Count}" + (activity is null ? "" : $"\n{activity}");
         _label.Modulate = Crest.IsDefeated ? new Color(0.5f, 0.5f, 0.5f) : Colors.White;
+    }
+
+    private const string AegisKey = "aegis";
+
+    /// <summary>A part (or, with no id, the whole Crest) was struck: flash it and jolt the body back.</summary>
+    public void Hit(string? componentInstanceId, Color color, float recoil)
+    {
+        _flashes[componentInstanceId ?? ""] = (FlashSeconds, color);
+        _recoil = Mathf.Max(_recoil, recoil);
+    }
+
+    /// <summary>The Aegis absorbed a hit: flash the barrier.</summary>
+    public void AegisFlash() => _flashes[AegisKey] = (FlashSeconds * 1.5f, new Color(0.5f, 1f, 0.85f));
+
+    public override void _Process(double delta)
+    {
+        if (Crest is null)
+            return;
+        float dt = (float)delta;
+
+        foreach (var key in _flashes.Keys.ToList())
+        {
+            var (time, color) = _flashes[key];
+            time -= dt;
+            if (time <= 0)
+                _flashes.Remove(key);
+            else
+                _flashes[key] = (time, color);
+        }
+
+        foreach (var (key, materials) in _partMaterials)
+        {
+            float energy = 0;
+            Color color = Colors.White;
+            if (_flashes.TryGetValue(key, out var own)) { energy = own.Time / FlashSeconds; color = own.Color; }
+            else if (_flashes.TryGetValue("", out var all)) { energy = all.Time / FlashSeconds * 0.6f; color = all.Color; }
+            foreach (var material in materials)
+            {
+                material.EmissionEnabled = energy > 0;
+                material.Emission = color;
+                material.EmissionEnergyMultiplier = energy * 3f;
+            }
+        }
+
+        if (_aegis.MaterialOverride is StandardMaterial3D shield)
+            shield.AlbedoColor = shield.AlbedoColor with { A = _flashes.TryGetValue(AegisKey, out var a) ? 0.18f + a.Time * 1.6f : 0.18f };
+
+        // Recoil: the body jolts backward and springs back.
+        _recoil = Mathf.Max(0f, _recoil - dt * 4f);
+        // Defeat: the Crest slumps forward and sinks over about half a second.
+        if (Crest.IsDefeated)
+            _defeat = Mathf.Min(1f, _defeat + dt * 2f);
+        else
+            _defeat = 0f;
+        float ease = 1f - (1f - _defeat) * (1f - _defeat);
+        _body.Position = new Vector3(0, -0.45f * ease, -0.35f * _recoil * _recoil);
+        _body.Rotation = new Vector3(Mathf.DegToRad(28f) * ease, 0, Mathf.DegToRad(-12f) * ease);
     }
 
     private void FaceToward(CombatSimulation sim, Vec2 moveTarget)
@@ -111,6 +178,7 @@ public partial class CrestView : Node3D
     {
         foreach (var child in _body.GetChildren())
             child.QueueFree();
+        _partMaterials.Clear();
 
         var faction = Coords.CrestColor(Crest);
         int weaponSide = 0, armorIndex = 0, utilityIndex = 0;
@@ -131,7 +199,7 @@ public partial class CrestView : Node3D
 
                 case ComponentCategory.Mobility when def.IsLocomotion:
                     // Two legs per locomotion component.
-                    AddPart(new CylinderMesh { TopRadius = 0.12f, BottomRadius = 0.18f, Height = 0.9f }, new Vector3(-0.3f, 0.45f, 0), color);
+                    AddPart(new CylinderMesh { TopRadius = 0.12f, BottomRadius = 0.18f, Height = 0.9f }, new Vector3(-0.3f, 0.45f, 0), color, part.InstanceId);
                     mesh = new CylinderMesh { TopRadius = 0.12f, BottomRadius = 0.18f, Height = 0.9f };
                     position = new Vector3(0.3f, 0.45f, 0);
                     break;
@@ -170,14 +238,20 @@ public partial class CrestView : Node3D
                 }
             }
 
-            AddPart(mesh, position, color);
+            AddPart(mesh, position, color, part.InstanceId);
         }
 
         _builtSignature = string.Join(",", Crest.Loadout.Installed.Select(e => $"{e.InstanceId}:{e.IsOperational}"));
     }
 
-    private void AddPart(Mesh mesh, Vector3 position, Color color) =>
-        _body.AddChild(new MeshInstance3D { Mesh = mesh, Position = position, MaterialOverride = Coords.Flat(color) });
+    private void AddPart(Mesh mesh, Vector3 position, Color color, string instanceId)
+    {
+        var material = Coords.Flat(color);
+        _body.AddChild(new MeshInstance3D { Mesh = mesh, Position = position, MaterialOverride = material });
+        if (!_partMaterials.TryGetValue(instanceId, out var list))
+            _partMaterials[instanceId] = list = [];
+        list.Add(material);
+    }
 
     private static Color CategoryColor(ComponentCategory category, Color faction) => category switch
     {

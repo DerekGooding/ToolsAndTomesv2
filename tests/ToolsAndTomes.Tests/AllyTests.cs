@@ -231,6 +231,29 @@ public sealed class AllyTests
     }
 
     [TestMethod]
+    public void DamageEvents_NameThePartThatWasHit()
+    {
+        var sim = Fight();
+        var enemyAI = new EnemyAIController();
+        var allyAI = new AllyAIController();
+        while (sim.Outcome == EncounterOutcome.InProgress && sim.CurrentBeat < 300)
+        {
+            enemyAI.Update(sim);
+            allyAI.Update(sim);
+            sim.StepBeat();
+        }
+
+        var hits = sim.Events.Where(e => e.Type is CombatEventType.ComponentDamaged or CombatEventType.ComponentDisabled).ToList();
+        Assert.IsNotEmpty(hits);
+        foreach (var e in hits)
+        {
+            var part = sim.FindCombatant(e.ActorId)!.Loadout.FindById(e.ComponentInstanceId!);
+            Assert.IsNotNull(part, e.Message);
+            StringAssert.Contains(e.Message, part.Definition.Name);
+        }
+    }
+
+    [TestMethod]
     public void BalanceRunner_PlaysWithAllies_Deterministically()
     {
         var runner = new BalanceRunner(_catalog, Lance);

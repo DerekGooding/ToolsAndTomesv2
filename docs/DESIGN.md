@@ -252,6 +252,150 @@ The free demo's region (`region: "border_march"`), played in order with the lanc
 
 ---
 
+## 3b. Tomes and Magic [Decided Nov 2026: in progress]
+
+The "Tomes" half of Tools and Tomes. Today one *Inventor's Spellbook* component grants every spell. This section replaces that with **core spells** every pilot knows and **tomes** held in a Crest's hands.
+
+Items marked **(decided)** are the user's calls (Nov 2026). The review accepted the remaining proposals, names, and starting numbers; the numbers will be tuned by playtesting.
+
+### Core spells (decided)
+- Every pilot knows four **core spells** and can cast them in any Crest, with no component: **Kinetic Push, Kinetic Pull, Square Summon, and Shape Fast-iron**.
+- Core spells are **utility basics**. The real magical power lives in tomes.
+- Numbers stay as today; Square Summon and Shape Fast-iron no longer need a Spellbook.
+- **Proposed source rule:** core spells are cast by the *pilot*, not a component.
+  - The pilot can have one core spell in motion at a time (the pilot is the "provider", as a weapon is for its actions).
+  - Damage can't disable core spells, but they reserve Wit and can be interrupted like any action.
+- **Consequence to note:** Square Summon still costs 4 Motes, and base Mote storage is 3. A Crest can only summon fast-iron if something raises its storage to 4 or more: a tome, an Aether Furnace, or a Stormglass Capacitor. Today that "something" is the Spellbook's +2.
+
+### Hands (decided)
+- **Every Crest has two hands.** Handheld components must be held in a hand to work; each one takes a hand.
+- **Handheld (decided):** tomes, plus handheld weapons:
+  - Talon Machine Pistol
+  - Vorpal Edge
+  - Righteous Blade
+  - Titan Hammer
+  - Acid Sprayer
+- **Mounted (no hand):** Falconet Missile Pod, Dragon's Breath Projector, Siege Mortar. Every other component category is unchanged.
+- Content: a `handheld` flag on components, and `hands` on Crest stats: 2, plus 1 per operational Extra Limb.
+- **Hands are set in the Workshop (decided).** The Workshop assigns each handheld component to a hand slot: Left, Right, or a limb.
+- **(decided)** A Crest holding more handhelds than it has hands can still be saved, but the extras show as **unheld (inactive)**, with a warning. Old profiles keep loading, and the player fixes the Crest in the Workshop.
+
+### Extra Limb (decided, numbers proposed)
+| Component | Category | Durability | Wit tax | Weight | Effect |
+|---|---|---|---|---|---|
+| **Articulated Arm** | Utility | 2 | 1 | 10 | +1 hand. In the Damage Order like any part. |
+
+- **Losing the limb loses what it holds (decided).**
+  - **(decided)** While the limb is disabled, its held item is **inoperative**: no actions, no bonuses. It keeps its own durability.
+  - Repairing the limb restores the item.
+  - At the table: "A held item works only while the limb holding it works."
+- **Workshop warning (decided):** if the Damage Order places a limb **before** the item it holds, the Workshop shows a loud warning: "the Articulated Arm takes hits before the Tome of Wards it holds — lose the arm, lose the tome." The warning shows in the Godot Workshop and the WPF hangar.
+
+### Tomes (decided: many tomes, each with its own spells; Wards is the starter)
+- A tome is a **handheld Arcane component**. Holding at least one operational tome raises the pilot's base Wit from **5 to 10**; a second tome doesn't raise it further. This keeps today's baseline (decided: 5 / 10 to start; real values come from playtesting).
+- **Each tome then varies (decided):** its own Wit, Mote, or other bonuses, listed below.
+- **(decided)** A Crest may hold several tomes (with both hands, or with limbs). It gets every spell list and every bonus, at the cost of hands and more exposure to electrical damage.
+- **Getting tomes (decided):** the **Tome of Wards** is in every new profile. The others are researched at the Research Desk. Old profiles turn each *Inventor's Spellbook* into a *Tome of Wards*.
+
+Spell columns: windup/impact/recovery beats, cooldown, range, Wit reserved, Motes spent.
+
+**Tome of Wards** (starter; defense). Durability 2, weight 3, Wit tax 0, **+2 Mote storage**.
+
+| Spell | Beats | Cd | Range | Wit | Motes | Effect |
+|---|---|---|---|---|---|---|
+| Aegis Barrier (existing) | reaction 0/1/1 | 12 | self | 2 | 1 | Absorbs the next 2 hits for 4 beats. |
+| Ward Ally (new) | 1/1/1 | 8 | 8 | 1 | 1 | An allied Crest gets an Aegis absorbing 1 hit for 4 beats. |
+| Bulwark (new) | 2/1/1 | 14 | self, radius 3 | 2 | 2 | Every lance Crest within 3 rolls +1 protection die for 4 beats. |
+
+**Tome of Force** (control). Durability 2, weight 4, Wit tax 1, **+1 Wit**.
+
+| Spell | Beats | Cd | Range | Wit | Motes | Effect |
+|---|---|---|---|---|---|---|
+| Gravity Crush (existing) | 3/1/2 | 8 | 9 | 2 | 1 | 1 damage (+2 vs Heavy); interruption power 5. |
+| Leaden Air (new) | 1/1/1 | 6 | 8 | 1 | 0 | Slow: the target's speed −2 (minimum 1), and its next windup takes +1 beat, for 4 beats. |
+| Anchor Bind (new) | 2/1/1 | 10 | 7 | 2 | 1 | Pin: the target can't move, blink, or be displaced for 3 beats. |
+
+**Tome of Storms** (damage; **electrical**). Durability 2, weight 3, Wit tax 1, **Motes 1 beat faster**.
+
+| Spell | Beats | Cd | Range | Wit | Motes | Effect |
+|---|---|---|---|---|---|---|
+| Lightning Bolt (new) | 1/1/1 | 2 | 8 | 1 | 0 | 1 electrical damage. |
+| Chain Lightning (new) | 2/1/2 | 6 | 7 | 2 | 1 | 1 electrical damage to the target, then jumps to up to 2 more enemies, each within 3 of the last. |
+| Storm Field (new) | 3/1/2 | 10 | point 9, radius 2.5 | 2 | 2 | 2 electrical hits on every enemy in the area. |
+
+**Iron Codex** (fast-iron magic). Durability 3, weight 6, Wit tax 0, **+1 Mote storage**.
+
+| Spell | Beats | Cd | Range | Wit | Motes | Effect |
+|---|---|---|---|---|---|---|
+| Quick Mend (new) | 2/1/1 | 4 | 4 (self or ally) | 1 | 0 | Spends 1 of the caster's fast-iron to restore 1 durability to the target's most damaged part (a disabled part comes back). A mid-fight repair. |
+| Conjured Blade (new) | 1/1/0 | 0 | self | 1 | 0 | Spends 1 fast-iron to put an *Iron Blade* (handheld, 1 damage ×2, range 2) into a free hand until the fight ends. Needs a free hand. |
+| Iron Wall (later) | 2/1/1 | 12 | point 6 | 2 | 0 | Spends 2 fast-iron to raise a wall. **Comes with the Obstacles phase** (decided): obstacles that block movement and line of fire are their own phase, and the Iron Codex ships with Quick Mend and Conjured Blade first. |
+
+- **The Arcane Amplifier:** today it gates Gravity Crush. **Proposed:** it no longer gates anything. Instead, the damaging spells of the tomes held add +1 interruption power. That keeps it a caster part without locking a spell behind it.
+
+### Damage types (decided: anti-magic counters; numbers proposed)
+These build on the existing trait-bonus mechanism, as Acid Spray does against Armored targets. Bonus points are rolled and saved like any other damage point.
+
+| Type | Bonus | Sources |
+|---|---|---|
+| **Electrical** | +1 damage per operational tome the target holds (maximum +2) | Tome of Storms spells; an enemy *Stormcaller*; later a researched *Arc Pistol* |
+| **Disjunction** (name proposed) | +1 damage per 3 points of the target's **equipment Wit tax** (decided), rounded down | A researched handheld *Hexbreaker* weapon; an enemy *Hexer* |
+
+- At the table: "Electrical: +1 per tome the target holds (max +2)." "Disjunction: count the target's Wit tax, +1 per 3."
+- Both show in the Workshop's stats, e.g. "Tomes held: 1 (electrical +1)" and "Wit tax 6 (disjunction +2)", so builds can see their exposure.
+
+### Swapping handhelds mid-fight (decided: needs a storage component)
+| Component | Category | Durability | Wit tax | Weight | Effect |
+|---|---|---|---|---|---|
+| **Weapon Harness** | Utility | 2 | 0 | 6 | Stows one handheld (inactive while stowed). Grants **Swap**: 2/0/0 beats, 1 Wit, interruptible. Exchanges the stowed item with the item in a chosen hand. |
+
+- If the harness is disabled, the stowed item can't be drawn.
+- Several harnesses can each stow one item.
+
+### Other casters (decided: allies and enemies; loadouts proposed)
+- **Anvil** holds a Righteous Blade and a **Tome of Wards**. The ally AI casts Ward Ally on the most-threatened lance member, and Bulwark when 2 or more allies are in range.
+- **Kestrel** holds a Talon and a **Tome of Storms**. The ally AI casts Lightning Bolt on cooldown, and Chain Lightning when enemies cluster.
+- **New enemy: Vesper Stormcaller** (Artillery-style, holds a Tome of Storms). It punishes tome-heavy lances; it first appears in Border Patrol's Border Fort.
+- **Kastor** holds a Titan Hammer and a **Tome of Force**. A Warlord casts on every affordable beat, so expect Leaden Air and Anchor Bind combos.
+
+### Starter builds and enemies affected by the hand limit
+| Crest | Handhelds today | Proposed |
+|---|---|---|
+| Agile Skirmish | Talon, Vorpal, Spellbook (3) | Talon + **Tome of Wards**; Vorpal on an **Articulated Arm** (it shows off the limb) |
+| Heavy Anchor | Talon, Titan, Spellbook (3) | Titan + **Tome of Wards** (keeps its Aegis reaction rule); Talon to spares |
+| Ironclad Bruiser | Righteous, Titan (2) | unchanged |
+| Kastor | Righteous, Titan, Spellbook (3) | Titan + **Tome of Force**; Righteous dropped |
+
+All demo balance numbers are re-measured afterwards with `--missions --allies all`.
+
+### Implementation outline (after review)
+1. **Core rules:**
+   - the `handheld` flag, hand slots and limbs, and the inoperative rule;
+   - the tome flag replacing `isSpellbook`, and per-tome bonuses;
+   - core spells as pilot actions;
+   - `damageType` on actions, with the Electrical and Disjunction bonuses;
+   - the new effects: ward ally, protection buff, slow, pin, chain, mend, and conjured item.
+2. **Content:** four tomes, Articulated Arm, Weapon Harness, the new spells, the Stormcaller, the starter-build and enemy changes, and profile migration.
+3. **Tests:**
+   - hand limits;
+   - limb loss;
+   - each new effect;
+   - each damage type;
+   - migration;
+   - tabletop parity (deterministic replays).
+4. **Workshop UI:** Godot and WPF get hand slots, the limb warning, and exposure stats. The HUD gets a spell bar grouped as Core / tome / weapons.
+5. **AI:** ally and enemy casting.
+6. **Rebalance** the demo region.
+
+### Review decisions (Nov 2026)
+1. **Limb loss:** a disabled limb makes its held item inoperative until the limb is repaired.
+2. **Over-limit Crests:** extra handhelds are inactive, with a warning; the Crest can still launch.
+3. **Several tomes:** allowed.
+4. **Obstacles** are a later phase of their own; Iron Wall arrives with them.
+5. **Names and numbers:** accepted as drafted, including "Disjunction"; the values get tuned in playtests.
+
+---
+
 ## 4. Deferred Long-Term Concepts (Preserved in Architecture)
 
 - Inventor's Workshop beyond the Research Desk (Forge, Workbench, Crest Bays, Spell Lab, Storage). The Research Desk slice is implemented — see 3a.
@@ -280,7 +424,7 @@ The free demo's region (`region: "border_march"`), played in order with the lanc
 
 | Phase | Goal | Key work |
 |---|---|---|
-| 0. Finish the current loop | A fun, playable 3-mission demo region | Allied pilots ✅; the demo region tuned with the lance ✅; fights of 60–120 beats ✅; mid-mission saves ✅; a feel pass for the close camera. |
+| 0. Finish the current loop | A fun, playable 3-mission demo region | Allied pilots ✅; the demo region tuned with the lance ✅; fights of 60–120 beats ✅; mid-mission saves ✅; first feel pass for the close camera ✅ (third-person follow camera, hit flashes, floating combat text, shake and hit-stop, windup rings). |
 | 1. Godot vertical slice | One encounter at target quality; **the campaign loop is playable in Godot** (Crest Bay, Mission Select, fights with a result panel, rests, resume; shared `CampaignSession` in Core) | Confirm Godot's .NET version can reference Core (multi-target Core if needed); Core↔Godot bridge (beat events + snapshots, presentation interpolates); tactical camera; one modular 3D Crest assembled from component models; telegraph VFX; audio hooks; controller-ready input. |
 | 2. Core hardening | Production-ready rules engine | Full save/load (including mid-fight); a stable presentation API; asset ids on content (model, VFX, sound per component/action); localization keys; performance budgets. |
 | 3. Content & tools pipeline | Designers add content without code | Editors for components, actions, encounters, missions over the JSON + validator; balance runner in CI. |

@@ -38,4 +38,5 @@ public sealed record CombatEvent(
     int? Value = null,
     InterruptionTier Interruption = InterruptionTier.None,
     Vec2? Position = null,
-    string? ActionId = null);
+    string? ActionId = null,
+    string? ComponentInstanceId = null);

@@ -123,7 +123,8 @@ public sealed class DamageResolutionService
                     target.Id,
                     $"{target.Name}'s {component.Definition.Name} damaged by {hit.SourceActionName} (d6: [{diceText}], {component.CurrentDurability}/{component.Definition.MaxDurability}).",
                     hit.SourceActorId,
-                    1));
+                    1,
+                    ComponentInstanceId: component.InstanceId));
 
                 if (nowDisabled)
                 {
@@ -132,7 +133,8 @@ public sealed class DamageResolutionService
                         CombatEventType.ComponentDisabled,
                         target.Id,
                         $"{target.Name}'s {component.Definition.Name} DISABLED! (Wit tax released: {component.Definition.WitTax}).",
-                        hit.SourceActorId));
+                        hit.SourceActorId,
+                        ComponentInstanceId: component.InstanceId));
                 }
             }
 

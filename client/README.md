@@ -48,6 +48,13 @@ The main scene (`scenes/Main.tscn`, `GameRoot`) runs the campaign:
   - a **Withdraw** button at the top right (it asks first).
 
   When the fight is decided, a result panel shows the samples recovered, which allies are down, and a Continue button.
+- **Feel:**
+  - The camera is a mid-distance third-person boom. It starts behind your Crest facing the enemy, follows you while leaning toward your target, and eases smoothly.
+  - Struck parts flash and the body recoils. Damage, saves, evasions, Aegis blocks, interruptions, and disabled parts float up.
+  - Breaking parts and falling Crests burst, and defeated Crests slump.
+  - The camera shakes with the size of the hit, hardest on your own Crest. Big hits briefly freeze the beat clock (hit-stop).
+  - An enemy windup aimed at your lance draws a ring around its target that fills, amber to red, as the strike approaches. Area attacks show their blast radius, and the impact beat flashes.
+  - All of this is presentation only; the rules don't change.
 - **Rest:** switch between the lance's Crests. Wait for Motes, cast Square Summon, repair the selected component, hand fast-iron to an ally, and shape fast-iron or use cargo. Then continue or withdraw.
 
 The campaign is `CampaignSession` in Core, so the Godot client and the WPF tool (`dotnet run --project src/ToolsAndTomes.App`) share one profile: `%LOCALAPPDATA%\ToolsAndTomes\profile.json`. A mission is saved between fights. Quit at any point and the game resumes at the rest, or at the start of the interrupted fight.
@@ -63,7 +70,8 @@ Everything the WPF tool does is now in the Godot client too. The WPF tool remain
 | Action bar | Use an action (reactions light up during incoming impacts) |
 | Space / `.` | Pause / step one beat while paused |
 | Tab | Next target |
-| WASD, Q/E, wheel, middle-drag | Pan, rotate, zoom, tilt the camera |
+| WASD, Q/E, wheel, middle-drag | Pan (takes manual control), rotate, zoom, orbit/tilt the camera |
+| F / Home | Camera follows your Crest again |
 | R | Restart the fight (quick battles only) |
 
 ## Options and smoke tests
@@ -78,13 +86,14 @@ Options go after `--`, e.g. `tools/godot.ps1 --path client/ToolsAndTomes.Client 
 | `--campaign-autoplay [missionId]` | Plays through the real screens on autopilot with a throwaway profile: the given mission, or the whole demo region in order until a mission fails. Prints a `CAMPAIGN AUTOPLAY` line per mission. Exit code 1 if a mission failed. |
 | `--profile <path>` | Use another profile file |
 | `--open workshop\|missions\|bay` | Start on that screen |
-| `--beats-per-frame <n>`, `--hold <s>` | Slow autoplay down and linger on each screen, for recordings |
+| `--beats-per-frame <n>`, `--hold <s>` | Autoplay speed (`0` = real time, with hit-stop) and lingering on each screen, for recordings |
 
 ```powershell
 tools/godot.ps1 --headless --path client/ToolsAndTomes.Client -- --autoplay
 tools/godot.ps1 --headless --path client/ToolsAndTomes.Client -- --campaign-autoplay
 # Record frames to look at (needs a window, not --headless):
 tools/godot.ps1 --path client/ToolsAndTomes.Client --write-movie out/f.png --fixed-fps 2 -- --campaign-autoplay mis_first_patrol --beats-per-frame 40 --hold 1
+tools/godot.ps1 --path client/ToolsAndTomes.Client --write-movie out/f.png --fixed-fps 10 --quit-after 300 -- --autoplay --beats-per-frame 0   # a fight in real time
 ```
 
 The lance's allied pilots are the teal Crests. They're AI-controlled, and their status is on the HUD's "Lance" line.

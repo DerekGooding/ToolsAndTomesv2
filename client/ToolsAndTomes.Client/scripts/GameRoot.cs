@@ -23,7 +23,7 @@ namespace ToolsAndTomes.Client;
 /// fails. Prints a `CAMPAIGN AUTOPLAY` line per mission and quits (exit code 1 if one failed).</item>
 /// <item>`--profile &lt;path&gt;`: use another profile file.</item>
 /// <item>`--open workshop|missions|bay`: start on that screen (development and screenshots).</item>
-/// <item>`--beats-per-frame &lt;n&gt;`: autoplay speed (default 20); 1 makes a watchable recording with `--write-movie`.</item>
+/// <item>`--beats-per-frame &lt;n&gt;`: autoplay speed (default 20); 0 plays in real time (watchable, and right for `--write-movie`).</item>
 /// <item>`--hold &lt;seconds&gt;`: in campaign autoplay, linger on each menu screen and result panel (for recordings).</item>
 /// </list>
 /// </remarks>
@@ -56,7 +56,7 @@ public partial class GameRoot : Node
         _autoplay = args.Contains("--autoplay");
         _campaignAutoplay = args.Contains("--campaign-autoplay");
 
-        if (int.TryParse(Arg("--beats-per-frame"), out int bpf) && bpf > 0)
+        if (int.TryParse(Arg("--beats-per-frame"), out int bpf) && bpf >= 0)
             _beatsPerFrame = bpf;
         if (double.TryParse(Arg("--hold"), System.Globalization.CultureInfo.InvariantCulture, out double hold) && hold > 0)
             _hold = hold;
