@@ -281,7 +281,7 @@ The free demo's region (`region: "border_march"`), played in order with the lanc
 | Phase | Goal | Key work |
 |---|---|---|
 | 0. Finish the current loop | A fun, playable 3-mission demo region | Allied pilots ✅; the demo region tuned with the lance ✅; fights of 60–120 beats ✅; mid-mission saves ✅; a feel pass for the close camera. |
-| 1. Godot vertical slice | One encounter at target quality | Confirm Godot's .NET version can reference Core (multi-target Core if needed); Core↔Godot bridge (beat events + snapshots, presentation interpolates); tactical camera; one modular 3D Crest assembled from component models; telegraph VFX; audio hooks; controller-ready input. |
+| 1. Godot vertical slice | One encounter at target quality; **the campaign loop is playable in Godot** (Crest Bay, Mission Select, fights with a result panel, rests, resume; shared `CampaignSession` in Core) | Confirm Godot's .NET version can reference Core (multi-target Core if needed); Core↔Godot bridge (beat events + snapshots, presentation interpolates); tactical camera; one modular 3D Crest assembled from component models; telegraph VFX; audio hooks; controller-ready input. |
 | 2. Core hardening | Production-ready rules engine | Full save/load (including mid-fight); a stable presentation API; asset ids on content (model, VFX, sound per component/action); localization keys; performance budgets. |
 | 3. Content & tools pipeline | Designers add content without code | Editors for components, actions, encounters, missions over the JSON + validator; balance runner in CI. |
 | 4. Systems breadth | Full game scope | Workshop rooms, Grip (multiple Crests), exploration, world map/narrative, progression depth. |

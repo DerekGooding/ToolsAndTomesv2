@@ -8,12 +8,12 @@ namespace ToolsAndTomes.App;
 
 public partial class MissionSelectView : UserControl
 {
-    private readonly AppSessionState _session;
+    private readonly CampaignSession _session;
 
     public event Action? BackRequested;
     public event Action? MissionStarted;
 
-    public MissionSelectView(AppSessionState session)
+    public MissionSelectView(CampaignSession session)
     {
         InitializeComponent();
         _session = session;

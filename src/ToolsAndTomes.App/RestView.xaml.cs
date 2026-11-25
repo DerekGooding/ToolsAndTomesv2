@@ -24,7 +24,7 @@ public partial class RestView : UserControl
         public override string ToString() => Label;
     }
 
-    private readonly AppSessionState _session;
+    private readonly CampaignSession _session;
 
     /// <summary>The lance member the rest actions apply to (null: the player's Crest).</summary>
     private string? _crestId;
@@ -33,7 +33,7 @@ public partial class RestView : UserControl
     public event Action? ContinueRequested;
     public event Action? WithdrawRequested;
 
-    public RestView(AppSessionState session)
+    public RestView(CampaignSession session)
     {
         InitializeComponent();
         _session = session;

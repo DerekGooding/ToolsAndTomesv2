@@ -1,3 +1,4 @@
+using ToolsAndTomes.Core.Campaign;
 using System.Windows;
 using System.Windows.Controls;
 using ToolsAndTomes.Core.Definitions;
@@ -38,14 +39,14 @@ public partial class HangarView : UserControl
 
     private const string AnyTelegraph = "Any impact";
 
-    private readonly AppSessionState _session;
+    private readonly CampaignSession _session;
     private bool _suppressSelection;
     private string? _reselectInstanceId;
 
     public event Action? LaunchEncounterRequested;
     public event Action? ResearchRequested;
 
-    public HangarView(AppSessionState session)
+    public HangarView(CampaignSession session)
     {
         InitializeComponent();
         _session = session;

@@ -1,3 +1,4 @@
+using ToolsAndTomes.Core.Campaign;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,7 +27,7 @@ public partial class CombatView : UserControl
     /// <summary>Wall-clock length of one beat (one tabletop second) at normal speed.</summary>
     private static readonly TimeSpan BeatDuration = TimeSpan.FromSeconds(1);
 
-    private readonly AppSessionState _session;
+    private readonly CampaignSession _session;
     private readonly DispatcherTimer _timer;
     private readonly System.Diagnostics.Stopwatch _frameClock = new();
     private TimeSpan _beatElapsed;
@@ -66,7 +67,7 @@ public partial class CombatView : UserControl
             .ToList();
     }
 
-    public CombatView(AppSessionState session)
+    public CombatView(CampaignSession session)
     {
         InitializeComponent();
         _session = session;

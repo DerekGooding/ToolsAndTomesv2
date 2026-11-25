@@ -8,7 +8,7 @@ config_version=5
 
 config/name="Tools and Tomes"
 config/description="Real-time tactical Crest combat (Godot client, placeholder assets)."
-run/main_scene="res://scenes/Battle.tscn"
+run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
 [display]

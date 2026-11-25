@@ -1,3 +1,4 @@
+using ToolsAndTomes.Core.Campaign;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -6,11 +7,11 @@ namespace ToolsAndTomes.App;
 
 public partial class ResearchView : UserControl
 {
-    private readonly AppSessionState _session;
+    private readonly CampaignSession _session;
 
     public event Action? BackRequested;
 
-    public ResearchView(AppSessionState session)
+    public ResearchView(CampaignSession session)
     {
         InitializeComponent();
         _session = session;

@@ -7,24 +7,45 @@ using ToolsAndTomes.Core.Simulation;
 namespace ToolsAndTomes.Client;
 
 /// <summary>
-/// Godot vertical-slice entry point. Runs one Core encounter (the demo's Border Fort unless `-- --encounter <id>`,
-/// with the allied pilots in the player's lance; `-- --solo` leaves them out) on the beat clock:
-/// the simulation advances one beat per second (three seconds in slow motion while a reaction is available),
-/// and everything in between is presentation-only interpolation. All rules come from ToolsAndTomes.Core.
+/// Presents one Core encounter on the beat clock: the simulation advances one beat per second (three seconds in
+/// slow motion while a reaction is available), and everything in between is presentation-only interpolation.
+/// All rules come from ToolsAndTomes.Core. <see cref="GameRoot"/> creates it with a <see cref="SimFactory"/>
+/// (a mission fight from the campaign, or a quick battle) and listens for <see cref="Finished"/>.
 /// </summary>
 public partial class BattleController : Node3D
 {
     private const double BeatSeconds = 1.0;
     private const double SlowMotionFactor = 3.0;
 
+    /// <summary>The longest an autoplayed fight runs before it counts as a timeout.</summary>
+    public const int AutoplayBeatLimit = 300;
+
+    /// <summary>Builds the fight to show (called again on restart, when <see cref="AllowRestart"/>).</summary>
+    public Func<CombatSimulation> SimFactory { get; set; } = null!;
+
+    /// <summary>Runs at full speed with the player on autopilot (headless smoke tests).</summary>
+    public bool Autoplay { get; set; }
+
+    /// <summary>Beats simulated per frame in autoplay (lower it to record the fight with Godot's movie writer).</summary>
+    public int AutoplayBeatsPerFrame { get; set; } = 20;
+
+    /// <summary>Whether R restarts the fight (quick battles only: a mission fight can't be replayed).</summary>
+    public bool AllowRestart { get; set; } = true;
+
+    /// <summary>Text for the result panel's button; null hides the button (quick battles restart with R).</summary>
+    public string? ContinueLabel { get; set; }
+
+    /// <summary>Raised once when the fight ends (or, in autoplay, hits <see cref="AutoplayBeatLimit"/>).</summary>
+    public event Action<CombatSimulation>? Finished;
+
+    /// <summary>Raised when the player presses the result panel's button.</summary>
+    public event Action? ContinueRequested;
+
     private readonly Dictionary<string, CrestView> _views = [];
     private EnemyAIController _enemyAi = new();
     private readonly AllyAIController _allyAi = new();
-    private bool _solo;
-    private string _encounterId = DefaultEncounterId;
-
-    /// <summary>The fight shown by default: a full demo encounter (Border Patrol's last).</summary>
-    public const string DefaultEncounterId = "enc_bm_border_fort";
+    private bool _finished;
+    private string? _resultText;
     private GameCatalog _catalog = null!;
     private CombatSimulation _sim = null!;
     private Combatant _player = null!;
@@ -36,29 +57,20 @@ public partial class BattleController : Node3D
     private Node3D _arena = null!;
     private double _beatElapsed;
     private double _beatLength = BeatSeconds;
-    private int _seed = 1337;
     private string? _targetId;
     private ActionDefinition? _armedPointAction;
 
-    // Smoke-test mode: `tools/godot.ps1 --headless --path client/ToolsAndTomes.Client -- --autoplay`
-    // runs the fight at full speed with the player on autopilot, prints the result, and quits.
-    private bool _autoplay;
     private readonly AutoPilot _autoPilot = new();
+
+    /// <summary>The fight on screen.</summary>
+    public CombatSimulation Simulation => _sim;
+
+    /// <summary>Shown on the result panel when the fight ends (e.g. samples recovered).</summary>
+    public void SetResultText(string text) => _resultText = text;
 
     public override void _Ready()
     {
         _catalog = GameCatalog.Default;
-        _autoplay = OS.GetCmdlineUserArgs().Contains("--autoplay");
-        var userArgs = OS.GetCmdlineUserArgs();
-        _solo = userArgs.Contains("--solo");
-        int at = Array.IndexOf(userArgs, "--encounter");
-        if (at >= 0 && at + 1 < userArgs.Length)
-        {
-            if (_catalog.Encounters.ContainsKey(userArgs[at + 1]))
-                _encounterId = userArgs[at + 1];
-            else
-                GD.PrintErr($"Unknown encounter '{userArgs[at + 1]}'; using {_encounterId}.");
-        }
 
         AddChild(new WorldEnvironment
         {
@@ -80,6 +92,7 @@ public partial class BattleController : Node3D
         _hud = new BattleHud();
         AddChild(_hud);
         _hud.ActionPressed += OnActionPressed;
+        _hud.ContinuePressed += () => ContinueRequested?.Invoke();
         _sounds = new SoundBank();
         AddChild(_sounds);
 
@@ -93,14 +106,10 @@ public partial class BattleController : Node3D
         _views.Clear();
         _arena?.QueueFree();
 
-        var loadout = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog, "player");
-        var encounter = _catalog.Encounters[_encounterId];
-        var allies = _solo
-            ? []
-            : EncounterFactory.CreateAllies(_catalog.Pilots.Keys.Take(ToolsAndTomes.Core.Campaign.MissionRun.MaxAllies), _catalog,
-                encounter.PlayerStartingMotes);
-        _sim = EncounterFactory.CreateEncounter(encounter, loadout, _seed++, _catalog, allies);
+        _sim = SimFactory();
         _enemyAi = new EnemyAIController();
+        _finished = false;
+        _resultText = null;
         _player = _sim.FindCombatant(EncounterFactory.PlayerCombatantId)!;
         _targetId = _sim.Combatants.FirstOrDefault(c => c.Faction == Faction.Enemy)?.Id;
         _armedPointAction = null;
@@ -121,8 +130,14 @@ public partial class BattleController : Node3D
         _camera.Focus(new Vector3((float)_sim.ArenaWidth / 2f, 0, (float)_sim.ArenaHeight / 2f));
         _hud.ResetLog();
 
-        if (_autoplay)
+        if (Autoplay)
             _sim.Resume();
+
+        // Draw the fight once now, so its first frame isn't the un-laid-out scene.
+        foreach (var view in _views.Values)
+            view.Refresh(_sim, 0, view.Crest.Id == _targetId);
+        _telegraphs.Refresh(_sim, _views);
+        _hud.Refresh(_sim, _player, Target(), 0, false, null);
     }
 
     private void BuildArena()
@@ -147,7 +162,7 @@ public partial class BattleController : Node3D
 
     public override void _Process(double delta)
     {
-        if (_autoplay)
+        if (Autoplay)
         {
             RunAutoplayFrame();
             return;
@@ -168,11 +183,31 @@ public partial class BattleController : Node3D
             view.Refresh(_sim, fraction, view.Crest.Id == _targetId);
         _telegraphs.Refresh(_sim, _views);
         _hud.Refresh(_sim, _player, Target(), fraction, _beatLength > BeatSeconds, _armedPointAction);
+        _hud.ShowResult(_finished ? ResultHeadline() : null, _resultText, ContinueLabel, AllowRestart);
+        CheckFinished();
+    }
+
+    private string ResultHeadline() => _sim.Outcome switch
+    {
+        EncounterOutcome.PlayerVictory => "VICTORY",
+        EncounterOutcome.PlayerDefeat => "DEFEAT: your Crest's Core failed",
+        _ => "TIME UP"
+    };
+
+    /// <summary>Raises <see cref="Finished"/> once, when the fight is decided (or autoplay runs out of beats).</summary>
+    private void CheckFinished()
+    {
+        bool over = _sim.Outcome != EncounterOutcome.InProgress || (Autoplay && _sim.CurrentBeat >= AutoplayBeatLimit);
+        if (_finished || !over)
+            return;
+        _finished = true;
+        _sim.Pause();
+        Finished?.Invoke(_sim);
     }
 
     private void RunAutoplayFrame()
     {
-        for (int i = 0; i < 20 && _sim.Outcome == EncounterOutcome.InProgress && _sim.CurrentBeat < 300; i++)
+        for (int i = 0; i < AutoplayBeatsPerFrame && _sim.Outcome == EncounterOutcome.InProgress && _sim.CurrentBeat < AutoplayBeatLimit; i++)
         {
             _autoPilot.Update(_sim, _player);
             AdvanceBeat();
@@ -182,15 +217,8 @@ public partial class BattleController : Node3D
             view.Refresh(_sim, 0, view.Crest.Id == _targetId);
         _telegraphs.Refresh(_sim, _views);
         _hud.Refresh(_sim, _player, Target(), 0, false, null);
-
-        if (_sim.Outcome != EncounterOutcome.InProgress || _sim.CurrentBeat >= 300)
-        {
-            GD.Print($"AUTOPLAY RESULT ({_encounterId}): {_sim.Outcome} after {_sim.CurrentBeat} beats; " +
-                     $"enemies defeated {_sim.Combatants.Count(c => c.Faction == Faction.Enemy && c.IsDefeated)}, " +
-                     $"allies {_sim.Combatants.Count(AllyAIController.IsAlly)} ({_sim.Combatants.Count(c => AllyAIController.IsAlly(c) && c.IsDefeated)} down), " +
-                     $"events {_sim.Events.Count}");
-            GetTree().Quit();
-        }
+        CheckFinished();
+        _hud.ShowResult(_finished ? ResultHeadline() : null, _resultText, ContinueLabel, AllowRestart);
     }
 
     private void AdvanceBeat()
@@ -290,7 +318,7 @@ public partial class BattleController : Node3D
                     _targetId = enemies[(index + 1) % enemies.Count].Id;
                 }
                 break;
-            case Key.R:
+            case Key.R when AllowRestart:
                 StartEncounter();
                 break;
             case Key.Escape:

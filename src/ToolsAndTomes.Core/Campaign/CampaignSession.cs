@@ -1,18 +1,24 @@
-using System.IO;
 using ToolsAndTomes.Core.AI;
-using ToolsAndTomes.Core.Campaign;
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
 using ToolsAndTomes.Core.Simulation;
 using ToolsAndTomes.Core.Workshop;
 
-namespace ToolsAndTomes.App;
+namespace ToolsAndTomes.Core.Campaign;
 
-public sealed class AppSessionState
+/// <summary>
+/// The player's campaign, shared by every frontend (the WPF tool and the Godot client): Crest assemblies and
+/// spares, Workshop research, allied pilots and the lance, the mission in progress, and the saved profile.
+/// Frontends call into it and draw what it holds; it has no UI.
+/// </summary>
+public sealed class CampaignSession
 {
-    /// <summary>Saved progress lives in %LOCALAPPDATA%\ToolsAndTomes\profile.json.</summary>
-    public static string ProfilePath { get; } = Path.Combine(
+    /// <summary>The default profile: %LOCALAPPDATA%\ToolsAndTomes\profile.json (shared by both frontends).</summary>
+    public static string DefaultProfilePath { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ToolsAndTomes", "profile.json");
+
+    /// <summary>Where this session loads and saves its profile.</summary>
+    public string ProfilePath { get; }
 
     private int _nextInstanceCounter = 100;
     private int _nextAssemblyCounter = 1;
@@ -48,8 +54,10 @@ public sealed class AppSessionState
     public CrestLoadout SelectedLoadout =>
         CrestAssemblies.First(c => c.Id == SelectedCrestId);
 
-    public AppSessionState()
+    /// <param name="profilePath">The profile file (default <see cref="DefaultProfilePath"/>); e.g. a temporary file for automated runs.</param>
+    public CampaignSession(string? profilePath = null)
     {
+        ProfilePath = profilePath ?? DefaultProfilePath;
         if (!TryLoadProfile())
             CreateNewProfile();
     }
@@ -124,6 +132,33 @@ public sealed class AppSessionState
     }
 
     // ---- Research ---------------------------------------------------------------------------
+
+    /// <summary>Picks the assembly to fly on the next mission (not while a mission is in progress).</summary>
+    public bool SelectCrest(string assemblyId)
+    {
+        if (ActiveMission is not null || CrestAssemblies.All(a => a.Id != assemblyId))
+            return false;
+        SelectedCrestId = assemblyId;
+        Save();
+        return true;
+    }
+
+    /// <summary>
+    /// Sets who joins the player on the next mission, in lance order: known pilots, no repeats, at most
+    /// <see cref="MissionRun.MaxAllies"/> (not while a mission is in progress).
+    /// </summary>
+    public bool SetLance(IEnumerable<string> pilotIds)
+    {
+        var ids = pilotIds.ToList();
+        if (ActiveMission is not null || ids.Count > MissionRun.MaxAllies || ids.Distinct().Count() != ids.Count ||
+            ids.Any(id => !Catalog.Pilots.ContainsKey(id)))
+            return false;
+
+        Lance.Clear();
+        Lance.AddRange(ids);
+        Save();
+        return true;
+    }
 
     public ResearchResult Research(string materialId)
     {
@@ -217,6 +252,10 @@ public sealed class AppSessionState
     {
         if (run.Phase == MissionPhase.Completed)
             Workshop.MarkMissionCompleted(run.Mission.Id);
+
+        // Back at the Workshop: every Crest is repaired and restocked (damage is never kept between missions).
+        foreach (var crest in run.Lance)
+            crest.Loadout.RepairAll();
 
         int samples = run.RewardsEarned.Sum(r => r.Count);
         string outcome = run.Phase switch

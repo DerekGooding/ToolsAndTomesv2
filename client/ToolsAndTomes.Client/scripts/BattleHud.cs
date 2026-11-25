@@ -21,6 +21,14 @@ public partial class BattleHud : CanvasLayer
     /// <summary>Raised when an action button is pressed.</summary>
     public event Action<ActionDefinition>? ActionPressed;
 
+    /// <summary>Raised when the result panel's button is pressed.</summary>
+    public event Action? ContinuePressed;
+
+    private PanelContainer _result = null!;
+    private Label _resultHeadline = null!;
+    private Label _resultBody = null!;
+    private Button _resultButton = null!;
+
     public override void _Ready()
     {
         var top = new PanelContainer();
@@ -48,7 +56,7 @@ public partial class BattleHud : CanvasLayer
         bottomBox.AddChild(new Label
         {
             Text = "Left-click: select / place point action   Right-click: move   Space: pause   . : step beat   " +
-                   "Tab: next target   WASD/QE/wheel/middle-drag: camera   R: restart",
+                   "Tab: next target   WASD/QE/wheel/middle-drag: camera",
             Modulate = new Color(0.65f, 0.7f, 0.8f)
         });
 
@@ -59,6 +67,47 @@ public partial class BattleHud : CanvasLayer
         AddChild(right);
         _log = new RichTextLabel { BbcodeEnabled = true, ScrollFollowing = true, CustomMinimumSize = new Vector2(420, 250) };
         right.AddChild(_log);
+
+        // The result panel, centered, shown when the fight is decided.
+        var center = new CenterContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        center.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        AddChild(center);
+        _result = new PanelContainer { Visible = false, CustomMinimumSize = new Vector2(460, 0) };
+        var resultStyle = new StyleBoxFlat
+        {
+            BgColor = new Color(0.08f, 0.1f, 0.15f, 0.97f),
+            BorderColor = new Color(1f, 0.78f, 0.3f, 0.8f),
+            BorderWidthTop = 2, BorderWidthBottom = 2, BorderWidthLeft = 2, BorderWidthRight = 2,
+            CornerRadiusTopLeft = 10, CornerRadiusTopRight = 10, CornerRadiusBottomLeft = 10, CornerRadiusBottomRight = 10
+        };
+        resultStyle.SetContentMarginAll(22);
+        _result.AddThemeStyleboxOverride("panel", resultStyle);
+        center.AddChild(_result);
+        var resultBox = new VBoxContainer();
+        resultBox.AddThemeConstantOverride("separation", 12);
+        _result.AddChild(resultBox);
+        _resultHeadline = new Label { HorizontalAlignment = HorizontalAlignment.Center };
+        _resultHeadline.AddThemeFontSizeOverride("font_size", 30);
+        _resultBody = new Label { HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        _resultButton = new Button { CustomMinimumSize = new Vector2(220, 40), SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter };
+        _resultButton.Pressed += () => ContinuePressed?.Invoke();
+        resultBox.AddChild(_resultHeadline);
+        resultBox.AddChild(_resultBody);
+        resultBox.AddChild(_resultButton);
+    }
+
+    /// <summary>Shows the result panel (headline null: hidden).</summary>
+    public void ShowResult(string? headline, string? body, string? buttonLabel, bool canRestart)
+    {
+        _result.Visible = headline is not null;
+        if (headline is null)
+            return;
+        _resultHeadline.Text = headline;
+        _resultHeadline.Modulate = headline.StartsWith("VICTORY") ? new Color(1f, 0.85f, 0.3f) : new Color(1f, 0.45f, 0.4f);
+        string hint = canRestart ? "Press R to fight again." : "";
+        _resultBody.Text = string.Join("\n", new[] { body, hint }.Where(s => !string.IsNullOrEmpty(s)));
+        _resultButton.Visible = buttonLabel is not null;
+        _resultButton.Text = buttonLabel ?? "";
     }
 
     public override void _ExitTree() => _icons.Clear();
@@ -83,12 +132,9 @@ public partial class BattleHud : CanvasLayer
 
         _allies.Text = AlliesLine(sim, player);
 
-        _outcome.Text = sim.Outcome switch
-        {
-            EncounterOutcome.PlayerVictory => "VICTORY! Press R to fight again.",
-            EncounterOutcome.PlayerDefeat => "DEFEAT - Core failed. Press R to try again.",
-            _ => armed is null ? "" : $"Armed {armed.Name}: left-click a point on the field."
-        };
+        _outcome.Text = sim.Outcome == EncounterOutcome.InProgress && armed is not null
+            ? $"Armed {armed.Name}: left-click a point on the field."
+            : "";
 
         var impacts = sim.GetIncomingImpacts(player);
         _prompt.Text = impacts.Count > 0

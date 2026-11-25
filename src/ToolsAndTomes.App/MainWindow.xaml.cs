@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using ToolsAndTomes.Core.Campaign;
 
@@ -9,7 +9,7 @@ namespace ToolsAndTomes.App;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly AppSessionState _session = new();
+    private readonly CampaignSession _session = new();
     private readonly HangarView _hangarView;
     private readonly CombatView _combatView;
     private readonly ResearchView _researchView;
