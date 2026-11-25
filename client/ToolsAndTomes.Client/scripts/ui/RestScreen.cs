@@ -2,13 +2,13 @@ using Godot;
 using ToolsAndTomes.Core.AI;
 using ToolsAndTomes.Core.Campaign;
 using ToolsAndTomes.Core.Instances;
+using ToolsAndTomes.Core.Rules;
 
 namespace ToolsAndTomes.Client.UI;
 
 /// <summary>
 /// Rest in the field between a mission's fights: time passes one Mote at a time; Square Summon, repairs, and
-/// handing fast-iron to allies happen between Motes. Every action saves the mission.
-/// Field shaping and cargo use stay in the WPF tool for now.
+/// handing fast-iron to allies, shaping fast-iron, and using cargo happen between Motes. Every action saves the mission.
 /// </summary>
 public partial class RestScreen : Control
 {
@@ -176,6 +176,27 @@ public partial class RestScreen : Control
             var give = Ui.Button($"Give 1 fast-iron from your Crest ({run.Crest.TotalFastIron} on hand)", () => Do(run.GiveFastIron(null, _crestId)));
             give.Disabled = run.Crest.TotalFastIron == 0;
             _actions.AddChild(give);
+        }
+
+        // Shaping fast-iron (ammo, consumables, whole components) and using cargo items.
+        var options = crest.IsDefeated ? [] : FieldOption.Build(run.Catalog, crest);
+        if (options.Count > 0)
+        {
+            _actions.AddChild(Ui.Text("Shape fast-iron or use cargo:", Ui.Accent, 14));
+            var row = new HBoxContainer();
+            row.AddThemeConstantOverride("separation", 6);
+            _actions.AddChild(row);
+            var pick = new OptionButton { SizeFlagsHorizontal = SizeFlags.ExpandFill, ClipText = true };
+            foreach (var option in options)
+                pick.AddItem(option.Label);
+            row.AddChild(pick);
+            row.AddChild(Ui.Button("Do it", () =>
+            {
+                var cmd = options[pick.Selected].Command;
+                Do(cmd.Shaping is { } order
+                    ? run.Shape(order, cmd.OwnComponentInstanceId, _crestId)
+                    : run.UseCargoItem(cmd.ActionId, cmd.OwnComponentInstanceId ?? "", _crestId));
+            }));
         }
 
         Ui.Clear(_log);

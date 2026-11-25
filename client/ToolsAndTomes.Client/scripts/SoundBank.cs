@@ -26,7 +26,9 @@ public partial class SoundBank : Node3D
     private readonly List<AudioStreamPlayer3D> _voices = [];
     private readonly RandomNumberGenerator _rng = new();
     private int _nextVoice;
-    private readonly bool _headless = DisplayServer.GetName() == "headless";
+    // Headless runs and --write-movie recordings use audio drivers that never free playbacks (they'd be
+    // reported as leaked at exit), so those load sounds but don't play them.
+    private readonly bool _headless = DisplayServer.GetName() == "headless" || OS.HasFeature("movie");
 
     public override void _Ready()
     {

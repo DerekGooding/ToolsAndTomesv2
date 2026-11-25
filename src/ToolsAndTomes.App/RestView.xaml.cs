@@ -1,3 +1,4 @@
+using ToolsAndTomes.Core.Rules;
 using System.Windows;
 using System.Windows.Controls;
 using ToolsAndTomes.Core.Campaign;

@@ -6,7 +6,7 @@ namespace ToolsAndTomes.Client.UI;
 
 /// <summary>
 /// The hub between missions: pick your Crest, choose who rides in your lance, research recovered samples, and
-/// head out (or resume the mission in progress). Full refitting stays in the WPF tool for now.
+/// head out (or resume the mission in progress). Refitting opens the Workshop.
 /// </summary>
 public partial class CrestBayScreen : Control
 {
@@ -21,6 +21,9 @@ public partial class CrestBayScreen : Control
     public event Action? ResumeRequested;
     public event Action? QuickBattleRequested;
     public event Action? QuitRequested;
+
+    /// <summary>Open the Workshop on a Crest (by loadout id).</summary>
+    public event Action<string>? WorkshopRequested;
 
     public CrestBayScreen() : this(null!) { }
 
@@ -113,7 +116,9 @@ public partial class CrestBayScreen : Control
                     (rule.Telegraph is { } t ? $" ({t})" : ""), Ui.Muted, 14));
         }
 
-        _crestColumn.AddChild(Ui.Text("Refit components and Damage Order in the WPF tool (dotnet run --project src/ToolsAndTomes.App) for now.", Ui.Muted, 13));
+        var refit = Ui.Button("Refit in the Workshop ▶", () => WorkshopRequested?.Invoke(crest.Id));
+        refit.Disabled = locked;
+        _crestColumn.AddChild(refit);
     }
 
     private void RefreshLance()
@@ -150,6 +155,10 @@ public partial class CrestBayScreen : Control
             {
                 column.AddChild(Ui.Text($"{crest.Name}: {string.Join(", ", crest.DamageOrder.Select(e => e.Definition.Name))}", Ui.Ink, 14));
                 column.AddChild(Ui.Text(Ui.StatsLine(crest, rules), Ui.Muted, 13));
+                var refit = Ui.Button($"Refit {pilot.DisplayName}'s Crest", () => WorkshopRequested?.Invoke(crest.Id));
+                refit.Disabled = locked;
+                refit.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+                column.AddChild(refit);
             }
         }
 

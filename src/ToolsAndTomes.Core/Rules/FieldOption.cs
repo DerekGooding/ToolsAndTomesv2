@@ -1,13 +1,12 @@
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
-using ToolsAndTomes.Core.Rules;
 using ToolsAndTomes.Core.Simulation;
 
-namespace ToolsAndTomes.App;
+namespace ToolsAndTomes.Core.Rules;
 
 /// <summary>
 /// One thing the player can shape from fast-iron or use from cargo, as a ready command.
-/// Shared by the combat screen (issued as a command) and the rest screen (performed directly).
+/// Shared by every frontend's combat screen (issued as a command) and rest screen (performed directly).
 /// </summary>
 public sealed record FieldOption(string Label, UseActionCommand Command)
 {

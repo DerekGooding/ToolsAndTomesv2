@@ -1,11 +1,15 @@
 using Godot;
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
+using ToolsAndTomes.Core.Rules;
 using ToolsAndTomes.Core.Simulation;
 
 namespace ToolsAndTomes.Client;
 
-/// <summary>Placeholder HUD: status line, action bar, combat log, and controls help.</summary>
+/// <summary>
+/// Placeholder HUD: status line, lance line, action bar with the Field menu (shaping and cargo), combat log,
+/// an inspector (timeline, your Crest, your target), a leave/withdraw button, and the result panel.
+/// </summary>
 public partial class BattleHud : CanvasLayer
 {
     private Label _status = null!;
@@ -23,6 +27,24 @@ public partial class BattleHud : CanvasLayer
 
     /// <summary>Raised when the result panel's button is pressed.</summary>
     public event Action? ContinuePressed;
+
+    /// <summary>Raised when the player picks something to shape or use from the Field menu.</summary>
+    public event Action<FieldOption>? FieldOptionChosen;
+
+    /// <summary>Raised when the player leaves the fight (after confirming, when <see cref="LeaveConfirmText"/> is set).</summary>
+    public event Action? LeavePressed;
+
+    /// <summary>The leave button's text (null hides it).</summary>
+    public string? LeaveLabel { get; set; }
+
+    /// <summary>If set, leaving asks this question first.</summary>
+    public string? LeaveConfirmText { get; set; }
+
+    private RichTextLabel _inspector = null!;
+    private MenuButton _field = null!;
+    private List<FieldOption> _fieldOptions = [];
+    private Func<List<FieldOption>>? _fieldSource;
+    private Button _leave = null!;
 
     private PanelContainer _result = null!;
     private Label _resultHeadline = null!;
@@ -51,8 +73,19 @@ public partial class BattleHud : CanvasLayer
         AddChild(bottom);
         var bottomBox = new VBoxContainer();
         bottom.AddChild(bottomBox);
+        var barRow = new HBoxContainer();
+        barRow.AddThemeConstantOverride("separation", 10);
+        bottomBox.AddChild(barRow);
+        _field = new MenuButton { Text = "Field ▾", TooltipText = "Shape fast-iron (ammo, consumables, components) or use cargo", FocusMode = Control.FocusModeEnum.None };
+        _field.AboutToPopup += BuildFieldMenu;
+        _field.GetPopup().IdPressed += id =>
+        {
+            if (id >= 0 && id < _fieldOptions.Count)
+                FieldOptionChosen?.Invoke(_fieldOptions[(int)id]);
+        };
+        barRow.AddChild(_field);
         _actionBar = new HBoxContainer();
-        bottomBox.AddChild(_actionBar);
+        barRow.AddChild(_actionBar);
         bottomBox.AddChild(new Label
         {
             Text = "Left-click: select / place point action   Right-click: move   Space: pause   . : step beat   " +
@@ -67,6 +100,24 @@ public partial class BattleHud : CanvasLayer
         AddChild(right);
         _log = new RichTextLabel { BbcodeEnabled = true, ScrollFollowing = true, CustomMinimumSize = new Vector2(420, 250) };
         right.AddChild(_log);
+
+        // Inspector, top-left under the status lines: the timeline, your Crest, and your target.
+        var left = new PanelContainer { CustomMinimumSize = new Vector2(340, 0), Position = new Vector2(0, 110) };
+        AddChild(left);
+        _inspector = new RichTextLabel
+        {
+            BbcodeEnabled = true, FitContent = true, ScrollActive = false,
+            CustomMinimumSize = new Vector2(330, 0), MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        _inspector.AddThemeFontSizeOverride("normal_font_size", 13);
+        left.AddChild(_inspector);
+
+        _leave = new Button { Visible = false, FocusMode = Control.FocusModeEnum.None };
+        _leave.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+        _leave.GrowHorizontal = Control.GrowDirection.Begin;
+        _leave.Position = new Vector2(-12, 8);
+        _leave.Pressed += Leave;
+        AddChild(_leave);
 
         // The result panel, centered, shown when the fight is decided.
         var center = new CenterContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -95,6 +146,42 @@ public partial class BattleHud : CanvasLayer
         resultBox.AddChild(_resultBody);
         resultBox.AddChild(_resultButton);
     }
+
+    /// <summary>Where the Field menu gets its options (the player's Crest, right now).</summary>
+    public void SetFieldSource(Func<List<FieldOption>> source) => _fieldSource = source;
+
+    private void BuildFieldMenu()
+    {
+        var popup = _field.GetPopup();
+        popup.Clear();
+        _fieldOptions = _fieldSource?.Invoke() ?? [];
+        if (_fieldOptions.Count == 0)
+        {
+            popup.AddItem("Nothing to shape or use (needs a Shaping spell, fast-iron, or cargo)", -1);
+            popup.SetItemDisabled(0, true);
+            return;
+        }
+        for (int i = 0; i < _fieldOptions.Count; i++)
+            popup.AddItem(_fieldOptions[i].Label, i);
+    }
+
+    private void Leave()
+    {
+        if (LeaveConfirmText is null)
+        {
+            LeavePressed?.Invoke();
+            return;
+        }
+        var dialog = new ConfirmationDialog { Title = LeaveLabel ?? "Leave", DialogText = LeaveConfirmText, OkButtonText = LeaveLabel ?? "Leave" };
+        dialog.Confirmed += () => LeavePressed?.Invoke();
+        AddChild(dialog);
+        dialog.PopupCentered();
+    }
+
+    /// <summary>A one-line note under the status (e.g. what a Field command did).</summary>
+    public void Flash(string text) => _flash = text;
+
+    private string _flash = "";
 
     /// <summary>Shows the result panel (headline null: hidden).</summary>
     public void ShowResult(string? headline, string? body, string? buttonLabel, bool canRestart)
@@ -134,7 +221,10 @@ public partial class BattleHud : CanvasLayer
 
         _outcome.Text = sim.Outcome == EncounterOutcome.InProgress && armed is not null
             ? $"Armed {armed.Name}: left-click a point on the field."
-            : "";
+            : _flash;
+        _leave.Visible = LeaveLabel is not null && sim.Outcome == EncounterOutcome.InProgress;
+        _leave.Text = LeaveLabel ?? "";
+        RefreshInspector(sim, player, target);
 
         var impacts = sim.GetIncomingImpacts(player);
         _prompt.Text = impacts.Count > 0
@@ -211,6 +301,53 @@ public partial class BattleHud : CanvasLayer
             _actionBar.AddChild(button);
         }
     }
+
+    private void RefreshInspector(CombatSimulation sim, Combatant player, Combatant? target)
+    {
+        var text = new System.Text.StringBuilder();
+        text.Append("[b]Timeline[/b]\n");
+        var entries = sim.GetTimelineEntries()
+            .OrderBy(e => e.Faction)
+            .ThenBy(e => e.BeatsUntilImpact < 0 ? 999 : e.BeatsUntilImpact)
+            .ToList();
+        if (entries.Count == 0)
+            text.Append("[color=#8a8f99]Everyone idle.[/color]\n");
+        foreach (var e in entries.Take(8))
+        {
+            string who = e.Faction == Faction.Player ? "#7cc4ff" : "#ff9a5c";
+            string state = e.State switch
+            {
+                ActionState.Windup => "#ffd36b",
+                ActionState.Executing => "#ff6b6b",
+                ActionState.Recovery => "#b89cff",
+                ActionState.Interrupted => "#ff6b6b",
+                _ => "#8a8f99"
+            };
+            string impact = e.BeatsUntilImpact >= 0 ? $" · hits in {e.BeatsUntilImpact}" : "";
+            text.Append($"[color={who}]{Esc(e.ActorName)}[/color] [color={state}]{e.State}[/color] {Esc(e.ActionName)} ({e.BeatsRemaining}){impact}\n");
+        }
+
+        AppendCrest(text, "You", player);
+        if (target is not null)
+            AppendCrest(text, "Target", target);
+        _inspector.Text = text.ToString();
+    }
+
+    private static void AppendCrest(System.Text.StringBuilder text, string heading, Combatant c)
+    {
+        text.Append($"\n[b]{heading}: {Esc(c.Name)}[/b] [color=#8a8f99]{c.State}[/color]\n");
+        int n = 1;
+        foreach (var part in c.Loadout.DamageOrder)
+        {
+            var d = part.Definition;
+            string color = part.IsDisabled ? "#ff6b6b" : part.CurrentDurability < d.MaxDurability ? "#ffb36b" : "#d8dde6";
+            string hp = part.IsDisabled ? "OFF" : $"{part.CurrentDurability}/{d.MaxDurability}";
+            string ammo = d.MaxAmmo > 0 ? $" ammo {part.CurrentAmmo}" : "";
+            text.Append($"[color={color}]{n++}. {Esc(d.Name)} {hp}{ammo}[/color]\n");
+        }
+    }
+
+    private static string Esc(string s) => s.Replace("[", "[lb]");
 
     private void RefreshLog(CombatSimulation sim)
     {

@@ -48,6 +48,49 @@ public sealed class CampaignSessionTests
     }
 
     [TestMethod]
+    public void PilotsCrests_CanBeRefit_AndTheRefitIsSaved()
+    {
+        var session = new CampaignSession(_profile);
+        var targets = session.RefitTargets;
+        Assert.IsTrue(targets.Any(t => t.PilotId == "pilot_vell"));
+        var kestrel = targets.Single(t => t.PilotId == "pilot_vell").Loadout;
+        var mine = session.SelectedLoadout;
+
+        // Move the player's Cargo Rack onto Kestrel's Crest, and a spare into the player's.
+        var rack = mine.Installed.First(e => e.Definition.Id == "util_cargo_rack");
+        Assert.IsTrue(session.Transfer(mine, rack.InstanceId, kestrel));
+        Assert.IsNotNull(kestrel.FindById(rack.InstanceId));
+        var plate = session.SpareInventory.First(e => e.Definition.Id == "armor_heavy_plate");
+        Assert.IsTrue(session.InstallSpare(mine, plate.InstanceId));
+        Assert.IsTrue(session.Uninstall(kestrel, kestrel.Installed.First(e => e.Definition.Id == "eq_talon").InstanceId));
+        session.Save();
+
+        var reloaded = new CampaignSession(_profile);
+        var kestrelAgain = reloaded.PilotCrests["pilot_vell"];
+        CollectionAssert.Contains(kestrelAgain.Installed.Select(e => e.Definition.Id).ToList(), "util_cargo_rack");
+        CollectionAssert.DoesNotContain(kestrelAgain.Installed.Select(e => e.Definition.Id).ToList(), "eq_talon");
+        CollectionAssert.Contains(reloaded.SelectedLoadout.Installed.Select(e => e.Definition.Id).ToList(), "armor_heavy_plate");
+        Assert.IsTrue(reloaded.SpareInventory.Any(e => e.Definition.Id == "eq_talon"));
+    }
+
+    [TestMethod]
+    public void Refitting_IsBlockedDuringAMission_AndTheWorkshopRepairsForFree()
+    {
+        var session = new CampaignSession(_profile);
+        var mine = session.SelectedLoadout;
+        var part = mine.Installed[0];
+        part.ApplyDamage(part.Definition.MaxDurability);
+        session.RepairInWorkshop(mine);
+        Assert.AreEqual(part.Definition.MaxDurability, part.CurrentDurability);
+
+        session.StartMission("mis_first_patrol");
+        Assert.IsFalse(session.CanRefit);
+        Assert.IsFalse(session.Uninstall(mine, part.InstanceId));
+        Assert.IsFalse(session.InstallSpare(mine, session.SpareInventory[0].InstanceId));
+        Assert.IsFalse(session.Transfer(mine, part.InstanceId, session.PilotCrests["pilot_vell"]));
+    }
+
+    [TestMethod]
     public void QuittingMidFight_ResumesAtTheStartOfThatFight()
     {
         var session = new CampaignSession(_profile);

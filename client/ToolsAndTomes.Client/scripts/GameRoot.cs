@@ -22,6 +22,7 @@ namespace ToolsAndTomes.Client;
 /// the given mission, or, by default, the demo region in order (each newly unlocked mission next) until a mission
 /// fails. Prints a `CAMPAIGN AUTOPLAY` line per mission and quits (exit code 1 if one failed).</item>
 /// <item>`--profile &lt;path&gt;`: use another profile file.</item>
+/// <item>`--open workshop|missions|bay`: start on that screen (development and screenshots).</item>
 /// <item>`--beats-per-frame &lt;n&gt;`: autoplay speed (default 20); 1 makes a watchable recording with `--write-movie`.</item>
 /// <item>`--hold &lt;seconds&gt;`: in campaign autoplay, linger on each menu screen and result panel (for recordings).</item>
 /// </list>
@@ -77,6 +78,13 @@ public partial class GameRoot : Node
             return;
         }
 
+        switch (Arg("--open"))
+        {
+            case "workshop": ShowWorkshop(); return;
+            case "missions": ShowMissionSelect(); return;
+            case "bay": ShowCrestBay(); return;
+        }
+
         if (_session.ActiveMission is not null)
             Resume();
         else
@@ -109,8 +117,19 @@ public partial class GameRoot : Node
         bay.ResumeRequested += Resume;
         bay.QuickBattleRequested += () => QuickBattle(DefaultQuickBattle, solo: false);
         bay.QuitRequested += () => GetTree().Quit();
+        bay.WorkshopRequested += id => ShowWorkshop(id);
         Show(bay);
         return bay;
+    }
+
+    private WorkshopScreen ShowWorkshop(string? loadoutId = null)
+    {
+        var workshop = new WorkshopScreen(_session);
+        if (loadoutId is not null)
+            workshop.Focus(loadoutId);
+        workshop.BackRequested += () => ShowCrestBay();
+        Show(workshop);
+        return workshop;
     }
 
     private MissionSelectScreen ShowMissionSelect()
@@ -157,7 +176,14 @@ public partial class GameRoot : Node
             Autoplay = _campaignAutoplay,
             AutoplayBeatsPerFrame = _beatsPerFrame,
             AllowRestart = false,
-            ContinueLabel = "Continue"
+            ContinueLabel = "Continue",
+            LeaveLabel = "Withdraw",
+            LeaveConfirmText = "Withdraw from the mission? Samples already recovered are kept; this fight and the completion bonus are lost."
+        };
+        battle.LeaveRequested += () =>
+        {
+            _session.WithdrawFromMission();
+            ShowCrestBay();
         };
         battle.Finished += sim =>
         {
@@ -232,8 +258,10 @@ public partial class GameRoot : Node
             Autoplay = _autoplay,
             AutoplayBeatsPerFrame = _beatsPerFrame,
             AllowRestart = true,
-            ContinueLabel = _autoplay ? null : "Back to the Crest Bay"
+            ContinueLabel = _autoplay ? null : "Back to the Crest Bay",
+            LeaveLabel = "Crest Bay"
         };
+        battle.LeaveRequested += () => ShowCrestBay();
         battle.Finished += sim =>
         {
             if (!_autoplay)

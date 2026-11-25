@@ -2,6 +2,7 @@ using Godot;
 using ToolsAndTomes.Core.AI;
 using ToolsAndTomes.Core.Definitions;
 using ToolsAndTomes.Core.Instances;
+using ToolsAndTomes.Core.Rules;
 using ToolsAndTomes.Core.Simulation;
 
 namespace ToolsAndTomes.Client;
@@ -40,6 +41,13 @@ public partial class BattleController : Node3D
 
     /// <summary>Raised when the player presses the result panel's button.</summary>
     public event Action? ContinueRequested;
+
+    /// <summary>Raised when the player leaves mid-fight (the HUD's leave button).</summary>
+    public event Action? LeaveRequested;
+
+    /// <summary>The HUD's leave button text (null hides it), and an optional confirmation question.</summary>
+    public string? LeaveLabel { get; set; }
+    public string? LeaveConfirmText { get; set; }
 
     private readonly Dictionary<string, CrestView> _views = [];
     private EnemyAIController _enemyAi = new();
@@ -93,6 +101,15 @@ public partial class BattleController : Node3D
         AddChild(_hud);
         _hud.ActionPressed += OnActionPressed;
         _hud.ContinuePressed += () => ContinueRequested?.Invoke();
+        _hud.LeaveLabel = Autoplay ? null : LeaveLabel;
+        _hud.LeaveConfirmText = LeaveConfirmText;
+        _hud.LeavePressed += () => LeaveRequested?.Invoke();
+        _hud.SetFieldSource(() => FieldOption.Build(_catalog, _player));
+        _hud.FieldOptionChosen += option =>
+        {
+            var result = _sim.IssueCommand(option.Command);
+            _hud.Flash(result.IsValid ? $"Ordered: {option.Label}" : $"Can't: {result.FailureReason}");
+        };
         _sounds = new SoundBank();
         AddChild(_sounds);
 

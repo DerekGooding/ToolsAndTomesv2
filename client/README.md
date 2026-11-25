@@ -31,17 +31,28 @@ The main scene (`scenes/Main.tscn`, `GameRoot`) runs the campaign:
   - Pick your Crest, and see its stats and Damage Order.
   - Choose your lance (up to two allied pilots).
   - Research recovered samples.
+  - Open the Workshop for your Crest or a pilot's.
   - Start, resume, or withdraw from a mission, or play a quick battle.
+- **Workshop:** refit any Crest, yours or an allied pilot's, between missions:
+  - rename it, or save it as a new assembly;
+  - reorder the Damage Order; install and uninstall parts; move a part straight to another Crest;
+  - fabricate known blueprints into spares;
+  - load cargo;
+  - add, reorder, and remove reaction rules;
+  - repair for free;
+  - reset all progress (asks first).
 - **Mission Select:** every mission, with its fights, its completion bonus, and what unlocks it.
-- **Fight:** the 3D battle. When it's decided, a result panel shows the samples recovered, which allies are down, and a Continue button.
-- **Rest:** switch between the lance's Crests. Wait for Motes, cast Square Summon, repair the selected component, and hand fast-iron to an ally. Then continue or withdraw.
+- **Fight:** the 3D battle, with:
+  - an inspector at the top left: the timeline of who is winding up and when each hit lands, then your Crest's and your target's parts;
+  - a **Field ▾** menu by the action bar: shape ammo, consumables, or components, or use cargo, mid-fight;
+  - a **Withdraw** button at the top right (it asks first).
+
+  When the fight is decided, a result panel shows the samples recovered, which allies are down, and a Continue button.
+- **Rest:** switch between the lance's Crests. Wait for Motes, cast Square Summon, repair the selected component, hand fast-iron to an ally, and shape fast-iron or use cargo. Then continue or withdraw.
 
 The campaign is `CampaignSession` in Core, so the Godot client and the WPF tool (`dotnet run --project src/ToolsAndTomes.App`) share one profile: `%LOCALAPPDATA%\ToolsAndTomes\profile.json`. A mission is saved between fights. Quit at any point and the game resumes at the rest, or at the start of the interrupted fight.
 
-**Not in the Godot client yet** (use the WPF tool for now):
-- refitting components and the Damage Order;
-- fabricating parts;
-- shaping fast-iron and using cargo during a rest.
+Everything the WPF tool does is now in the Godot client too. The WPF tool remains a 2D debugging and balancing view.
 
 ## Controls
 
@@ -66,6 +77,7 @@ Options go after `--`, e.g. `tools/godot.ps1 --path client/ToolsAndTomes.Client 
 | `--autoplay` | Quick battle on autopilot at full speed; prints `AUTOPLAY RESULT` and quits |
 | `--campaign-autoplay [missionId]` | Plays through the real screens on autopilot with a throwaway profile: the given mission, or the whole demo region in order until a mission fails. Prints a `CAMPAIGN AUTOPLAY` line per mission. Exit code 1 if a mission failed. |
 | `--profile <path>` | Use another profile file |
+| `--open workshop\|missions\|bay` | Start on that screen |
 | `--beats-per-frame <n>`, `--hold <s>` | Slow autoplay down and linger on each screen, for recordings |
 
 ```powershell

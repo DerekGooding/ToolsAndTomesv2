@@ -6,6 +6,9 @@ using ToolsAndTomes.Core.Workshop;
 
 namespace ToolsAndTomes.Core.Campaign;
 
+/// <summary>A Crest the player can refit: one of their assemblies, or an allied pilot's Crest.</summary>
+public sealed record RefitTarget(string Label, CrestLoadout Loadout, string? PilotId);
+
 /// <summary>
 /// The player's campaign, shared by every frontend (the WPF tool and the Godot client): Crest assemblies and
 /// spares, Workshop research, allied pilots and the lance, the mission in progress, and the saved profile.
@@ -99,36 +102,62 @@ public sealed class CampaignSession
         return freshAssembly;
     }
 
-    public bool UninstallFromSelected(string instanceId)
+    public bool UninstallFromSelected(string instanceId) => Uninstall(SelectedLoadout, instanceId);
+
+    public bool InstallFromSpare(string instanceId) => InstallSpare(SelectedLoadout, instanceId);
+
+    public bool TransferToOtherAssembly(string instanceId, string targetAssemblyId) =>
+        CrestAssemblies.FirstOrDefault(c => c.Id == targetAssemblyId) is { } target &&
+        Transfer(SelectedLoadout, instanceId, target);
+
+    // ---- Refitting any Crest (your assemblies and the pilots' Crests) ---------------------------
+
+    /// <summary>Refitting happens in the Workshop, between missions (a mission's Crests are in the field).</summary>
+    public bool CanRefit => ActiveMission is null;
+
+    /// <summary>Every Crest the player can refit: their own assemblies, then each pilot's Crest.</summary>
+    public IReadOnlyList<RefitTarget> RefitTargets =>
+        CrestAssemblies.Select(a => new RefitTarget(a.Name, a, null))
+            .Concat(Catalog.Pilots.Values
+                .Where(p => PilotCrests.ContainsKey(p.Id))
+                .Select(p => new RefitTarget($"{p.DisplayName}'s {PilotCrests[p.Id].Name}", PilotCrests[p.Id], p.Id)))
+            .ToList();
+
+    /// <summary>Moves an installed component into the spares inventory.</summary>
+    public bool Uninstall(CrestLoadout from, string instanceId)
     {
-        var removed = SelectedLoadout.Uninstall(instanceId);
-        if (removed is null)
+        if (!CanRefit || from.Uninstall(instanceId) is not { } removed)
             return false;
 
         SpareInventory.Add(removed);
         return true;
     }
 
-    public bool InstallFromSpare(string instanceId)
+    /// <summary>Installs a spare (non-Core parts go before the Core in the Damage Order).</summary>
+    public bool InstallSpare(CrestLoadout into, string instanceId)
     {
-        var item = SpareInventory.FirstOrDefault(e => e.InstanceId == instanceId);
-        if (item is null)
+        if (!CanRefit || SpareInventory.FirstOrDefault(e => e.InstanceId == instanceId) is not { } item)
             return false;
-
-        if (!SelectedLoadout.Install(item))
+        if (!into.Install(item))
             return false; // an identical instance is already installed; the spare stays in inventory
 
         SpareInventory.Remove(item);
         return true;
     }
 
-    public bool TransferToOtherAssembly(string instanceId, string targetAssemblyId)
-    {
-        var target = CrestAssemblies.FirstOrDefault(c => c.Id == targetAssemblyId);
-        if (target is null)
-            return false;
+    /// <summary>Moves an installed component straight from one Crest to another.</summary>
+    public bool Transfer(CrestLoadout from, string instanceId, CrestLoadout to) =>
+        CanRefit && from.TransferComponentTo(instanceId, to);
 
-        return SelectedLoadout.TransferComponentTo(instanceId, target);
+    /// <summary>The Workshop repairs and restocks for free (missions start repaired anyway).</summary>
+    public void RepairInWorkshop(CrestLoadout crest)
+    {
+        crest.RepairAll();
+        foreach (var spare in SpareInventory)
+        {
+            spare.Repair();
+            spare.RefillAmmo();
+        }
     }
 
     // ---- Research ---------------------------------------------------------------------------
