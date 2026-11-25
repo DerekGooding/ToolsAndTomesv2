@@ -65,9 +65,10 @@ Everything the WPF tool does is now in the Godot client too. The WPF tool remain
 
 | Input | Action |
 |---|---|
-| Left-click | Select an enemy target / place a point-targeted action |
+| Left-click | Select an enemy target / place a point-targeted action / pick yourself or an ally for Ward Ally or Quick Mend |
 | Right-click | Move |
-| Action bar | Use an action (reactions light up during incoming impacts) |
+| Action bar | Use an action: weapons, then tome spells (purple), then core spells (grey). Reactions light up during incoming impacts. |
+| Field ▾ | Shape fast-iron, use cargo, or swap a stowed handheld (Weapon Harness) into a hand |
 | Space / `.` | Pause / step one beat while paused |
 | Tab | Next target |
 | WASD, Q/E, wheel, middle-drag | Pan (takes manual control), rotate, zoom, orbit/tilt the camera |

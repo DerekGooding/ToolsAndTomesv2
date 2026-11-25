@@ -192,21 +192,29 @@ public sealed class DamageAndCombatRulesTests
     }
 
     [TestMethod]
-    public void ResourceValidation_BlocksActionsWithoutMotesAmmoOrAmplifier()
+    public void ResourceValidation_BlocksTomeSpellsWithoutTheTomeOrMotes()
     {
-        var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5), startingMotes: 0);
+        // The Agile build holds the Tome of Wards: Gravity Crush (Tome of Force) isn't available.
+        var wards = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5), startingMotes: 3);
         var enemy = CreateEnemy("enemy_bruiser", new Vec2(8, 5));
+        Assert.IsFalse(new CombatSimulation([wards, enemy], seed: 1)
+            .IssueCommand(new UseActionCommand(wards.Id, "spell_gravity_crush", enemy.Id)).IsValid);
+
+        var forceBuild = ConfigurationCatalog.AgileSkirmish with
+        {
+            ComponentIds = ConfigurationCatalog.AgileSkirmish.ComponentIds.Select(id => id == "tome_wards" ? "tome_force" : id).ToList()
+        };
+        var player = CreatePlayer(forceBuild, new Vec2(4, 5), startingMotes: 0);
+        enemy = CreateEnemy("enemy_bruiser", new Vec2(8, 5));
         var sim = new CombatSimulation([player, enemy], seed: 1);
 
-        var noMote = sim.IssueCommand(new UseActionCommand(player.Id, "spell_gravity_crush", enemy.Id));
-        Assert.IsFalse(noMote.IsValid);
-
+        Assert.IsFalse(sim.IssueCommand(new UseActionCommand(player.Id, "spell_gravity_crush", enemy.Id)).IsValid, "no Mote");
         player.Resources.AddMotes(2, 5);
-        var amp = player.Loadout.Installed.First(e => e.Definition.Id == "eq_spell_amplifier");
-        amp.ApplyDamage(amp.Definition.MaxDurability);
+        Assert.IsTrue(ActionValidationRules.ValidateUseAction(player, GameCatalog.Default.GetAction("spell_gravity_crush"), enemy, null).IsValid);
 
-        var noAmp = sim.IssueCommand(new UseActionCommand(player.Id, "spell_gravity_crush", enemy.Id));
-        Assert.IsFalse(noAmp.IsValid);
+        var tome = player.Loadout.Installed.First(e => e.Definition.Id == "tome_force");
+        tome.ApplyDamage(tome.Definition.MaxDurability);
+        Assert.IsFalse(sim.IssueCommand(new UseActionCommand(player.Id, "spell_gravity_crush", enemy.Id)).IsValid, "the tome is broken");
     }
 
     [TestMethod]
@@ -229,7 +237,7 @@ public sealed class DamageAndCombatRulesTests
     public void MoteCostAboveStorageCapacity_IsRejected()
     {
         var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5), startingMotes: 5);
-        var book = player.Loadout.Installed.First(e => e.Definition.IsSpellbook);
+        var book = player.Loadout.Installed.First(e => e.Definition.IsTome);
         var sixMoteSpell = GameCatalog.Default.GetAction("spell_square_summon") with { MoteCost = 6 };
 
         var result = ActionValidationRules.ValidateUseAction(player, sixMoteSpell, null, null);

@@ -40,23 +40,53 @@ public static class LoadoutRules
         if (stats.CargoUsed > stats.CargoCapacity)
             warnings.Add($"Cargo over capacity: {stats.CargoUsed} units loaded, {stats.CargoCapacity} available.");
 
+        var unheld = order.Where(e => e.IsOperational && loadout.HoldStateOf(e) == HoldState.Unheld).ToList();
+        if (unheld.Count > 0)
+            warnings.Add($"No free hand for {string.Join(", ", unheld.Select(e => e.Definition.Name))}: " +
+                         $"{(unheld.Count == 1 ? "it doesn't" : "they don't")} work. Add an extra limb, or remove a handheld.");
+
+        // A limb that takes hits before what it holds can lose it early.
+        foreach (var part in order)
+        {
+            if (loadout.HoldStateOf(part) != HoldState.Limb || loadout.HolderOf(part) is not { } limb)
+                continue;
+            int limbIndex = IndexOf(order, limb), partIndex = IndexOf(order, part);
+            if (limbIndex < partIndex)
+                warnings.Add($"LIMB BEFORE ITS ITEM: the {limb.Definition.Name} takes hits before the {part.Definition.Name} it holds. " +
+                             $"Lose the limb, lose the {part.Definition.Name}. Move the {limb.Definition.Name} later in the Damage Order.");
+        }
+
         return warnings;
     }
 
     /// <summary>Derives a Crest's capabilities purely from its operational components. Pure; see <see cref="CrestLoadout.GetStats"/> for the cached form.</summary>
+    private static int IndexOf(IReadOnlyList<Instances.EquipmentInstance> order, Instances.EquipmentInstance part)
+    {
+        for (int i = 0; i < order.Count; i++)
+            if (ReferenceEquals(order[i], part))
+                return i;
+        return -1;
+    }
+
+    /// <summary>
+    /// The Crest's stats. Only <i>active</i> components count: operational and, if handheld, held in a working
+    /// hand (stowed, unheld, and limb-dropped handhelds give nothing). Weight counts everything carried.
+    /// </summary>
     public static CrestStats ComputeStats(CrestLoadout loadout, RulesConfig? rules = null)
     {
-        var r = rules ?? RulesConfig.Default;
+        var r = rules ?? loadout.Rules;
 
         // All installed components contribute physical mass, even if disabled, as does carried cargo.
         int totalWeight = loadout.Installed.Sum(e => e.Definition.Weight) + loadout.CargoWeight(r);
-        var operational = loadout.Installed.Where(e => e.IsOperational).ToList();
+        var operational = loadout.Installed.Where(loadout.IsActive).ToList();
 
-        bool hasSpellbook = operational.Any(e => e.Definition.IsSpellbook);
+        int tomesHeld = operational.Count(e => e.Definition.IsTome);
         bool hasAmplifier = operational.Any(e => e.Definition.IsSpellAmplifier);
         bool isCoreOperational = operational.Any(e => e.Definition.IsCore);
+        int hands = r.BaseHands + loadout.Installed.Where(e => e.IsOperational).Sum(e => e.Definition.ExtraHands);
+        int unheld = loadout.Installed.Count(e => e.IsOperational && loadout.HoldStateOf(e) == HoldState.Unheld);
 
-        int basePilotWit = hasSpellbook ? r.BaseWitWithSpellbook : r.BaseWitWithoutSpellbook;
+        int basePilotWit = tomesHeld > 0 ? r.BaseWitWithTome : r.BaseWitWithoutTome;
         int maxWit = basePilotWit + operational.Sum(e => e.Definition.BonusWitCapacity);
         int witTax = operational.Sum(e => e.Definition.WitTax);
 
@@ -87,7 +117,10 @@ public static class LoadoutRules
             MoveSpeed = moveSpeed,
             DisplacementResistance = dispResist,
             BonusProtectionDice = bonusProtectionDice,
-            HasSpellbook = hasSpellbook,
+            HasTome = tomesHeld > 0,
+            TomesHeld = tomesHeld,
+            Hands = hands,
+            UnheldHandhelds = unheld,
             HasSpellAmplifier = hasAmplifier,
             IsCoreOperational = isCoreOperational,
             MaxWit = maxWit,

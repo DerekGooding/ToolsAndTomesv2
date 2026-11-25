@@ -167,7 +167,7 @@ public partial class WorkshopScreen : Control
         Ui.Clear(_installed);
         int n = 1;
         foreach (var part in Crest.DamageOrder)
-            _installed.AddChild(PartButton(part, n++, part.InstanceId == _selectedPart, id => _selectedPart = id));
+            _installed.AddChild(PartButton(part, n++, part.InstanceId == _selectedPart, id => _selectedPart = id, Crest));
 
         Ui.Clear(_partTools);
         var selected = _selectedPart is null ? null : Crest.FindById(_selectedPart);
@@ -198,6 +198,29 @@ public partial class WorkshopScreen : Control
             }
         };
         _partTools.AddChild(transferTo);
+
+        // Hands: put the selected handheld in the own hands, an extra limb, or a harness.
+        if (selected is { Definition.Handheld: true } && _session.CanRefit)
+        {
+            var holders = Crest.Installed.Where(e => e.Definition.ExtraHands > 0 || e.Definition.StowSlots > 0).ToList();
+            var holdIn = new OptionButton { TooltipText = "Which hand holds the selected handheld" };
+            holdIn.AddItem("Hold in…", -2);
+            holdIn.AddItem("Own hands", -1);
+            for (int i = 0; i < holders.Count; i++)
+                holdIn.AddItem(holders[i].Definition.ExtraHands > 0 ? $"{holders[i].Definition.Name} (limb)" : $"{holders[i].Definition.Name} (stow)", i);
+            holdIn.ItemSelected += index =>
+            {
+                int pick = holdIn.GetItemId((int)index);
+                if (pick == -2)
+                    return;
+                string? holderId = pick < 0 ? null : holders[pick].InstanceId;
+                if (Crest.SetHolder(selected.InstanceId, holderId))
+                    Commit(pick < 0 ? $"{selected.Definition.Name} goes in the own hands." : $"{selected.Definition.Name} → {holders[pick].Definition.Name}.");
+                else
+                    _message.Text = $"{holders[pick].Definition.Name} has no room.";
+            };
+            _partTools.AddChild(holdIn);
+        }
         AddTool(_partTools, "Repair all", _session.CanRefit, () =>
         {
             _session.RepairInWorkshop(Crest);
@@ -308,16 +331,17 @@ public partial class WorkshopScreen : Control
         var s = LoadoutRules.ComputeStats(Crest, Rules);
 
         _right.AddChild(Ui.Heading("Stats", Ui.Accent));
+        _right.AddChild(Ui.Text(Ui.MagicLine(Crest, Rules), Ui.Ink, 14));
         _right.AddChild(Ui.Text(
             $"Weight {s.TotalWeight} / leg load {s.LoadCapacity}{(s.TotalWeight >= 90 ? " (heavy)" : "")}   ·   speed {s.MoveSpeed}/beat\n" +
             $"Wit {s.AvailableWit(0)} free of {s.MaxWit} (tax {s.EquipmentWitTax})   ·   Motes {s.MaxMotes} (+1 / {s.MoteGenerationIntervalBeats}s)\n" +
             $"Protection 1 + {s.BonusProtectionDice} dice (5+ saves)   ·   displacement resist {s.DisplacementResistance}\n" +
-            $"Heat {s.HeatCapacity}, −{s.HeatDissipationPerBeat}/beat   ·   Spellbook {(s.HasSpellbook ? "yes" : "no")}   ·   " +
+            $"Heat {s.HeatCapacity}, −{s.HeatDissipationPerBeat}/beat   ·   Tomes held {s.TomesHeld}   ·   " +
             $"Amplifier {(s.HasSpellAmplifier ? "yes" : "no")}", Ui.Ink, 14));
         if (!s.IsCoreOperational)
             _right.AddChild(Ui.Text("No working Core: install or repair one before launching.", Ui.Bad, 14));
         foreach (var warning in LoadoutRules.GetWarnings(Crest, Rules))
-            _right.AddChild(Ui.Text("⚠ " + warning, Ui.Accent, 13));
+            _right.AddChild(Ui.Text("⚠ " + warning, warning.StartsWith("LIMB BEFORE") ? Ui.Bad : Ui.Accent, 13));
 
         _right.AddChild(Ui.Heading("Actions", Ui.Accent));
         foreach (var a in Crest.GetOperationalActionIds().Select(catalog.GetAction).OrderBy(a => a.Category).ThenBy(a => a.Name))
@@ -394,12 +418,12 @@ public partial class WorkshopScreen : Control
 
     // ---- Helpers ---------------------------------------------------------------------------------
 
-    private Button PartButton(EquipmentInstance part, int index, bool selected, Action<string> select)
+    private Button PartButton(EquipmentInstance part, int index, bool selected, Action<string> select, CrestLoadout? loadout = null)
     {
         var d = part.Definition;
         string extra = (d.WitTax > 0 ? $"  ·  Wit tax {d.WitTax}" : "") + (d.BonusWitCapacity > 0 ? $"  ·  +{d.BonusWitCapacity} Wit" : "") + $"  ·  wt {d.Weight}";
-        var button = SelectButton($"{Ui.ComponentLine(part, index)}   [{d.Category}]{extra}", selected, () => select(part.InstanceId));
-        if (part.IsDisabled)
+        var button = SelectButton($"{Ui.ComponentLine(part, index, loadout)}   [{d.Category}]{extra}", selected, () => select(part.InstanceId));
+        if (part.IsDisabled || loadout?.HoldStateOf(part) == HoldState.Unheld)
             button.Modulate = Ui.Bad;
         return button;
     }

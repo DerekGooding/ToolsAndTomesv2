@@ -65,14 +65,47 @@ public sealed record ActionDefinition
     /// <summary>Uninterruptible actions ignore disruption, interruption, and cancellation.</summary>
     public bool IsUninterruptible { get; init; }
 
-    public bool RequiresSpellAmplifier { get; init; }
-    public bool RequiresSpellbook { get; init; }
 
     /// <summary>
     /// Reactions are declared during a beat and resolve at the end of that same beat,
     /// before any impacts. They have no windup.
     /// </summary>
     public bool IsReactive { get; init; }
+
+    // ---- Tome spell effects ----
+
+    /// <summary>Extra damage against some targets (see <see cref="DamageType"/>).</summary>
+    public DamageType DamageType { get; init; }
+
+    /// <summary>After hitting its target, the action jumps to up to this many more enemies, each within <see cref="ChainRange"/> of the last.</summary>
+    public int ChainJumps { get; init; }
+    public int ChainRange { get; init; }
+
+    /// <summary>Extra protection dice granted to allies in the area (the caster included) for <see cref="BuffDurationBeats"/>.</summary>
+    public int ProtectionBonusDice { get; init; }
+    public int BuffDurationBeats { get; init; }
+
+    /// <summary>Slow: the target's movement speed drops by this much (to a minimum of 1) for <see cref="SlowBeats"/>.</summary>
+    public int SlowAmount { get; init; }
+    public int SlowBeats { get; init; }
+
+    /// <summary>The target's next windup takes this many extra beats.</summary>
+    public int WindupDelay { get; init; }
+
+    /// <summary>Pin: the target can't move, dash, blink, or be displaced for this many beats.</summary>
+    public int PinBeats { get; init; }
+
+    /// <summary>Durability restored to the target's most damaged part (a disabled part comes back).</summary>
+    public int MendPoints { get; init; }
+
+    /// <summary>Fast-iron the caster spends when the action takes effect (Quick Mend, Conjured Blade).</summary>
+    public int FastIronSpent { get; init; }
+
+    /// <summary>A component conjured into a free hand until the fight ends.</summary>
+    public string? ConjuresComponentId { get; init; }
+
+    /// <summary>A harness swap: exchanges the stowed handheld with the held item named by the command.</summary>
+    public bool IsSwap { get; init; }
 
     [System.Text.Json.Serialization.JsonIgnore]
     public int TotalBeats => WindupBeats + ImpactBeats + RecoveryBeats;

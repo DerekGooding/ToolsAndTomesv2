@@ -3,7 +3,7 @@
     "id": "pilot_marrow",
     "name": "Hollis Marrow",
     "callsign": "Anvil",
-    "description": "A veteran Warden-trained guard. Plants heavy legs, takes the hits meant for you, and answers with a holy-iron blade.",
+    "description": "A veteran Warden-trained guard. Plants heavy legs, takes the hits meant for you, wards the lance from his Tome of Wards, and answers with a holy-iron blade.",
     "assembly": {
       "id": "cfg_pilot_marrow",
       "name": "Anvil's Bulwark",
@@ -11,6 +11,7 @@
         "armor_heavy_plate",
         "eq_repulsor",
         "eq_righteous",
+        "tome_wards",
         "mob_anchor_legs",
         "core_aether_furnace"
       ],
@@ -23,7 +24,7 @@
     "id": "pilot_vell",
     "name": "Sera Vell",
     "callsign": "Kestrel",
-    "description": "A border scout who never stops moving. Hangs back, salvos from range, and darts in with a Talon when a target falters.",
+    "description": "A border scout who never stops moving. Hangs back, salvos from range, calls lightning from her Tome of Storms, and darts in with a Talon when a target falters.",
     "assembly": {
       "id": "cfg_pilot_vell",
       "name": "Kestrel's Lance",
@@ -31,6 +32,7 @@
         "eq_jump_jets",
         "eq_falconet",
         "eq_talon",
+        "tome_storms",
         "mob_stride_legs",
         "core_aether_dynamo"
       ]

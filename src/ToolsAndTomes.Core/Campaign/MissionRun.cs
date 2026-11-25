@@ -157,6 +157,7 @@ public sealed class MissionRun
                 Assembly = c.Loadout.ExportConfiguration(),
                 Components = c.Loadout.DamageOrder.Select(e => new ComponentSave(e.InstanceId, e.CurrentDurability, e.CurrentAmmo)).ToList(),
                 Motes = c.Resources.CurrentMotes,
+                MoteProgressBeats = c.Resources.MoteGenerationProgressBeats,
                 FastIron = c.Resources.FastIron,
                 CarriedFastIron = c.Loadout.CarriedFastIron,
                 Consumables = c.Loadout.CarriedConsumables
@@ -198,6 +199,7 @@ public sealed class MissionRun
         {
             crest.Resources.TrySpendMotes(crest.Resources.CurrentMotes);
             crest.Resources.AddMotes(saved.Motes, int.MaxValue);
+            crest.Resources.RestoreMoteProgress(saved.MoteProgressBeats);
             crest.Resources.AddFastIron(saved.FastIron);
         }
 
@@ -242,11 +244,12 @@ public sealed class MissionRun
             return part;
         });
 
-        var loadout = new CrestLoadout(saved.Assembly.Id, saved.Assembly.Name, parts);
+        var loadout = new CrestLoadout(saved.Assembly.Id, saved.Assembly.Name, parts) { Rules = catalog.Rules };
         foreach (var rule in saved.Assembly.ReactionRules.Where(r => catalog.Actions.TryGetValue(r.ActionId, out var a) && a.IsReactive))
             loadout.AddReactionRule(rule);
         loadout.SetCargoManifest(saved.Assembly.Cargo, catalog);
         loadout.RestoreCargo(saved.CarriedFastIron, saved.Consumables, catalog);
+        loadout.ApplyHoldings(saved.Assembly.Holdings);
         return loadout;
     }
 
@@ -283,6 +286,8 @@ public sealed class MissionRun
             throw new InvalidOperationException("The encounter is still in progress.");
 
         ActiveSimulation = null;
+        foreach (var crest in Lance)
+            crest.Loadout.RemoveConjured(); // conjured parts last only until the fight ends
         if (sim.Outcome == EncounterOutcome.PlayerDefeat)
         {
             Phase = MissionPhase.Failed;
@@ -363,8 +368,6 @@ public sealed class MissionRun
             .FirstOrDefault(a => a.FastIronProduced > 0);
         if (summon is null)
             return RestResult.Fail("No operational component can cast Square Summon.");
-        if (summon.RequiresSpellbook && !crest.Stats.HasSpellbook)
-            return RestResult.Fail($"{summon.Name} requires an operational Spellbook.");
         if (summon.MoteCost > crest.Stats.MaxMotes)
             return RestResult.Fail($"{summon.Name} needs {summon.MoteCost} Motes; this Crest can only store {crest.Stats.MaxMotes}.");
         if (!crest.Resources.TrySpendMotes(summon.MoteCost))
@@ -409,8 +412,6 @@ public sealed class MissionRun
         var shaping = crest.Loadout.GetOperationalActionIds().Select(Catalog.GetAction).FirstOrDefault(a => a.IsShaping);
         if (shaping is null)
             return RestResult.Fail("No operational component can cast a Shaping spell.");
-        if (shaping.RequiresSpellbook && !crest.Stats.HasSpellbook)
-            return RestResult.Fail($"{shaping.Name} requires an operational Spellbook.");
 
         var command = new UseActionCommand(crest.Id, shaping.Id, OwnComponentInstanceId: ownComponentInstanceId, Shaping: order);
         var (check, plan) = ShapingRules.Validate(crest, shaping, command, Catalog);

@@ -22,7 +22,21 @@ public enum TargetingType
 {
     Self,
     EnemyUnit,
-    Point
+    Point,
+
+    /// <summary>A Crest on the caster's own side (the caster included), e.g. Ward Ally or Quick Mend.</summary>
+    AllyUnit
+}
+
+/// <summary>
+/// What kind of damage an action deals. Physical has no extra effect. Electrical deals extra damage per tome the
+/// target holds; Disjunction deals extra damage per few points of the target's equipment Wit tax.
+/// </summary>
+public enum DamageType
+{
+    Physical,
+    Electrical,
+    Disjunction
 }
 
 /// <summary>

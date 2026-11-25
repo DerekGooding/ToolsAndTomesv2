@@ -252,7 +252,7 @@ The free demo's region (`region: "border_march"`), played in order with the lanc
 
 ---
 
-## 3b. Tomes and Magic [Decided Nov 2026: in progress]
+## 3b. Tomes and Magic [Implemented Nov 2026, except Iron Wall]
 
 The "Tomes" half of Tools and Tomes. Today one *Inventor's Spellbook* component grants every spell. This section replaces that with **core spells** every pilot knows and **tomes** held in a Crest's hands.
 
@@ -393,6 +393,40 @@ All demo balance numbers are re-measured afterwards with `--missions --allies al
 3. **Several tomes:** allowed.
 4. **Obstacles** are a later phase of their own; Iron Wall arrives with them.
 5. **Names and numbers:** accepted as drafted, including "Disjunction"; the values get tuned in playtests.
+
+### As built (Nov 2026)
+- **Rules engine:**
+  - **The loadout decides what works.** A part is *active* if it is operational and, if handheld, held in a working hand. Only active parts give actions and stat bonuses.
+  - **Own hands:** they hold the first operational handhelds that no limb or harness holds, in Damage Order, so reordering the Damage Order decides which ones the Crest holds.
+  - **Holdings:** limb and harness assignments are saved in assemblies as `holdings` (component indices).
+  - **Core spells** come from a *pilot* pseudo-provider. It is never installed or hit, casts one core spell at a time, and can be locked out by interruption.
+- **Added during implementation:**
+  - **A broken handheld lets go of its hand** (it is "dropped"). A repaired or freshly shaped replacement takes the free hand. Shaped handhelds go into a free hand or a free limb.
+  - **Saved missions keep the Mote timer's progress.** This was a latent gap that the new spells exposed, because Mote timing now matters.
+- **Every pilot is a caster, enemies included.** Enemies know the core spells too. The enemy AI only considers actions aimed at enemies, so it never gets stuck on utility spells.
+- **Support casting:** the shared autopilot (the player's autopilot, allies, and Warlords) casts support spells before attacking:
+  - Ward Ally on the most-threatened lance member that has no ward;
+  - Bulwark when two or more of the lance are close and under threat;
+  - Quick Mend on a Crest with broken parts;
+  - Conjured Blade while it can spare the fast-iron.
+- **Content changes:**
+  - The Arcane Amplifier is now unlocked by Stormglass research.
+  - The two starter builds and Kastor were refit for the hand limit (see the table above).
+  - The Vesper Stormcaller holds the Border Fort.
+  - The finale is now Kastor (Tome of Force, Titan in hand, Righteous Blade on an Articulated Arm) with two Stormcallers and a Skyblade.
+- **Balance** (autopilot, full lance, 200 seeds, Agile / Heavy):
+
+  | Mission | Agile | Heavy | Average | Target |
+  |---|---|---|---|---|
+  | First Patrol | 100% | 100% | 100% | ~90%+ |
+  | Border Patrol | 88% | 56% | ~72% | 60–70% |
+  | The Warlord's Gate | 51% | 32% | ~41% | ~40% |
+
+  Border Patrol sits at the top edge of its target. Heavy's misses there are mostly timeouts: the slow autopilot chases Skirmishers.
+- **UI:**
+  - **Workshop (Godot):** each handheld shows "in hand", "held by …", "stowed", "NO FREE HAND", or "dropped". A *Hold in…* picker assigns limbs and harnesses. The stats show hands, tomes held, and electrical/disjunction exposure, and the limb warning is red.
+  - **Battle:** Ward Ally and Quick Mend arm, then take a click on yourself or an ally. Harness swaps are in the Field menu. The action bar shows weapons, then tome spells (purple), then core spells.
+- **Not yet:** Iron Wall (comes with the Obstacles phase); written tabletop AI rules for allies and casters.
 
 ---
 

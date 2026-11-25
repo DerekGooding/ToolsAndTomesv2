@@ -32,8 +32,8 @@ public static class ContentValidator
             if (a.HitCount < 1) errors.Add($"{at}: hitCount must be at least 1.");
             if (a.MoteCost > 0 && a.MoteCost > MaxPossibleMoteStorage(catalog))
                 errors.Add($"{at}: moteCost {a.MoteCost} exceeds the storage of a Crest carrying one of every component.");
-            if (!catalog.Equipment.Values.Any(e => e.GrantedActionIds.Contains(a.Id)))
-                errors.Add($"{at}: no component grants this action.");
+            if (!catalog.Rules.CoreSpellIds.Contains(a.Id) && !catalog.Equipment.Values.Any(e => e.GrantedActionIds.Contains(a.Id)))
+                errors.Add($"{at}: no component grants this action (and it isn't a core spell).");
         }
 
         // Equipment
@@ -72,9 +72,34 @@ public static class ContentValidator
             var unlockable = catalog.Materials.Values.SelectMany(m => m.UnlocksComponentIds).ToHashSet();
             foreach (var e in catalog.Equipment.Values)
             {
-                if (!catalog.BaselineComponentIds.Contains(e.Id) && !unlockable.Contains(e.Id))
+                if (!e.ConjuredOnly && !catalog.BaselineComponentIds.Contains(e.Id) && !unlockable.Contains(e.Id))
                     errors.Add($"component '{e.Id}': not in a starter build and not unlocked by any material (unobtainable).");
             }
+        }
+
+        // Tomes, hands, and spells
+        foreach (var id in catalog.Rules.CoreSpellIds.Where(id => !catalog.Actions.ContainsKey(id)))
+            errors.Add($"rules: core spell '{id}' is not an action.");
+        if (catalog.Rules.BaseHands < 0) errors.Add("rules: baseHands cannot be negative.");
+        foreach (var e in catalog.Equipment.Values)
+        {
+            string at = $"component '{e.Id}'";
+            if (e.IsTome && !e.Handheld) errors.Add($"{at}: a tome must be handheld.");
+            if (e.Handheld && (e.ExtraHands > 0 || e.StowSlots > 0)) errors.Add($"{at}: a handheld can't be a limb or harness.");
+            if (e.ExtraHands < 0 || e.StowSlots < 0) errors.Add($"{at}: extraHands and stowSlots cannot be negative.");
+            if (e.ConjuredOnly && catalog.BaselineComponentIds.Contains(e.Id)) errors.Add($"{at}: conjured-only parts can't be in a starter build.");
+        }
+        foreach (var a in catalog.Actions.Values)
+        {
+            string at = $"action '{a.Id}'";
+            if (a.ConjuresComponentId is { } cid &&
+                (!catalog.Equipment.TryGetValue(cid, out var conjured) || !conjured.Handheld || !conjured.ConjuredOnly))
+                errors.Add($"{at}: conjures '{cid}', which must be a handheld, conjured-only component.");
+            if (a.ChainJumps > 0 && a.ChainRange <= 0) errors.Add($"{at}: chainJumps needs a chainRange.");
+            if (a.ProtectionBonusDice > 0 && a.BuffDurationBeats <= 0) errors.Add($"{at}: protectionBonusDice needs buffDurationBeats.");
+            if (a.SlowAmount > 0 && a.SlowBeats <= 0) errors.Add($"{at}: slowAmount needs slowBeats.");
+            if (a.IsSwap && !catalog.Equipment.Values.Any(e => e.StowSlots > 0 && e.GrantedActionIds.Contains(a.Id)))
+                errors.Add($"{at}: a swap must be granted by a harness (a component with stowSlots).");
         }
 
         // Consumables & field shaping
@@ -199,6 +224,29 @@ public static class ContentValidator
             else if (!def.IsReactive)
                 errors.Add($"{at}: reaction rule action '{rule.ActionId}' is not a reaction.");
         }
+
+        EquipmentDefinition? Part(int i) =>
+            i >= 0 && i < config.ComponentIds.Count && catalog.Equipment.TryGetValue(config.ComponentIds[i], out var e) ? e : null;
+        foreach (var h in config.Holdings)
+        {
+            var held = Part(h.Held);
+            var holder = Part(h.Holder);
+            if (held is null || holder is null)
+                errors.Add($"{at}: holding ({h.Held} held by {h.Holder}) points outside the component list.");
+            else if (!held.Handheld)
+                errors.Add($"{at}: '{held.Id}' is held by '{holder.Id}' but isn't handheld.");
+            else if (holder.ExtraHands <= 0 && holder.StowSlots <= 0)
+                errors.Add($"{at}: '{holder.Id}' holds '{held.Id}' but is neither a limb nor a harness.");
+        }
+        foreach (var group in config.Holdings.GroupBy(h => h.Holder))
+        {
+            var holder = Part(group.Key);
+            int capacity = holder is null ? 0 : Math.Max(holder.ExtraHands, holder.StowSlots);
+            if (holder is not null && group.Count() > capacity)
+                errors.Add($"{at}: '{holder.Id}' holds {group.Count()} items but has room for {capacity}.");
+        }
+        if (config.Holdings.GroupBy(h => h.Held).Any(g => g.Count() > 1))
+            errors.Add($"{at}: a component is held twice.");
     }
 
     private static int MaxPossibleMoteStorage(GameCatalog catalog) =>

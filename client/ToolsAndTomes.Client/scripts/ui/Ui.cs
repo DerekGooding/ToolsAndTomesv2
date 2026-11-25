@@ -115,13 +115,37 @@ public static class Ui
                $"Heat {s.HeatCapacity}  ·  Cargo {s.CargoUsed}/{s.CargoCapacity}  ·  Weight {s.TotalWeight}";
     }
 
-    /// <summary>One component, as listed in Damage Order (durability, ammo, disabled).</summary>
-    public static string ComponentLine(EquipmentInstance part, int index)
+    /// <summary>One component, as listed in Damage Order (durability, ammo, disabled, and where it's held).</summary>
+    public static string ComponentLine(EquipmentInstance part, int index, CrestLoadout? loadout = null)
     {
         var d = part.Definition;
         string hp = part.IsDisabled ? "DISABLED" : $"{part.CurrentDurability}/{d.MaxDurability}";
         string ammo = d.MaxAmmo > 0 ? $"  ·  ammo {part.CurrentAmmo}/{d.MaxAmmo}" : "";
-        return $"{index}. {d.Name}  ({hp}){ammo}";
+        string hold = loadout is null ? "" : HoldTag(loadout, part);
+        return $"{index}. {d.Name}  ({hp}){ammo}{(hold.Length > 0 ? $"  ·  {hold}" : "")}";
+    }
+
+    /// <summary>Where a handheld is: "in hand", "held by Articulated Arm", "stowed", "NO FREE HAND", or "dropped" (broken).</summary>
+    public static string HoldTag(CrestLoadout loadout, EquipmentInstance part) => loadout.HoldStateOf(part) switch
+    {
+        HoldState.OwnHand => "✋ in hand",
+        HoldState.Limb => $"✋ held by {loadout.HolderOf(part)?.Definition.Name}",
+        HoldState.Stowed => $"stowed in {loadout.HolderOf(part)?.Definition.Name}",
+        HoldState.Unheld when part.IsDisabled => "dropped (broken)",
+        HoldState.Unheld => "⚠ NO FREE HAND (inactive)",
+        _ => ""
+    };
+
+    /// <summary>Hands, tomes held, and exposure to Electrical and Disjunction damage.</summary>
+    public static string MagicLine(CrestLoadout loadout, RulesConfig rules)
+    {
+        var s = LoadoutRules.ComputeStats(loadout, rules);
+        int held = loadout.Installed.Count(e => loadout.HoldStateOf(e) is HoldState.OwnHand or HoldState.Limb);
+        int electrical = Math.Min(rules.ElectricalMaxBonus, s.TomesHeld * rules.ElectricalBonusPerTome);
+        int disjunction = rules.DisjunctionWitTaxPerBonus <= 0 ? 0 : s.EquipmentWitTax / rules.DisjunctionWitTaxPerBonus;
+        return $"Hands {held}/{s.Hands}  ·  Tomes held {s.TomesHeld}" +
+               (electrical > 0 ? $" (electrical +{electrical})" : "") +
+               $"  ·  Wit tax {s.EquipmentWitTax}" + (disjunction > 0 ? $" (disjunction +{disjunction})" : "");
     }
 
     public static string Materials(GameCatalog catalog, IEnumerable<MaterialCount> counts) =>

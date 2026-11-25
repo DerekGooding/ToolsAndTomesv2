@@ -108,7 +108,7 @@ public partial class BattleController : Node3D
         _hud.LeaveLabel = Autoplay ? null : LeaveLabel;
         _hud.LeaveConfirmText = LeaveConfirmText;
         _hud.LeavePressed += () => LeaveRequested?.Invoke();
-        _hud.SetFieldSource(() => FieldOption.Build(_catalog, _player));
+        _hud.SetFieldSource(() => FieldOption.Build(_catalog, _player, includeSwaps: true));
         _hud.FieldOptionChosen += option =>
         {
             var result = _sim.IssueCommand(option.Command);
@@ -391,7 +391,8 @@ public partial class BattleController : Node3D
 
     private void OnActionPressed(ActionDefinition action)
     {
-        if (action.Targeting == TargetingType.Point && action.BlinkDistance == 0)
+        // Point actions and ally-targeted spells (Ward Ally, Quick Mend) arm, then take a left-click.
+        if ((action.Targeting == TargetingType.Point && action.BlinkDistance == 0) || action.Targeting == TargetingType.AllyUnit)
         {
             _armedPointAction = action;
             return;
@@ -401,7 +402,7 @@ public partial class BattleController : Node3D
         var target = action.Targeting == TargetingType.EnemyUnit ? Target() : null;
         var result = _sim.IssueCommand(new UseActionCommand(_player.Id, action.Id, target?.Id));
         if (!result.IsValid)
-            GD.Print($"Cannot use {action.Name}: {result.FailureReason}");
+            _hud.Flash($"Can't use {action.Name}: {result.FailureReason}");
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -413,11 +414,23 @@ public partial class BattleController : Node3D
                 break;
 
             case InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } click when GroundPoint(click.Position) is { } point:
-                if (_armedPointAction is { } armed)
+                if (_armedPointAction is { Targeting: TargetingType.AllyUnit } wardOrMend)
+                {
+                    var ally = _sim.Combatants
+                        .Where(c => c.Faction == Faction.Player && !c.IsDefeated)
+                        .OrderBy(c => c.Position.DistanceTo(point))
+                        .FirstOrDefault(c => c.Position.DistanceTo(point) <= 1.6);
+                    var result = ally is null
+                        ? Core.Rules.ActionValidationResult.Fail("click on yourself or an ally")
+                        : _sim.IssueCommand(new UseActionCommand(_player.Id, wardOrMend.Id, ally.Id));
+                    _hud.Flash(result.IsValid ? $"{wardOrMend.Name} → {ally!.Name}" : $"Can't use {wardOrMend.Name}: {result.FailureReason}");
+                    _armedPointAction = null;
+                }
+                else if (_armedPointAction is { } armed)
                 {
                     var result = _sim.IssueCommand(new UseActionCommand(_player.Id, armed.Id, TargetPoint: point));
                     if (!result.IsValid)
-                        GD.Print($"Cannot use {armed.Name}: {result.FailureReason}");
+                        _hud.Flash($"Can't use {armed.Name}: {result.FailureReason}");
                     _armedPointAction = null;
                 }
                 else

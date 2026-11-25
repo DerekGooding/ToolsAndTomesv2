@@ -60,24 +60,6 @@
     "isArmor": true
   },
   {
-    "id": "spellbook_grimoire",
-    "name": "Inventor's Spellbook",
-    "description": "Raises pilot base Wit to 10, adds +2 Mote storage, and unlocks arcane spells.",
-    "category": "Arcane",
-    "maxDurability": 2,
-    "weight": 2,
-    "bonusMoteStorage": 2,
-    "isSpellbook": true,
-    "grantedActionIds": [
-      "spell_push",
-      "spell_pull",
-      "spell_aegis",
-      "spell_gravity_crush",
-      "spell_square_summon",
-      "spell_shape_fast_iron"
-    ]
-  },
-  {
     "id": "eq_righteous",
     "name": "Righteous Blade",
     "description": "Reliable short-commitment melee blade.",
@@ -87,7 +69,8 @@
     "weight": 10,
     "grantedActionIds": [
       "weapon_righteous"
-    ]
+    ],
+    "handheld": true
   },
   {
     "id": "eq_vorpal",
@@ -99,7 +82,8 @@
     "weight": 6,
     "grantedActionIds": [
       "weapon_vorpal"
-    ]
+    ],
+    "handheld": true
   },
   {
     "id": "eq_titan",
@@ -111,7 +95,8 @@
     "weight": 24,
     "grantedActionIds": [
       "weapon_titan"
-    ]
+    ],
+    "handheld": true
   },
   {
     "id": "eq_talon",
@@ -123,7 +108,8 @@
     "weight": 8,
     "grantedActionIds": [
       "weapon_talon"
-    ]
+    ],
+    "handheld": true
   },
   {
     "id": "eq_falconet",
@@ -175,7 +161,8 @@
     "maxAmmo": 6,
     "grantedActionIds": [
       "weapon_acid_spray"
-    ]
+    ],
+    "handheld": true
   },
   {
     "id": "eq_shield_generator",
@@ -238,12 +225,112 @@
   {
     "id": "eq_spell_amplifier",
     "name": "Arcane Amplifier",
-    "description": "Channels heavy pilot spells such as Gravity Crush through the Crest.",
+    "description": "Channels the pilot's spells through the Crest: damaging and disrupting spells gain +1 interruption power.",
     "category": "Arcane",
     "maxDurability": 2,
     "witTax": 1,
     "weight": 6,
     "isSpellAmplifier": true
+  },
+  {
+    "id": "tome_wards",
+    "name": "Tome of Wards",
+    "category": "Arcane",
+    "description": "Starter tome of protection: Aegis Barrier, Ward Ally, and Bulwark. Held in a hand; raises base Wit and stores 2 more Motes.",
+    "maxDurability": 2,
+    "weight": 3,
+    "bonusMoteStorage": 2,
+    "isTome": true,
+    "handheld": true,
+    "grantedActionIds": [
+      "spell_aegis",
+      "spell_ward_ally",
+      "spell_bulwark"
+    ]
+  },
+  {
+    "id": "tome_force",
+    "name": "Tome of Force",
+    "category": "Arcane",
+    "description": "Tome of control: Gravity Crush, Leaden Air (slow), and Anchor Bind (pin). Held in a hand; +1 Wit.",
+    "maxDurability": 2,
+    "witTax": 1,
+    "bonusWitCapacity": 1,
+    "weight": 4,
+    "isTome": true,
+    "handheld": true,
+    "grantedActionIds": [
+      "spell_gravity_crush",
+      "spell_leaden_air",
+      "spell_anchor_bind"
+    ]
+  },
+  {
+    "id": "tome_storms",
+    "name": "Tome of Storms",
+    "category": "Arcane",
+    "description": "Tome of lightning: Lightning Bolt, Chain Lightning, and Storm Field, all electrical. Held in a hand; Motes come 1 beat faster.",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 3,
+    "moteIntervalReductionBeats": 1,
+    "isTome": true,
+    "handheld": true,
+    "grantedActionIds": [
+      "spell_lightning_bolt",
+      "spell_chain_lightning",
+      "spell_storm_field"
+    ]
+  },
+  {
+    "id": "tome_iron_codex",
+    "name": "Iron Codex",
+    "category": "Arcane",
+    "description": "Iron-bound tome of fast-iron magic: Quick Mend and Conjured Blade. Held in a hand; stores 1 more Mote.",
+    "maxDurability": 3,
+    "weight": 6,
+    "bonusMoteStorage": 1,
+    "isTome": true,
+    "handheld": true,
+    "grantedActionIds": [
+      "spell_quick_mend",
+      "spell_conjured_blade"
+    ]
+  },
+  {
+    "id": "eq_articulated_arm",
+    "name": "Articulated Arm",
+    "category": "Utility",
+    "description": "An extra limb: +1 hand. Whatever it holds stops working while the arm is disabled, so keep it after its item in the Damage Order.",
+    "maxDurability": 2,
+    "witTax": 1,
+    "weight": 4,
+    "extraHands": 1
+  },
+  {
+    "id": "eq_weapon_harness",
+    "name": "Weapon Harness",
+    "category": "Utility",
+    "description": "Stows one handheld (inactive while stowed) and grants Swap: trade it with a held item mid-fight.",
+    "maxDurability": 2,
+    "weight": 6,
+    "stowSlots": 1,
+    "grantedActionIds": [
+      "harness_swap"
+    ]
+  },
+  {
+    "id": "eq_iron_blade",
+    "name": "Iron Blade",
+    "category": "Weapon",
+    "description": "A blade of conjured fast-iron. It crumbles when the fight ends.",
+    "maxDurability": 1,
+    "weight": 4,
+    "handheld": true,
+    "conjuredOnly": true,
+    "grantedActionIds": [
+      "weapon_iron_blade"
+    ]
   },
   {
     "id": "armor_oathsteel_plating",

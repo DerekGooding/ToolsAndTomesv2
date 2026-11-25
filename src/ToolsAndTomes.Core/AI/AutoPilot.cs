@@ -13,6 +13,64 @@ namespace ToolsAndTomes.Core.AI;
 /// </summary>
 public sealed class AutoPilot
 {
+    /// <summary>
+    /// Tome support spells, cast before attacks while Wit allows: Ward Ally on the most-threatened lance member
+    /// without a ward; Bulwark when two or more of the lance are close and under threat; Quick Mend on a lance
+    /// member with a broken part; Conjured Blade into a free hand. Returns the Wit committed.
+    /// </summary>
+    private static int CastSupport(CombatSimulation sim, Combatant crest, HashSet<string> busy, int witBudget)
+    {
+        int spent = 0;
+        var lance = sim.Combatants.Where(c => c.Faction == crest.Faction && !c.IsDefeated).ToList();
+        bool Threatened(Combatant c) => sim.GetIncomingImpacts(c).Count > 0;
+
+        foreach (var action in crest.Loadout.GetOperationalActionIds().Select(sim.Catalog.GetAction)
+                     .Where(a => !a.IsReactive && !busy.Contains(a.Id))
+                     .OrderBy(a => a.Id, StringComparer.Ordinal))
+        {
+            if (action.WitReserve > witBudget - spent || crest.FindFreeProvider(action.Id) is null)
+                continue;
+
+            Combatant? ally = null;
+            bool cast = false;
+            if (action.Targeting == TargetingType.AllyUnit && action.AegisBlocks > 0)
+            {
+                ally = lance.Where(c => Threatened(c) && !c.HasActiveAegis && c.Position.DistanceTo(crest.Position) <= action.Range)
+                    .OrderByDescending(c => c.Id == EncounterFactory.PlayerCombatantId)
+                    .ThenBy(c => c.Id, StringComparer.Ordinal)
+                    .FirstOrDefault();
+                cast = ally is not null;
+            }
+            else if (action.Targeting == TargetingType.AllyUnit && action.MendPoints > 0)
+            {
+                ally = lance.Where(c => c.Position.DistanceTo(crest.Position) <= action.Range &&
+                                        c.Loadout.Installed.Any(e => e.IsDisabled || (e.Definition.IsCore && e.CurrentDurability < e.Definition.MaxDurability)))
+                    .OrderByDescending(c => c.Loadout.Installed.Count(e => e.IsDisabled))
+                    .ThenBy(c => c.Id, StringComparer.Ordinal)
+                    .FirstOrDefault();
+                cast = ally is not null;
+            }
+            else if (action.Targeting == TargetingType.Self && action.ProtectionBonusDice > 0)
+            {
+                var near = lance.Where(c => c.Position.DistanceTo(crest.Position) <= action.AreaRadius).ToList();
+                cast = near.Count >= 2 && near.Any(Threatened);
+            }
+            else if (action.Targeting == TargetingType.Self && action.ConjuresComponentId is not null)
+            {
+                cast = crest.TotalFastIron > action.FastIronSpent; // keep one fast-iron in hand for repairs
+            }
+
+            if (cast && sim.ValidateUse(crest, action, ally, null).IsValid &&
+                sim.IssueCommand(new UseActionCommand(crest.Id, action.Id, ally?.Id)).IsValid)
+            {
+                spent += action.WitReserve;
+                busy.Add(action.Id);
+            }
+        }
+
+        return spent;
+    }
+
     /// <param name="target">The enemy to fight; the nearest living enemy when omitted.</param>
     public void Update(CombatSimulation sim, Combatant crest, Combatant? target = null)
     {
@@ -33,11 +91,13 @@ public sealed class AutoPilot
             .Concat(crest.QueuedCommands.OfType<UseActionCommand>().Select(c => c.ActionId))
             .ToHashSet();
 
+        witBudget -= CastSupport(sim, crest, busyActions, witBudget);
+
         // Strongest actions first, so limited Wit goes to the biggest hits.
         var candidates = crest.Loadout.GetOperationalActionIds()
             .Select(id => sim.Catalog.GetAction(id))
             .Where(a => a.Category is ActionCategory.Weapon or ActionCategory.Spell)
-            .Where(a => !a.IsReactive && a.Targeting != TargetingType.Self)
+            .Where(a => !a.IsReactive && a.Targeting is TargetingType.EnemyUnit or TargetingType.Point)
             .Where(a => !busyActions.Contains(a.Id))
             .OrderByDescending(a => a.BaseDamage * a.HitCount)
             .ThenBy(a => a.Id, StringComparer.Ordinal);

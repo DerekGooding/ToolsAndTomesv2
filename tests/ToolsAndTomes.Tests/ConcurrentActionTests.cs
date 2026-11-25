@@ -74,7 +74,7 @@ public sealed class ConcurrentActionTests
         var player = CreatePlayer(ConfigurationCatalog.AgileSkirmish, new Vec2(4, 5));
         var vorpalComp = player.Loadout.Installed.First(e => e.Definition.Id == "eq_vorpal");
         var talonComp = player.Loadout.Installed.First(e => e.Definition.Id == "eq_talon");
-        var bookComp = player.Loadout.Installed.First(e => e.Definition.IsSpellbook);
+        var bookComp = player.Loadout.Installed.First(e => e.Definition.IsTome);
 
         var vorpal = player.AddAction(_catalog.GetAction("weapon_vorpal"), vorpalComp.InstanceId, "x", null);
         vorpal.Phase = ActionState.Windup;

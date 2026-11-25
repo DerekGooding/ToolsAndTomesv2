@@ -6,7 +6,8 @@
     "samplesToResearch": 2,
     "unlocksComponentIds": [
       "armor_oathsteel_plating",
-      "eq_righteous"
+      "eq_righteous",
+      "tome_force"
     ]
   },
   {
@@ -15,7 +16,8 @@
     "description": "Weeping green crystal that slowly eats any metal it touches. Bottled under pressure, it strips armor.",
     "samplesToResearch": 2,
     "unlocksComponentIds": [
-      "eq_acid_sprayer"
+      "eq_acid_sprayer",
+      "eq_weapon_harness"
     ]
   },
   {
@@ -25,7 +27,8 @@
     "samplesToResearch": 3,
     "unlocksComponentIds": [
       "eq_artillery_mortar",
-      "eq_falconet"
+      "eq_falconet",
+      "tome_iron_codex"
     ]
   },
   {
@@ -34,7 +37,9 @@
     "description": "Glass that holds a faint charge long after a storm passes. A natural reservoir for Motes of Moment.",
     "samplesToResearch": 3,
     "unlocksComponentIds": [
-      "util_stormglass_capacitor"
+      "util_stormglass_capacitor",
+      "tome_storms",
+      "eq_spell_amplifier"
     ]
   },
   {

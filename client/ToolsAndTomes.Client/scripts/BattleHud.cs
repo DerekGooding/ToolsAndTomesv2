@@ -220,7 +220,9 @@ public partial class BattleHud : CanvasLayer
         _allies.Text = AlliesLine(sim, player);
 
         _outcome.Text = sim.Outcome == EncounterOutcome.InProgress && armed is not null
-            ? $"Armed {armed.Name}: left-click a point on the field."
+            ? armed.Targeting == TargetingType.AllyUnit
+                ? $"Armed {armed.Name}: left-click yourself or an ally."
+                : $"Armed {armed.Name}: left-click a point on the field."
             : _flash;
         _leave.Visible = LeaveLabel is not null && sim.Outcome == EncounterOutcome.InProgress;
         _leave.Text = LeaveLabel ?? "";
@@ -256,15 +258,18 @@ public partial class BattleHud : CanvasLayer
 
     private void RefreshActionBar(CombatSimulation sim, Combatant player, Combatant? target)
     {
+        // Weapons and defenses, then tome spells, then the core spells every pilot knows; swaps live in the Field menu.
+        var core = sim.Catalog.Rules.CoreSpellIds;
         var actions = player.Loadout.GetOperationalActionIds()
             .Select(sim.Catalog.GetAction)
-            .Where(a => !a.IsShaping && !a.RefillsAmmo)
-            .OrderBy(a => a.Category).ThenBy(a => a.Name)
+            .Where(a => !a.IsShaping && !a.RefillsAmmo && !a.IsSwap)
+            .OrderBy(a => core.Contains(a.Id) ? 2 : a.Category == ActionCategory.Spell ? 1 : 0)
+            .ThenBy(a => a.Category).ThenBy(a => a.Name)
             .ToList();
 
         var states = actions.Select(a =>
         {
-            Combatant? unit = a.Targeting == TargetingType.EnemyUnit ? target : null;
+            Combatant? unit = a.Targeting == TargetingType.EnemyUnit ? target : a.Targeting == TargetingType.AllyUnit ? player : null;
             Vec2? point = a.Targeting == TargetingType.Point ? player.Position : null;
             bool valid = sim.ValidateUse(player, a, unit, point).IsValid;
             int cooldown = player.GetCooldown(a.Id);
@@ -297,6 +302,12 @@ public partial class BattleHud : CanvasLayer
             }
             if (action.IsReactive)
                 button.Modulate = new Color(0.6f, 1f, 0.85f);
+            else if (core.Contains(action.Id))
+                button.Modulate = new Color(0.8f, 0.8f, 0.9f);
+            else if (action.Category == ActionCategory.Spell)
+                button.Modulate = new Color(0.85f, 0.7f, 1f);
+            button.TooltipText = (core.Contains(action.Id) ? "Core spell (every pilot knows it)\n"
+                                  : action.Category == ActionCategory.Spell ? $"Tome spell\n" : "") + button.TooltipText;
             button.Pressed += () => ActionPressed?.Invoke(action);
             _actionBar.AddChild(button);
         }

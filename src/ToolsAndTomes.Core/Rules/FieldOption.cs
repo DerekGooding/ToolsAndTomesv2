@@ -12,10 +12,26 @@ public sealed record FieldOption(string Label, UseActionCommand Command)
 {
     public override string ToString() => Label;
 
-    /// <summary>Everything the Crest can shape from fast-iron or use from cargo right now.</summary>
-    public static List<FieldOption> Build(GameCatalog catalog, Combatant player)
+    /// <summary>Everything the Crest can shape from fast-iron or use from cargo right now (and, mid-fight, harness swaps).</summary>
+    /// <param name="includeSwaps">Include "swap the stowed item into this hand" options (fights only; rests can't swap).</param>
+    public static List<FieldOption> Build(GameCatalog catalog, Combatant player, bool includeSwaps = false)
     {
         var options = new List<FieldOption>();
+        if (includeSwaps)
+        {
+            foreach (var harness in player.Loadout.Installed.Where(e => e.Definition.StowSlots > 0 && player.Loadout.IsActive(e)))
+            {
+                if (player.Loadout.StowedIn(harness) is not { } stowed)
+                    continue;
+                var swap = harness.Definition.GrantedActionIds.Select(catalog.GetAction).FirstOrDefault(a => a.IsSwap);
+                if (swap is null)
+                    continue;
+                foreach (var held in player.Loadout.Installed.Where(e => player.Loadout.HoldStateOf(e) is HoldState.OwnHand or HoldState.Limb))
+                    options.Add(new FieldOption(
+                        $"Swap {held.Definition.Name} ↔ {stowed.Definition.Name} ({swap.WindupBeats} beats)",
+                        new UseActionCommand(player.Id, swap.Id, OwnComponentInstanceId: held.InstanceId)));
+            }
+        }
         var available = player.Loadout.GetOperationalActionIds().ToHashSet();
         var ammoWeapons = player.Loadout.Installed
             .Where(e => e.IsOperational && e.Definition.MaxAmmo > 0 && e.CurrentAmmo < e.Definition.MaxAmmo)

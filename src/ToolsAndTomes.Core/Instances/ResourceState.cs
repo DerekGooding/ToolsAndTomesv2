@@ -12,6 +12,9 @@ public sealed class ResourceState
 
     public int ReservedWit => _witReservations.Values.Sum();
 
+    /// <summary>Restores how far the Mote timer has run (e.g. when resuming a saved mission).</summary>
+    public void RestoreMoteProgress(int beats) => MoteGenerationProgressBeats = Math.Max(0, beats);
+
     public ResourceState(int startingMotes = 1)
     {
         CurrentMotes = Math.Max(0, startingMotes);

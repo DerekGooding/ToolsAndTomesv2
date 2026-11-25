@@ -86,7 +86,7 @@
   {
     "id": "enc_bm_border_fort",
     "name": "Border Fort",
-    "description": "The fort's Warden holds the gate while a Bruiser and an Artillery Crest cover it.",
+    "description": "The fort's Warden holds the gate while a Bruiser, a Stormcaller, and an Artillery Crest cover it. The Stormcaller's lightning hits tome-holders hardest.",
     "arenaWidth": 24,
     "arenaHeight": 14,
     "playerStart": { "x": 4, "y": 7 },
@@ -94,7 +94,7 @@
     "enemies": [
       { "enemyId": "enemy_warden", "position": { "x": 14, "y": 7 }, "startingMotes": 1 },
       { "enemyId": "enemy_bruiser", "position": { "x": 16, "y": 3 }, "startingMotes": 1 },
-      { "enemyId": "enemy_skirmisher", "position": { "x": 17, "y": 11 }, "startingMotes": 1 },
+      { "enemyId": "enemy_stormcaller", "position": { "x": 17, "y": 11 }, "startingMotes": 1 },
       { "enemyId": "enemy_artillery", "position": { "x": 21, "y": 7 }, "startingMotes": 1 }
     ],
     "rewards": {
@@ -131,15 +131,16 @@
   {
     "id": "enc_bm_warlord",
     "name": "The Warlord's Gate",
-    "description": "Gatewarden Kastor stands in the gate: plated, spell-bound, and armed with salvo, blade, and hammer, firing all at once. A Skyblade and a Bruiser guard his flanks.",
+    "description": "Gatewarden Kastor stands in the gate: plated, holding the Tome of Force, with a hammer in hand and a blade on a third arm, firing all at once. Two Stormcallers rain lightning on your tomes while a Skyblade hunts stragglers.",
     "arenaWidth": 26,
     "arenaHeight": 14,
     "playerStart": { "x": 4, "y": 7 },
     "playerStartingMotes": 2,
     "enemies": [
       { "enemyId": "enemy_warlord", "position": { "x": 16, "y": 7 }, "startingMotes": 2 },
-      { "enemyId": "enemy_skyblade", "position": { "x": 15, "y": 3 }, "startingMotes": 1 },
-      { "enemyId": "enemy_bruiser", "position": { "x": 15, "y": 11 }, "startingMotes": 1 }
+      { "enemyId": "enemy_stormcaller", "position": { "x": 21, "y": 3 }, "startingMotes": 1 },
+      { "enemyId": "enemy_stormcaller", "position": { "x": 21, "y": 11 }, "startingMotes": 1 },
+      { "enemyId": "enemy_skyblade", "position": { "x": 15, "y": 3 }, "startingMotes": 1 }
     ],
     "rewards": {
       "guaranteed": [ { "materialId": "mat_bastion_ore", "count": 1 } ],

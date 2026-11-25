@@ -1,6 +1,16 @@
 {
-  "baseWitWithoutSpellbook": 5,
-  "baseWitWithSpellbook": 10,
+  "baseWitWithoutTome": 5,
+  "baseWitWithTome": 10,
+  "coreSpellIds": [
+    "spell_push",
+    "spell_pull",
+    "spell_square_summon",
+    "spell_shape_fast_iron"
+  ],
+  "baseHands": 2,
+  "electricalBonusPerTome": 1,
+  "electricalMaxBonus": 2,
+  "disjunctionWitTaxPerBonus": 3,
   "baseMoteStorage": 3,
   "moteGenerationIntervalBeats": 5,
   "minMoteGenerationIntervalBeats": 1,

@@ -20,7 +20,16 @@ public sealed record CrestStats
     public int DisplacementResistance { get; init; }
     public int BonusProtectionDice { get; init; }
 
-    public bool HasSpellbook { get; init; }
+    public bool HasTome { get; init; }
+
+    /// <summary>Operational tomes held in a working hand.</summary>
+    public int TomesHeld { get; init; }
+
+    /// <summary>Hands available: the Crest's own plus operational extra limbs.</summary>
+    public int Hands { get; init; }
+
+    /// <summary>Handheld components that aren't held (more than the Crest has hands); they don't work.</summary>
+    public int UnheldHandhelds { get; init; }
     public bool HasSpellAmplifier { get; init; }
     public bool IsCoreOperational { get; init; }
 

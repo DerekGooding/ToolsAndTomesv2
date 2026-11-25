@@ -15,6 +15,9 @@ public sealed class EquipmentInstance
     /// <summary>Increments whenever <see cref="IsOperational"/> flips; used to invalidate cached Crest stats.</summary>
     public int OperationalVersion { get; private set; }
 
+    /// <summary>Conjured by a spell (e.g. Conjured Blade): it vanishes when the fight ends.</summary>
+    public bool IsConjured { get; init; }
+
     public EquipmentInstance(string instanceId, EquipmentDefinition definition)
     {
         InstanceId = instanceId;

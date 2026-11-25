@@ -155,6 +155,10 @@ public sealed class EnemyAIController
             if (def.Category != ActionCategory.Weapon && def.Category != ActionCategory.Spell)
                 continue;
 
+            // Only actions aimed at the enemy (utility spells such as Square Summon or wards are not attacks).
+            if (def.Targeting is not (TargetingType.EnemyUnit or TargetingType.Point) || def.IsReactive || def.IsShaping)
+                continue;
+
             Vec2? point = def.Targeting == TargetingType.Point ? target.Position : null;
             Combatant? unitTarget = def.Targeting == TargetingType.EnemyUnit ? target : null;
 

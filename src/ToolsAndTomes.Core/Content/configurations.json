@@ -2,16 +2,16 @@
   {
     "id": "cfg_agile_skirmish",
     "name": "Agile Skirmish Assembly",
-    "description": "Illustrative light component build emphasizing Blink evasion, high speed, Vorpal/Talon strikes, and amplified spells.",
+    "description": "Light build: Blink evasion and speed; a Talon and the Tome of Wards in its hands, and a Vorpal Edge on an Articulated Arm (kept after the blade in the Damage Order).",
     "componentIds": [
       "eq_jump_jets",
       "eq_talon",
       "eq_vorpal",
-      "eq_spell_amplifier",
       "eq_blink_drive",
+      "eq_articulated_arm",
       "util_cargo_rack",
       "mob_stride_legs",
-      "spellbook_grimoire",
+      "tome_wards",
       "core_aether_dynamo"
     ],
     "reactionRules": [
@@ -23,22 +23,24 @@
     "cargo": [
       { "kind": "FastIron", "count": 3 },
       { "kind": "Consumable", "count": 1, "itemId": "con_shaped_charge" }
+    ],
+    "holdings": [
+      { "held": 2, "holder": 4 }
     ]
   },
   {
     "id": "cfg_heavy_anchor",
     "name": "Heavy Anchor Assembly",
-    "description": "Illustrative heavy component build using a Heavy Aether Furnace, armor plating, Shield Generator, Repulsor, Titan Hammer, and Dragon's Breath.",
+    "description": "Heavy build: a Heavy Aether Furnace, armor plating, Shield Generator, Repulsor, and Dragon's Breath, with a Titan Hammer and the Tome of Wards in its hands.",
     "componentIds": [
       "armor_heavy_plate",
-      "eq_talon",
       "eq_thermal_regulator",
       "eq_dragons_breath",
       "eq_repulsor",
       "eq_shield_generator",
       "eq_titan",
       "mob_anchor_legs",
-      "spellbook_grimoire",
+      "tome_wards",
       "core_aether_furnace"
     ],
     "reactionRules": [

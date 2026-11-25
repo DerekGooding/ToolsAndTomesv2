@@ -49,11 +49,34 @@ public static class ProfileSerializer
     /// Reads a profile and reconciles it with the current content: unknown components, materials, and reaction
     /// rules are dropped (with warnings) so a profile saved against older content still loads.
     /// </summary>
+    /// <summary>Components renamed or replaced in content, so older saves still load (old id → new id).</summary>
+    public static IReadOnlyDictionary<string, string> RenamedComponents { get; } = new Dictionary<string, string>
+    {
+        ["spellbook_grimoire"] = "tome_wards" // the Inventor's Spellbook became the Tome of Wards (Tomes, Nov 2026)
+    };
+
+    /// <summary>An assembly with renamed components updated (see <see cref="RenamedComponents"/>).</summary>
+    public static CrestConfiguration Migrate(CrestConfiguration config) =>
+        config.ComponentIds.Any(RenamedComponents.ContainsKey)
+            ? config with { ComponentIds = config.ComponentIds.Select(id => RenamedComponents.GetValueOrDefault(id, id)).ToList() }
+            : config;
+
     public static ProfileLoadResult Deserialize(string json, GameCatalog catalog)
     {
         var raw = JsonSerializer.Deserialize<PlayerProfile>(json, ContentSerializer.Options)
                   ?? throw new JsonException("Profile is empty.");
         var warnings = new List<string>();
+        if (raw.Assemblies.Concat(raw.Pilots.Select(p => p.Assembly)).Any(a => a.ComponentIds.Any(RenamedComponents.ContainsKey)))
+            warnings.Add("Your Inventor's Spellbook is now a Tome of Wards, held in a hand. Check your Crests' hands in the Workshop.");
+        raw = raw with
+        {
+            Assemblies = raw.Assemblies.Select(Migrate).ToList(),
+            Pilots = raw.Pilots.Select(p => p with { Assembly = Migrate(p.Assembly) }).ToList(),
+            SpareComponentIds = raw.SpareComponentIds.Select(id => RenamedComponents.GetValueOrDefault(id, id)).ToList(),
+            ActiveMission = raw.ActiveMission is { } m
+                ? m with { Lance = m.Lance.Select(c => c with { Assembly = Migrate(c.Assembly) }).ToList() }
+                : null
+        };
 
         bool KnownComponent(string id, string where)
         {

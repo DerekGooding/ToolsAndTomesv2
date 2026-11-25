@@ -1,5 +1,6 @@
 using Godot;
 using ToolsAndTomes.Core.Campaign;
+using ToolsAndTomes.Core.Instances;
 using ToolsAndTomes.Core.Rules;
 
 namespace ToolsAndTomes.Client.UI;
@@ -99,13 +100,14 @@ public partial class CrestBayScreen : Control
 
         var crest = _session.SelectedLoadout;
         _crestColumn.AddChild(Ui.Text(Ui.StatsLine(crest, rules), Ui.Muted, 14));
+        _crestColumn.AddChild(Ui.Text(Ui.MagicLine(crest, rules), Ui.Muted, 14));
         foreach (var warning in LoadoutRules.GetWarnings(crest, rules))
-            _crestColumn.AddChild(Ui.Text("⚠ " + warning, Ui.Accent, 14));
+            _crestColumn.AddChild(Ui.Text("⚠ " + warning, warning.StartsWith("LIMB BEFORE") ? Ui.Bad : Ui.Accent, 14));
 
         _crestColumn.AddChild(Ui.Heading("Components (Damage Order: hits land top-down)"));
         int n = 1;
         foreach (var part in crest.DamageOrder)
-            _crestColumn.AddChild(Ui.Text(Ui.ComponentLine(part, n++), part.IsDisabled ? Ui.Bad : Ui.Ink, 14));
+            _crestColumn.AddChild(Ui.Text(Ui.ComponentLine(part, n++, crest), part.IsDisabled || crest.HoldStateOf(part) == HoldState.Unheld ? Ui.Bad : Ui.Ink, 14));
 
         if (crest.ReactionRules.Count > 0)
         {

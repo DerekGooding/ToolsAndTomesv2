@@ -16,7 +16,16 @@ public sealed record CrestConfiguration
 
     /// <summary>Cargo loaded in the Workshop; the Crest is restocked to this manifest before each encounter.</summary>
     public IReadOnlyList<CargoEntry> Cargo { get; init; } = [];
+
+    /// <summary>
+    /// Handhelds held by an extra limb or stowed in a harness, as indices into <see cref="ComponentIds"/>.
+    /// Every other handheld goes in the Crest's own hands, in Damage Order; extras beyond its hands are unheld.
+    /// </summary>
+    public IReadOnlyList<Holding> Holdings { get; init; } = [];
 }
+
+/// <summary>The component at <see cref="Held"/> is held (limb) or stowed (harness) by the component at <see cref="Holder"/>.</summary>
+public sealed record Holding(int Held, int Holder);
 
 public sealed record EnemyDefinition
 {

@@ -96,6 +96,7 @@ public static class ShapingRules
                 id = $"{baseId}_{n}";
             var instance = new EquipmentInstance(id, component);
             actor.Loadout.InstallAtEnd(instance);
+            actor.Loadout.HoldInFreeHand(instance); // a shaped handheld goes into a free hand (a broken one lets go of its own)
             events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
                 $"{actor.Name} shaped {plan.FastIronCost} fast-iron into a new {component.Name} (end of Damage Order).",
                 Value: plan.FastIronCost));

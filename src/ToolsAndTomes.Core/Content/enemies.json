@@ -89,6 +89,22 @@
     "preferredRange": 7
   },
   {
+    "id": "enemy_stormcaller",
+    "name": "Vesper Stormcaller",
+    "archetype": "Artillery",
+    "assembly": {
+      "id": "cfg_enemy_stormcaller",
+      "name": "Vesper Stormcaller",
+      "componentIds": [
+        "eq_shield_generator",
+        "tome_storms",
+        "mob_stride_legs",
+        "core_aether_dynamo"
+      ]
+    },
+    "preferredRange": 6
+  },
+  {
     "id": "enemy_warlord",
     "name": "Gatewarden Kastor",
     "archetype": "Warlord",
@@ -98,16 +114,18 @@
       "componentIds": [
         "armor_heavy_plate",
         "eq_repulsor",
-        "spellbook_grimoire",
-        "eq_falconet",
         "eq_righteous",
+        "eq_articulated_arm",
+        "tome_force",
+        "eq_falconet",
         "eq_titan",
         "mob_anchor_legs",
         "core_aether_furnace"
       ],
       "reactionRules": [
         { "actionId": "defense_repulsor", "telegraph": "MeleeCommit" }
-      ]
+      ],
+      "holdings": [ { "held": 2, "holder": 3 } ]
     },
     "preferredRange": 2.2
   }

@@ -469,7 +469,8 @@ public sealed class CampaignSession
                  {
                      "core_aether_dynamo", "core_aether_furnace", "mob_stride_legs", "mob_anchor_legs",
                      "eq_dragons_breath", "eq_shield_generator", "eq_repulsor", "eq_blink_drive",
-                     "armor_heavy_plate", "eq_thermal_regulator", "eq_spell_amplifier", "util_cargo_rack"
+                     "armor_heavy_plate", "eq_thermal_regulator", "eq_spell_amplifier", "util_cargo_rack",
+                     "eq_talon", "eq_articulated_arm"
                  })
         {
             AddSpare(id);

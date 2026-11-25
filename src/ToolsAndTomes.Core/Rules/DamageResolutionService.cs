@@ -98,7 +98,7 @@ public sealed class DamageResolutionService
 
             for (int p = 0; p < damagePoints && !target.IsDefeated; p++)
             {
-                var rollResult = RollProtection(target.Stats.BonusProtectionDice, rng);
+                var rollResult = RollProtection(target.BonusProtectionDice, rng);
                 string diceText = string.Join(",", rollResult.Rolls);
 
                 if (rollResult.Saved)
@@ -138,7 +138,7 @@ public sealed class DamageResolutionService
                 }
             }
 
-            if (hit.PushDistance != 0 && !target.IsDefeated)
+            if (hit.PushDistance != 0 && !target.IsDefeated && !target.IsPinned)
             {
                 int effectiveDist = EffectiveDisplacement(hit.PushDistance, target.Stats.DisplacementResistance);
                 var offset = target.Position - hit.SourcePosition;

@@ -18,10 +18,11 @@ internal static class ActionEffectResolver
         double arenaWidth,
         double arenaHeight,
         List<IncomingHit> incomingHits,
-        List<CombatEvent> events)
+        List<CombatEvent> events,
+        GameCatalog catalog)
     {
         int first = events.Count;
-        ApplyEffect(actor, active, allCombatants, beat, arenaWidth, arenaHeight, incomingHits, events);
+        ApplyEffect(actor, active, allCombatants, beat, arenaWidth, arenaHeight, incomingHits, events, catalog);
         for (int i = first; i < events.Count; i++)
             if (events[i].ActionId is null)
                 events[i] = events[i] with { ActionId = active.Definition.Id };
@@ -35,9 +36,13 @@ internal static class ActionEffectResolver
         double arenaWidth,
         double arenaHeight,
         List<IncomingHit> incomingHits,
-        List<CombatEvent> events)
+        List<CombatEvent> events,
+        GameCatalog catalog)
     {
         var def = active.Definition;
+
+        if (ApplySpellUtility(actor, active, allCombatants, beat, events, catalog))
+            return;
 
         // Heat generation (e.g., Dragon's Breath)
         if (def.HeatGenerated > 0)
@@ -91,7 +96,7 @@ internal static class ActionEffectResolver
         {
             var dest = active.TargetPoint ?? actor.Position;
             var delta = dest - actor.Position;
-            double dist = Math.Min(def.DashDistance, delta.Length);
+            double dist = actor.IsPinned ? 0 : Math.Min(def.DashDistance, delta.Length);
             if (dist > 0.01)
                 actor.Position = (actor.Position + delta.Normalized() * dist).Clamp(0.5, arenaWidth - 0.5, 0.5, arenaHeight - 0.5);
 
@@ -110,7 +115,7 @@ internal static class ActionEffectResolver
             if (def.EvadeBeats > 0)
                 actor.EvadeBeatsRemaining = Math.Max(actor.EvadeBeatsRemaining, def.EvadeBeats);
 
-            if (def.BlinkDistance > 0)
+            if (def.BlinkDistance > 0 && !actor.IsPinned)
             {
                 var targetPos = active.TargetPoint ?? DefaultBlinkDestination(actor, allCombatants, def.BlinkDistance);
                 var delta = targetPos - actor.Position;
@@ -151,8 +156,15 @@ internal static class ActionEffectResolver
 
         // Offensive / displacement actions
         var targets = ResolveTargets(actor, active, allCombatants);
+        // An Arcane Amplifier lends tome and core spells +1 interruption power.
+        int interruptionPower = def.InterruptionPower +
+                                (def.Category == ActionCategory.Spell && def.InterruptionPower > 0 && actor.Stats.HasSpellAmplifier ? 1 : 0);
         foreach (var target in targets)
         {
+            ApplyDebuffs(def, target, actor, beat, events);
+            if (def.BaseDamage <= 0 && def.PushDistance == 0 && def.InterruptionPower <= 0)
+                continue; // a pure debuff: no hit to resolve
+
             int damagePerHit = TraitRules.DamagePerHit(def, target);
 
             int hitCount = Math.Max(1, def.HitCount);
@@ -165,7 +177,7 @@ internal static class ActionEffectResolver
                     actor.Position,
                     damagePerHit,
                     i == 0 ? def.PushDistance : 0,
-                    def.InterruptionPower));
+                    interruptionPower));
             }
         }
 
@@ -229,6 +241,149 @@ internal static class ActionEffectResolver
                 results.Add(target);
         }
 
+        // Chain: jump from the last target to the nearest other enemy within reach, up to ChainJumps times.
+        for (int jump = 0; jump < def.ChainJumps && results.Count > 0; jump++)
+        {
+            var last = results[^1];
+            var next = allCombatants
+                .Where(c => !c.IsDefeated && c.Faction != actor.Faction && !results.Contains(c))
+                .Where(c => c.Position.DistanceTo(last.Position) <= def.ChainRange)
+                .OrderBy(c => c.Position.DistanceTo(last.Position))
+                .ThenBy(c => c.Id, StringComparer.Ordinal)
+                .FirstOrDefault();
+            if (next is null)
+                break;
+            results.Add(next);
+        }
+
         return results;
+    }
+
+    /// <summary>Slow, windup delay, and pin on an enemy target (effects, so defenses don't save against them; evasion dodges them).</summary>
+    private static void ApplyDebuffs(ActionDefinition def, Combatant target, Combatant actor, int beat, List<CombatEvent> events)
+    {
+        if ((def.SlowAmount <= 0 || def.SlowBeats <= 0) && def.WindupDelay <= 0 && def.PinBeats <= 0)
+            return;
+        if (target.IsEvading)
+            return;
+
+        var parts = new List<string>();
+        if (def.SlowAmount > 0 && def.SlowBeats > 0)
+        {
+            target.SlowAmount = Math.Max(target.SlowAmount, def.SlowAmount);
+            target.SlowBeatsRemaining = Math.Max(target.SlowBeatsRemaining, def.SlowBeats);
+            parts.Add($"slowed by {def.SlowAmount} for {def.SlowBeats} beats");
+        }
+        if (def.WindupDelay > 0)
+        {
+            target.PendingWindupDelay = Math.Max(target.PendingWindupDelay, def.WindupDelay);
+            parts.Add($"next windup +{def.WindupDelay} beat(s)");
+        }
+        if (def.PinBeats > 0)
+        {
+            target.PinnedBeatsRemaining = Math.Max(target.PinnedBeatsRemaining, def.PinBeats);
+            target.StopMovement();
+            parts.Add($"pinned for {def.PinBeats} beats");
+        }
+
+        events.Add(new CombatEvent(beat, CombatEventType.ActionExecuted, target.Id,
+            $"{target.Name} is {string.Join(", ", parts)} by {actor.Name}'s {def.Name}.", actor.Id, ActionId: def.Id));
+    }
+
+    /// <summary>
+    /// Tome utility spells that don't strike enemies: harness swaps, conjuring, mending, warding an ally, and
+    /// Bulwark. Returns true if the action was one of them (and has been applied).
+    /// </summary>
+    private static bool ApplySpellUtility(
+        Combatant actor,
+        ActiveAction active,
+        IReadOnlyList<Combatant> allCombatants,
+        int beat,
+        List<CombatEvent> events,
+        GameCatalog catalog)
+    {
+        var def = active.Definition;
+
+        if (def.IsSwap)
+        {
+            var held = active.OwnComponentInstanceId is null ? null : actor.Loadout.FindById(active.OwnComponentInstanceId);
+            var harness = actor.Loadout.FindById(active.SourceEquipmentInstanceId);
+            var stowed = harness is null ? null : actor.Loadout.StowedIn(harness);
+            bool ok = held is not null && stowed is not null && actor.Loadout.Swap(harness!.InstanceId, held.InstanceId);
+            events.Add(new CombatEvent(beat, ok ? CombatEventType.ActionExecuted : CombatEventType.CommandRejected, actor.Id,
+                ok ? $"{actor.Name} swapped {held!.Definition.Name} for {stowed!.Definition.Name}."
+                   : $"{actor.Name}'s {def.Name} found nothing to swap."));
+            return true;
+        }
+
+        if (def.ConjuresComponentId is { } conjureId)
+        {
+            if (!catalog.Equipment.TryGetValue(conjureId, out var conjuredDef) || !actor.Loadout.HasFreeHand() ||
+                !actor.TrySpendFastIron(def.FastIronSpent))
+            {
+                events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+                    $"{actor.Name}'s {def.Name} fizzled: it needs {def.FastIronSpent} fast-iron and a free hand."));
+                return true;
+            }
+
+            var part = new EquipmentInstance($"{actor.Id}_conjured_{active.Id}", conjuredDef) { IsConjured = true };
+            actor.Loadout.InstallAtEnd(part);
+            actor.Loadout.HoldInFreeHand(part);
+            events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, actor.Id,
+                $"{actor.Name} conjured {conjuredDef.Name} into a free hand (until the fight ends).",
+                ComponentInstanceId: part.InstanceId));
+            return true;
+        }
+
+        if (def.MendPoints > 0)
+        {
+            var target = active.TargetActorId is null ? actor : allCombatants.FirstOrDefault(c => c.Id == active.TargetActorId) ?? actor;
+            var part = target.Loadout.DamageOrder
+                .Where(e => e.CurrentDurability < e.Definition.MaxDurability)
+                .OrderByDescending(e => e.IsDisabled)
+                .ThenByDescending(e => e.Definition.IsCore)
+                .ThenByDescending(e => e.Definition.MaxDurability - e.CurrentDurability)
+                .FirstOrDefault();
+            if (part is null || !actor.TrySpendFastIron(def.FastIronSpent))
+            {
+                events.Add(new CombatEvent(beat, CombatEventType.CommandRejected, actor.Id,
+                    part is null ? $"{target.Name} has nothing to mend." : $"{actor.Name}'s {def.Name} needs {def.FastIronSpent} fast-iron."));
+                return true;
+            }
+
+            part.RestoreDurability(def.MendPoints);
+            events.Add(new CombatEvent(beat, CombatEventType.FieldShaped, target.Id,
+                $"{actor.Name} mended {target.Name}'s {part.Definition.Name} ({part.CurrentDurability}/{part.Definition.MaxDurability}).",
+                actor.Id, ComponentInstanceId: part.InstanceId));
+            return true;
+        }
+
+        if (def.AegisBlocks > 0 && def.Targeting == TargetingType.AllyUnit)
+        {
+            var target = allCombatants.FirstOrDefault(c => c.Id == active.TargetActorId && !c.IsDefeated);
+            if (target is null)
+                return true;
+            target.GrantWard(def.AegisBlocks, def.AegisDurationBeats);
+            events.Add(new CombatEvent(beat, CombatEventType.AegisActivated, target.Id,
+                $"{actor.Name} warded {target.Name} ({def.AegisBlocks} block(s) for {def.AegisDurationBeats} beats).", actor.Id));
+            return true;
+        }
+
+        if (def.ProtectionBonusDice > 0)
+        {
+            var covered = allCombatants
+                .Where(c => !c.IsDefeated && c.Faction == actor.Faction && c.Position.DistanceTo(actor.Position) <= Math.Max(0, def.AreaRadius))
+                .ToList();
+            foreach (var c in covered)
+            {
+                c.ProtectionBuffDice = Math.Max(c.ProtectionBuffDice, def.ProtectionBonusDice);
+                c.ProtectionBuffBeats = Math.Max(c.ProtectionBuffBeats, def.BuffDurationBeats);
+            }
+            events.Add(new CombatEvent(beat, CombatEventType.AegisActivated, actor.Id,
+                $"{actor.Name}'s {def.Name}: +{def.ProtectionBonusDice} protection die for {def.BuffDurationBeats} beats on {string.Join(", ", covered.Select(c => c.Name))}."));
+            return true;
+        }
+
+        return false;
     }
 }

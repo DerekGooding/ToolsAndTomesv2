@@ -42,7 +42,20 @@ public sealed record EquipmentDefinition
 
     public bool IsCore { get; init; }
     public bool IsArmor { get; init; }
-    public bool IsSpellbook { get; init; }
+    /// <summary>A tome: holding one (operational, in a hand) raises the pilot's base Wit; it grants its own spells.</summary>
+    public bool IsTome { get; init; }
+
+    /// <summary>Must be held in a hand to work (tomes and handheld weapons). Mounted parts need no hand.</summary>
+    public bool Handheld { get; init; }
+
+    /// <summary>Extra hands this part provides while operational (an extra limb); whatever they hold stops working while it is disabled.</summary>
+    public int ExtraHands { get; init; }
+
+    /// <summary>Handhelds this part can stow (a harness); a stowed item is inactive until swapped into a hand.</summary>
+    public int StowSlots { get; init; }
+
+    /// <summary>Exists only when conjured by a spell (e.g. the Iron Blade): never fabricated, researched, or shaped.</summary>
+    public bool ConjuredOnly { get; init; }
     public bool IsSpellAmplifier { get; init; }
 
     /// <summary>Cargo units this component can carry (fast-iron, consumables). 0 = not a cargo component.</summary>

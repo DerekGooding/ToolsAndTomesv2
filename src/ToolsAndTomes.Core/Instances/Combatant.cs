@@ -53,7 +53,70 @@ public sealed class Combatant
     /// <summary>Beats remaining before each action may start again.</summary>
     public IReadOnlyDictionary<string, int> Cooldowns => _cooldowns;
     /// <summary>Global rules this Crest is evaluated under (set by the simulation from its catalog).</summary>
-    public RulesConfig Rules { get; set; } = RulesConfig.Default;
+    /// <summary>The rules in force; the loadout follows (hands, core spells).</summary>
+    public RulesConfig Rules
+    {
+        get => _rules;
+        set
+        {
+            _rules = value;
+            Loadout.Rules = value;
+        }
+    }
+
+    private RulesConfig _rules = RulesConfig.Default;
+
+    // ---- Spell statuses (tomes) ----
+
+    /// <summary>Extra protection dice from an ally's Bulwark, and the beats it lasts.</summary>
+    public int ProtectionBuffDice { get; set; }
+    public int ProtectionBuffBeats { get; set; }
+
+    /// <summary>Slow (Leaden Air): movement speed lowered by <see cref="SlowAmount"/> (to a minimum of 1).</summary>
+    public int SlowAmount { get; set; }
+    public int SlowBeatsRemaining { get; set; }
+
+    /// <summary>Extra beats added to this Crest's next windup.</summary>
+    public int PendingWindupDelay { get; set; }
+
+    /// <summary>Pinned (Anchor Bind): can't move, dash, blink, or be displaced.</summary>
+    public int PinnedBeatsRemaining { get; set; }
+
+    public bool IsPinned => PinnedBeatsRemaining > 0;
+
+    /// <summary>Movement speed after slows and pins.</summary>
+    public int EffectiveMoveSpeed
+    {
+        get
+        {
+            if (IsPinned)
+                return 0;
+            int speed = Stats.MoveSpeed;
+            return SlowBeatsRemaining > 0 && speed > 0 ? Math.Max(1, speed - SlowAmount) : speed;
+        }
+    }
+
+    /// <summary>Protection dice beyond the base die: the Crest's own plus any Bulwark.</summary>
+    public int BonusProtectionDice => Stats.BonusProtectionDice + (ProtectionBuffBeats > 0 ? ProtectionBuffDice : 0);
+
+    /// <summary>Ticks the spell statuses down by one beat (part of the passive timers step).</summary>
+    public void TickSpellStatuses()
+    {
+        if (ProtectionBuffBeats > 0 && --ProtectionBuffBeats == 0)
+            ProtectionBuffDice = 0;
+        if (SlowBeatsRemaining > 0 && --SlowBeatsRemaining == 0)
+            SlowAmount = 0;
+        if (PinnedBeatsRemaining > 0)
+            PinnedBeatsRemaining--;
+    }
+
+    /// <summary>An Aegis granted by an ally's ward: absorbs hits like Aegis Barrier, but reserves none of this Crest's Wit.</summary>
+    public void GrantWard(int blocks, int durationBeats)
+    {
+        bool active = HasActiveAegis;
+        AegisBlocksRemaining = active ? AegisBlocksRemaining + blocks : blocks;
+        AegisBeatsRemaining = active ? Math.Max(AegisBeatsRemaining, durationBeats) : durationBeats;
+    }
 
     public CrestStats Stats => Loadout.GetStats(Rules);
 
@@ -117,6 +180,7 @@ public sealed class Combatant
         Name = name;
         Faction = faction;
         Loadout = loadout;
+        _rules = loadout.Rules; // adopt the loadout's rules until the simulation sets its own
         Position = startPosition;
         Resources = new ResourceState(startingMotes);
         Archetype = archetype;
@@ -131,11 +195,9 @@ public sealed class Combatant
         Movement?.ProviderInstanceId == instanceId;
 
     /// <summary>An operational component granting the action that is not running anything and not locked out.</summary>
+    /// <remarks>Includes the pilot for core spells: the pilot casts one core spell at a time.</remarks>
     public EquipmentInstance? FindFreeProvider(string actionId) =>
-        Loadout.Installed.FirstOrDefault(e =>
-            e.IsOperational &&
-            e.Definition.GrantedActionIds.Contains(actionId) &&
-            !IsComponentBusy(e.InstanceId));
+        Loadout.ProvidersFor(actionId).FirstOrDefault(e => !IsComponentBusy(e.InstanceId));
 
     /// <summary>The operational locomotion component used for walking (busy movement is allowed: it is redirected).</summary>
     public EquipmentInstance? FindLocomotionProvider() =>
@@ -246,6 +308,10 @@ public sealed class Combatant
         PendingCancel = false;
         ClearAegis();
         Resources.ReleaseAllWit();
+        ProtectionBuffDice = ProtectionBuffBeats = 0;
+        SlowAmount = SlowBeatsRemaining = 0;
+        PendingWindupDelay = 0;
+        PinnedBeatsRemaining = 0;
     }
 
     // ---- Command buffering ------------------------------------------------------------------
@@ -328,6 +394,7 @@ public sealed class Combatant
     public void PrepareForEncounter(Vec2 startPosition)
     {
         ClearAllActivity();
+        Loadout.RemoveConjured();
         _cooldowns.Clear();
         EvadeBeatsRemaining = 0;
         Resources.ResetHeat();

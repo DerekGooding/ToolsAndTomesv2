@@ -46,6 +46,9 @@ public sealed record CrestSave
     public IReadOnlyList<ComponentSave> Components { get; init; } = [];
 
     public int Motes { get; init; }
+
+    /// <summary>Beats already run toward the next Mote (the timer carries across fights).</summary>
+    public int MoteProgressBeats { get; init; }
     public int FastIron { get; init; }
     public int CarriedFastIron { get; init; }
     public IReadOnlyDictionary<string, int> Consumables { get; init; } = new Dictionary<string, int>();

@@ -38,7 +38,7 @@ public sealed class WorkshopTests
         var result = workshop.Research(oathsteel);
 
         Assert.IsTrue(result.Succeeded);
-        CollectionAssert.AreEquivalent(new[] { "armor_oathsteel_plating", "eq_righteous" }, result.UnlockedComponentIds.ToList());
+        CollectionAssert.AreEquivalent(new[] { "armor_oathsteel_plating", "eq_righteous", "tome_force" }, result.UnlockedComponentIds.ToList());
         Assert.AreEqual(1, workshop.GetSamples(oathsteel.Id), "Research consumed exactly samplesToResearch.");
         Assert.IsTrue(workshop.CanFabricate(_catalog, "armor_oathsteel_plating"));
         Assert.IsFalse(workshop.Research(oathsteel).Succeeded, "Cannot research twice.");

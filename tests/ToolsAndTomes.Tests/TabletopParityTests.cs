@@ -44,7 +44,7 @@ public sealed class TabletopParityTests
     [TestMethod]
     public void WitCollapse_DropsNewestCommitments_WhenAWitGrantingComponentIsDestroyed()
     {
-        // Heavy Anchor: Wit 12 (10 + Furnace 2), tax 8 → 4 available.
+        // Heavy Anchor: Wit 12 (10 with a tome + Furnace 2), tax 7 → 5 available.
         var player = CreatePlayer(ConfigurationCatalog.HeavyAnchor, new Vec2(5, 5), startingMotes: 3);
         var enemy = CreateEnemy("enemy_bruiser", new Vec2(7, 5));
         var sim = new CombatSimulation([player, enemy], new FixedRandom(6));
@@ -55,17 +55,17 @@ public sealed class TabletopParityTests
         sim.StepBeat();
         Assert.AreEqual(4, player.Resources.ReservedWit);
 
-        // A backup core keeps the Crest alive; then the Furnace (+2 Wit) is destroyed: 2 Wit short.
+        // A backup core keeps the Crest alive; then the Furnace (+2 Wit) is destroyed: 1 Wit short.
         player.Loadout.Install(new EquipmentInstance("backup_core", _catalog.GetEquipment("core_aether_dynamo")));
         var furnace = player.Loadout.Installed.First(e => e.Definition.Id == "core_aether_furnace");
         furnace.ApplyDamage(furnace.Definition.MaxDurability);
-        Assert.AreEqual(-2, player.Stats.AvailableWit(player.Resources.ReservedWit));
+        Assert.AreEqual(-1, player.Stats.AvailableWit(player.Resources.ReservedWit));
 
         var dropped = player.EnforceWitBudget();
 
         Assert.AreEqual(0, player.Stats.AvailableWit(player.Resources.ReservedWit));
-        CollectionAssert.AreEqual(new[] { "Kinetic Push", "Dragon's Breath" }, dropped, "Newest commitments drop first.");
-        Assert.HasCount(1, player.ActionsInMotion);
+        CollectionAssert.AreEqual(new[] { "Kinetic Push" }, dropped, "Newest commitments drop first.");
+        Assert.HasCount(2, player.ActionsInMotion);
     }
 
     /// <summary>

@@ -31,12 +31,6 @@ public static class ActionValidationRules
         if (action.ConsumableItemId is not null && actor.Loadout.GetConsumableCount(action.ConsumableItemId) <= 0)
             return ActionValidationResult.Fail($"No {action.ConsumableItemId} left in cargo.");
 
-        if (action.RequiresSpellbook && !stats.HasSpellbook)
-            return ActionValidationResult.Fail($"{action.Name} requires an operational Spellbook.");
-
-        if (action.RequiresSpellAmplifier && !stats.HasSpellAmplifier)
-            return ActionValidationResult.Fail($"{action.Name} requires an operational Arcane Amplifier.");
-
         if (actor.GetCooldown(action.Id) > 0)
             return ActionValidationResult.Fail($"{action.Name} is on cooldown.");
 
@@ -52,12 +46,37 @@ public static class ActionValidationRules
         if (action.WitReserve > 0 && stats.AvailableWit(actor.Resources.ReservedWit) < action.WitReserve)
             return ActionValidationResult.Fail($"Insufficient available Wit (needs {action.WitReserve}).");
 
+        if (action.FastIronSpent > 0 && actor.TotalFastIron < action.FastIronSpent)
+            return ActionValidationResult.Fail($"{action.Name} needs {action.FastIronSpent} fast-iron (have {actor.TotalFastIron}).");
+
+        if (action.ConjuresComponentId is not null && !actor.Loadout.HasFreeHand())
+            return ActionValidationResult.Fail($"{action.Name} needs a free hand.");
+
+        if (action.IsSwap)
+        {
+            bool stowedSomewhere = actor.Loadout.Installed.Any(e => e.Definition.StowSlots > 0 && e.IsOperational &&
+                                                                    e.Definition.GrantedActionIds.Contains(action.Id) && actor.Loadout.StowedIn(e) is not null);
+            if (!stowedSomewhere)
+                return ActionValidationResult.Fail($"{action.Name}: nothing is stowed.");
+        }
+
         if (action.Targeting == TargetingType.EnemyUnit)
         {
             if (target is null)
                 return ActionValidationResult.Fail("Requires a target combatant.");
             if (target.IsDefeated)
                 return ActionValidationResult.Fail("Target is already defeated.");
+            if (target.Faction == actor.Faction)
+                return ActionValidationResult.Fail($"{action.Name} targets an enemy.");
+        }
+        else if (action.Targeting == TargetingType.AllyUnit)
+        {
+            if (target is null)
+                return ActionValidationResult.Fail($"{action.Name} needs an allied target.");
+            if (target.IsDefeated)
+                return ActionValidationResult.Fail("Target is already defeated.");
+            if (target.Faction != actor.Faction)
+                return ActionValidationResult.Fail($"{action.Name} targets your own side.");
         }
         else if (action.Targeting == TargetingType.Point && targetPoint is null && target is null && action.BlinkDistance == 0)
         {

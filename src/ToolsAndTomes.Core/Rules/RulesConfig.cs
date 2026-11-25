@@ -10,8 +10,23 @@ public sealed record RulesConfig
     public static RulesConfig Default { get; } = new();
 
     // ---- Wit & Motes ----
-    public int BaseWitWithoutSpellbook { get; init; } = 5;
-    public int BaseWitWithSpellbook { get; init; } = 10;
+    public int BaseWitWithoutTome { get; init; } = 5;
+    public int BaseWitWithTome { get; init; } = 10;
+
+    // ---- Spells & hands ----
+
+    /// <summary>Spells every pilot knows and can cast in any Crest, with no component (one at a time).</summary>
+    public IReadOnlyList<string> CoreSpellIds { get; init; } = ["spell_push", "spell_pull", "spell_square_summon", "spell_shape_fast_iron"];
+
+    /// <summary>Hands every Crest has; extra limbs add more.</summary>
+    public int BaseHands { get; init; } = 2;
+
+    /// <summary>Electrical damage: extra damage per tome the target holds, up to a maximum.</summary>
+    public int ElectricalBonusPerTome { get; init; } = 1;
+    public int ElectricalMaxBonus { get; init; } = 2;
+
+    /// <summary>Disjunction damage: +1 per this many points of the target's equipment Wit tax.</summary>
+    public int DisjunctionWitTaxPerBonus { get; init; } = 3;
     public int BaseMoteStorage { get; init; } = 3;
     public int MoteGenerationIntervalBeats { get; init; } = 5;
     public int MinMoteGenerationIntervalBeats { get; init; } = 1;

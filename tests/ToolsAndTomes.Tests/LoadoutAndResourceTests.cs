@@ -15,15 +15,15 @@ public sealed class LoadoutAndResourceTests
     {
         var assembly = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog);
         var withBook = LoadoutRules.ComputeStats(assembly);
-        Assert.IsTrue(withBook.HasSpellbook);
+        Assert.IsTrue(withBook.HasTome);
         Assert.AreEqual(10, withBook.MaxWit);
         Assert.AreEqual(5, withBook.MaxMotes);
 
-        var book = assembly.Installed.First(e => e.Definition.IsSpellbook);
+        var book = assembly.Installed.First(e => e.Definition.IsTome);
         assembly.Uninstall(book.InstanceId);
 
         var withoutBook = LoadoutRules.ComputeStats(assembly);
-        Assert.IsFalse(withoutBook.HasSpellbook);
+        Assert.IsFalse(withoutBook.HasTome);
         Assert.AreEqual(5, withoutBook.MaxWit);
         Assert.AreEqual(3, withoutBook.MaxMotes);
 
@@ -66,10 +66,12 @@ public sealed class LoadoutAndResourceTests
     public void DisabledMobilityThermalAndAmplifierComponents_DegradeDerivedCapabilities()
     {
         var agile = CrestLoadout.CreateFromConfiguration(ConfigurationCatalog.AgileSkirmish, _catalog);
+        var amp = new EquipmentInstance("amp", _catalog.GetEquipment("eq_spell_amplifier"));
+        agile.Install(amp);
         var baseStats = LoadoutRules.ComputeStats(agile);
+        Assert.IsTrue(baseStats.HasSpellAmplifier);
 
         var jets = agile.Installed.First(e => e.Definition.Id == "eq_jump_jets");
-        var amp = agile.Installed.First(e => e.Definition.Id == "eq_spell_amplifier");
 
         jets.ApplyDamage(jets.Definition.MaxDurability);
         amp.ApplyDamage(amp.Definition.MaxDurability);

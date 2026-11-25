@@ -109,7 +109,8 @@ public partial class HangarView : UserControl
             $"Wit Capacity       : {stats.AvailableWit(0)} avail / {stats.MaxWit} max (Tax: {stats.EquipmentWitTax})\n" +
             $"Motes              : {stats.MaxMotes} max (+1 per {moteSec}s)\n" +
             $"Heat Management    : {stats.HeatCapacity} cap | -{stats.HeatDissipationPerBeat} per beat\n" +
-            $"Spellbook          : {(stats.HasSpellbook ? "Operational" : "Missing/Disabled")}\n" +
+            $"Tomes & hands      : {stats.TomesHeld} tome(s) held, {stats.Hands} hand(s)" +
+            (stats.UnheldHandhelds > 0 ? $" ({stats.UnheldHandhelds} handheld(s) without a hand!)" : "") + "\n" +
             $"Arcane Amplifier   : {(stats.HasSpellAmplifier ? "Operational" : "Missing/Disabled")}\n" +
             $"Core Status        : {(stats.IsCoreOperational ? "OPERATIONAL" : "MISSING/DISABLED (Install/Repair Core)")}";
 

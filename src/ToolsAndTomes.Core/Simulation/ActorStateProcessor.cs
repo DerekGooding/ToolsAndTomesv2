@@ -50,6 +50,7 @@ internal sealed class ActorStateProcessor
         }
 
         actor.TickLockouts();
+        actor.TickSpellStatuses();
     }
 
     // ---- Step 2: reactions ------------------------------------------------------------------
@@ -140,7 +141,7 @@ internal sealed class ActorStateProcessor
             events.Add(new CombatEvent(beat, CombatEventType.ActionStarted, actor.Id,
                 $"{actor.Name} reacts with {def.Name}!", cmd.TargetActorId, ActionId: def.Id));
 
-            ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events);
+            ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events, _catalog);
             act.EffectApplied = true;
 
             // The declaring beat was the reaction's impact; recovery starts next beat.
@@ -180,7 +181,7 @@ internal sealed class ActorStateProcessor
                     break;
 
                 case ActionState.Executing:
-                    ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events);
+                    ActionEffectResolver.ApplyExecutionEffect(actor, act, allCombatants, beat, _arenaWidth, _arenaHeight, hits, events, _catalog);
                     act.EffectApplied = true;
                     actor.Resources.ReleaseWit(act.WitReservationKey);
                     EnterRecovery(actor, act, enteredThisBeat: null);
@@ -217,7 +218,7 @@ internal sealed class ActorStateProcessor
 
         var delta = destination.Value - actor.Position;
         double travelNeeded = Math.Max(0, delta.Length - order.StopDistance);
-        double step = Math.Min(actor.Stats.MoveSpeed, travelNeeded);
+        double step = Math.Min(actor.EffectiveMoveSpeed, travelNeeded);
         var next = ClampToArena(actor.Position + delta.Normalized() * step);
 
         return new MovementResult(next, travelNeeded - step <= Epsilon, false);
@@ -485,7 +486,12 @@ internal sealed class ActorStateProcessor
             ActionId: def.Id));
 
         if (def.WindupBeats > 0)
-            SetPhase(act, ActionState.Windup, def.WindupBeats);
+        {
+            // Leaden Air: the next windup is slower.
+            int delay = actor.PendingWindupDelay;
+            actor.PendingWindupDelay = 0;
+            SetPhase(act, ActionState.Windup, def.WindupBeats + delay);
+        }
         else
             EnterImpact(actor, act, beat, events);
     }
